@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: executing
+stopped_at: context exhaustion at 90% (2026-05-04)
+last_updated: "2026-05-04T21:44:24.521Z"
+last_activity: "2026-05-04 — Phase 2 planned (02-01: hardware collector, 02-02: wiring + tests)"
+progress:
+  total_phases: 5
+  completed_phases: 1
+  total_plans: 6
+  completed_plans: 4
+  percent: 67
+---
+
 # Project State
 
 ## Project Reference
@@ -10,15 +26,16 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 ## Current Position
 
 Phase: 2 of 5 (System Collectors)
-Plan: 0 of 2 in current phase
-Status: Phase 2 planned (2 plans, 2 waves) — ready to execute
-Last activity: 2026-05-04 — Phase 2 planned (02-01: hardware collector, 02-02: wiring + tests)
+Plan: 1 of 2 in current phase
+Status: Phase 2 executing — 02-01 complete, 02-02 next
+Last activity: 2026-05-04 — 02-01 complete (hardware.py: collect_hardware + collect_profiles, 21 tests, 47 total passing)
 
-Progress: [████░░░░░░] 20%
+Progress: [█████░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 2
 - Average duration: ~1 min
 - Total execution time: ~2 min
@@ -30,6 +47,7 @@ Progress: [████░░░░░░] 20%
 | 01 | 4 | ~4 min | ~1 min |
 
 **Recent Trend:**
+
 - Last 5 plans: 01-01 (~1 min), 01-02 (~1 min), 01-03 (~1 min), 01-04 (~5 min)
 - Trend: —
 
@@ -53,6 +71,10 @@ Recent decisions affecting current work:
 - 01-03: P3_CODES check first in disambiguation chain (before seg3.isdigit) — Pitfall 1 guard
 - 01-03: station stored as int(seg3) — Pitfall 2 guard
 - 01-03: KUL/HKG excluded from CITY_CODES — unconfirmed for this convention
+- 02-01: _wmi_module/_WMI_AVAILABLE module-level import pattern — enables CI testing without COM server
+- 02-01: cpu_model silently None (no error) when _WMI_AVAILABLE=False — missing library is not a runtime failure
+- 02-01: Win32_Product not used — Win32_Processor used for cpu_model (CLAUDE.md constraint enforced)
+- 02-01: psutil imported at module level for patchability in disk error tests
 
 ### Pending Todos
 
@@ -77,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-04
-Stopped at: Phase 2 context gathered — ready to plan Phase 2
-Resume file: .planning/phases/02-system-collectors/02-CONTEXT.md
+Last session: 2026-05-04T21:51:45Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: None
