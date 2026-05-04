@@ -1,5 +1,366 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>Status Report — {{ hostname }}</title></head>
-<body>{{ hostname }}{% for app in apps %}{% endfor %}</body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status Report — {{ hostname }}</title>
+  <style>
+    :root {
+      --bg-dominant:  #1a1a2e;
+      --bg-secondary: #16213e;
+      --bg-accent:    #0f3460;
+      --text-body:    #e0e0e0;
+      --text-muted:   #6b7280;
+      --text-heading: #a8b2d8;
+      --border:       #2d3561;
+      --green:        #22c55e;
+      --amber:        #f59e0b;
+      --red:          #ef4444;
+      --hp-track:     #374151;
+      --hp-none:      #4b5563;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg-dominant);
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--text-body);
+      padding: 48px 0;
+    }
+
+    .sheet {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ---------------------------------------------------------------------------
+       Section card pattern — applies to .header, .stat-block, .equipment
+    --------------------------------------------------------------------------- */
+    .section-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .section-title {
+      background: var(--bg-accent);
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--text-heading);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ---------------------------------------------------------------------------
+       CHARACTER SHEET header
+    --------------------------------------------------------------------------- */
+    .header-hostname {
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.1;
+      color: var(--text-body);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .header-fields {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      padding: 0 24px 24px;
+    }
+
+    .header-field {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--text-heading);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .field-value {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-body);
+    }
+
+    .field-value.muted {
+      color: var(--text-muted);
+    }
+
+    /* ---------------------------------------------------------------------------
+       STAT BLOCK
+    --------------------------------------------------------------------------- */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 0;
+      padding: 16px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--text-heading);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 8px 0;
+      align-self: start;
+    }
+
+    .stat-value {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-body);
+      padding: 8px 0;
+    }
+
+    .stat-value.muted {
+      color: var(--text-muted);
+    }
+
+    /* HP Bar */
+    .hp-track {
+      background: var(--hp-track);
+      border-radius: 4px;
+      height: 20px;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .hp-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .hp-green { background: var(--green); }
+    .hp-amber { background: var(--amber); }
+    .hp-red   { background: var(--red); }
+    .hp-none  { background: var(--hp-none); }
+
+    .hp-label {
+      font-size: 14px;
+      color: var(--text-body);
+      margin-top: 4px;
+    }
+
+    .hp-label.muted {
+      color: var(--text-muted);
+    }
+
+    /* Disk HP cell spans full value column width */
+    .stat-hp-cell {
+      padding: 4px 0 8px;
+    }
+
+    /* ---------------------------------------------------------------------------
+       EQUIPMENT table
+    --------------------------------------------------------------------------- */
+    .equipment table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .equipment thead tr {
+      background: var(--bg-accent);
+    }
+
+    .equipment thead th {
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--text-heading);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      text-align: left;
+    }
+
+    .equipment thead th.col-status  { width: 80px; }
+    .equipment thead th.col-version { width: 160px; }
+    .equipment thead th.col-service { width: 120px; }
+
+    .equipment tbody tr:nth-child(even) {
+      background: #1a1a2e;
+    }
+
+    .equipment tbody tr:nth-child(odd) {
+      background: #16213e;
+    }
+
+    .equipment tbody td {
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-body);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .badge-installed { background: var(--green); }
+    .badge-missing   { background: var(--red); }
+
+    /* ---------------------------------------------------------------------------
+       QUEST STATUS footer
+    --------------------------------------------------------------------------- */
+    .quest-status {
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .quest-complete {
+      background: #14532d;
+      border: 2px solid var(--green);
+      color: var(--green);
+    }
+
+    .quest-incomplete {
+      background: #450a0a;
+      border: 2px solid var(--red);
+      color: var(--red);
+    }
+
+    /* ---------------------------------------------------------------------------
+       CHRONICLE
+    --------------------------------------------------------------------------- */
+    .chronicle {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+
+    <!-- CHARACTER SHEET header -->
+    <div class="header section-card">
+      <div class="section-title">Character Sheet</div>
+      <div class="header-hostname">{{ hostname }}</div>
+      <div class="header-fields">
+        <div class="header-field">
+          <span class="field-label">Class</span>
+          <span class="field-value{% if not device_type %} muted{% endif %}">{{ device_type | default('—') }}</span>
+        </div>
+        <div class="header-field">
+          <span class="field-label">Realm</span>
+          <span class="field-value{% if not city %} muted{% endif %}">{{ city | default('—') }}</span>
+        </div>
+        <div class="header-field">
+          <span class="field-label">Guild</span>
+          <span class="field-value{% if not guild %} muted{% endif %}">{{ guild | default('—') }}</span>
+        </div>
+        <div class="header-field">
+          <span class="field-label">Station</span>
+          <span class="field-value{% if station is none %} muted{% endif %}">{{ station | default('—') }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAT BLOCK -->
+    <div class="stat-block section-card">
+      <div class="section-title">Stat Block</div>
+      <div class="stat-grid">
+
+        <div class="stat-label">CPU</div>
+        <div class="stat-value{% if not cpu_model %} muted{% endif %}">{{ cpu_model | default('—') }}</div>
+
+        <div class="stat-label">RAM</div>
+        <div class="stat-value{% if ram_display is none %} muted{% endif %}">{{ ram_display | default('—') }}</div>
+
+        <div class="stat-label">Disk</div>
+        <div class="stat-hp-cell">
+          <div class="stat-value{% if disk_total_display is none %} muted{% endif %}">{{ disk_total_display | default('—') }}</div>
+          <div class="hp-track">
+            <div class="hp-fill {{ hp_class }}" style="width: {{ disk_pct }}%"></div>
+          </div>
+          <div class="hp-label{% if disk_label is none %} muted{% endif %}">{{ disk_label | default('—') }}</div>
+        </div>
+
+        <div class="stat-label">OS</div>
+        <div class="stat-value{% if os_combined is none %} muted{% endif %}">{{ os_combined | default('—') }}</div>
+
+        <div class="stat-label">Current User</div>
+        <div class="stat-value{% if not current_user %} muted{% endif %}">{{ current_user | default('—') }}</div>
+
+      </div>
+    </div>
+
+    <!-- EQUIPMENT -->
+    <div class="equipment section-card">
+      <div class="section-title">Equipment</div>
+      <table>
+        <thead>
+          <tr>
+            <th>App Name</th>
+            <th class="col-status">Status</th>
+            <th class="col-version">Version</th>
+            <th class="col-service">Service</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in apps %}
+          <tr>
+            <td>{{ app.name }}</td>
+            <td>
+              <span class="badge {% if app.installed %}badge-installed{% else %}badge-missing{% endif %}">
+                {% if app.installed %}&#10003; Installed{% else %}&#10007; Missing{% endif %}
+              </span>
+            </td>
+            <td>{{ app.version or '' }}</td>
+            <td>{{ app.service_state or '' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- QUEST STATUS -->
+    {% if quest_complete %}
+    <div class="quest-status quest-complete">QUEST COMPLETE</div>
+    {% else %}
+    <div class="quest-status quest-incomplete">QUEST INCOMPLETE — {{ missing_count }} app(s) missing</div>
+    {% endif %}
+
+    <!-- CHRONICLE -->
+    <div class="chronicle">Generated: {{ timestamp }}</div>
+
+  </div>
+</body>
 </html>
