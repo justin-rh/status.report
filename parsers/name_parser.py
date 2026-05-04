@@ -44,7 +44,7 @@ def parse_hostname(hostname: str) -> ParsedHostname:
     parts = hostname.upper().split('-')
 
     # D-04: unrecognized city prefix -> Unknown, silent, no further parsing
-    if not parts or parts[0] not in CITY_CODES:
+    if parts[0] not in CITY_CODES:
         return ParsedHostname(raw_hostname=hostname, device_type='Unknown')
 
     city = CITY_CODES[parts[0]]
