@@ -562,22 +562,22 @@ class AuditReport:
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **International city codes (KUL, HKG not in the 21)**
    - What we know: STATE.md blocker notes "international offices: AMM, AMS, KUL, HKG" need validation. The 21 city codes in CLAUDE.md do not include KUL or HKG.
    - What's unclear: Are KUL (Kuala Lumpur) and HKG (Hong Kong) current offices using the naming convention, or historical? AMM and AMS are in the 21-code list.
-   - Recommendation: Implement the parser with the 21 confirmed codes. The CITY_CODES dict is a module-level constant — adding codes is a one-line change. Document the blocker in code comments.
+   - RESOLVED: Implement the parser with the 21 confirmed codes. The CITY_CODES dict is a module-level constant — adding codes is a one-line change. Document the blocker in code comments. Unconfirmed codes are out of scope for Phase 1.
 
 2. **Zero-padding in station numbers**
    - What we know: ROADMAP SC1 shows `station=3` for `PHX-INV-003`. The raw segment is `'003'`.
    - What's unclear: Does the renderer ever need the zero-padded form for display?
-   - Recommendation: Store as `int`. If the renderer needs `'003'`, apply `str(station).zfill(3)` in the Jinja2 template. This keeps the model clean.
+   - RESOLVED: Store as `int`. If the renderer needs `'003'`, apply `str(station).zfill(3)` in the Jinja2 template. This keeps the model clean and the int form is canonical.
 
 3. **Can segment 3 be alphanumeric (mixed) and not match any laptop pattern?**
    - What we know: Current rules classify `seg3.isdigit()` -> workstation, `seg3.isalpha()` -> laptop.
    - What's unclear: What if seg3 is something like `'A1B'`? Currently falls to `device_type=Unknown`.
-   - Recommendation: Treat `Unknown` as the correct result for ambiguous structures. This is consistent with D-01 (structure-based detection) — if the structure is ambiguous, Unknown is honest.
+   - RESOLVED: Treat `Unknown` as the correct result for ambiguous structures. This is consistent with D-01 (structure-based detection) — if the structure is ambiguous, Unknown is the honest answer.
 
 ---
 
