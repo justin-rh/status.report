@@ -88,7 +88,7 @@ def test_build_context_guild_warehouse():
     ph = ParsedHostname(raw_hostname='PHX-INV-003', department='INV', company_code=None)
     report = make_report(parsed_hostname=ph)
     ctx = _build_context(report)
-    assert ctx['guild'] == 'INV'
+    assert ctx['guild'] == 'Inventory'
 
 
 def test_build_context_guild_laptop():

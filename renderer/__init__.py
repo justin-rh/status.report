@@ -12,6 +12,28 @@ from jinja2 import Environment
 from models import AuditReport
 from writers import write_html
 
+_DEPT_NAMES: dict[str, str] = {
+    'AGG': 'Aggregation',
+    'ASI': 'Autostore Induction',
+    'ASP': 'Autostore Picking',
+    'FLX': 'Flex',
+    'INV': 'Inventory',
+    'LTL': 'Less than Truckload',
+    'PAK': 'Packaging',
+    'PAR': 'Inside Packaging',
+    'QCD': 'Quality Control',
+    'REC': 'Receiving',
+    'RMA': 'Return Merchandise',
+    'SHP': 'Shipping',
+    'STK': 'Stocking',
+    'REV': 'Revitalization',
+    'VAD': 'Value Add',
+    'RLT': 'Reel Table',
+    'P3A': 'Pull to Pick',
+    'P3B': 'Pull to Pick',
+    'PBT': 'Packaging Big and Tall',
+}
+
 
 def render_report(report: AuditReport, output_path: Path) -> Path:
     """Render AuditReport to HTML character sheet and write to output_path.
@@ -52,8 +74,9 @@ def _build_context(report: AuditReport) -> dict:
     """
     ph = report.parsed_hostname
 
-    # Guild — D-03: warehouse=department, laptop=company_code, both None -> None -> '—'
-    guild = ph.department or ph.company_code
+    # Guild — D-03: warehouse=department (resolved to full name), laptop=company_code
+    dept_name = _DEPT_NAMES.get(ph.department, ph.department) if ph.department else None
+    guild = dept_name or ph.company_code
 
     # Disk HP bar — D-07, D-13: falsy guard catches both None and 0.0
     if report.disk_total_gb and report.disk_free_gb is not None:
