@@ -8,8 +8,8 @@
 ### Data Collection
 
 - [x] **COLL-01**: Tool parses the PC hostname and decodes city, device type (warehouse workstation, user-assigned laptop, department laptop, P3), department code, company code, and station number using the Master Electronics naming convention
-- [ ] **COLL-02**: Tool collects hardware stats: CPU model, total RAM, disk capacity and free space, Windows OS version and build number
-- [ ] **COLL-03**: Tool enumerates all local user profiles on the machine (not just the currently logged-in user)
+- [x] **COLL-02**: Tool collects hardware stats: CPU model, total RAM, disk capacity and free space, Windows OS version and build number — *Validated in Phase 2: System Collectors*
+- [x] **COLL-03**: Tool enumerates all local user profiles on the machine (not just the currently logged-in user) — *Validated in Phase 2: System Collectors*
 
 ### App Detection
 
@@ -68,8 +68,8 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | COLL-01 | Phase 1 | Complete |
-| COLL-02 | Phase 2 | Pending |
-| COLL-03 | Phase 2 | Pending |
+| COLL-02 | Phase 2 | Complete |
+| COLL-03 | Phase 2 | Complete |
 | APP-01 | Phase 4 | Pending |
 | APP-02 | Phase 4 | Pending |
 | APP-03 | Phase 4 | Pending |

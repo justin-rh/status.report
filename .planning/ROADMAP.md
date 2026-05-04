@@ -13,7 +13,7 @@ StatusReport is built in five phases following strict data dependencies. The dat
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Models and Hostname Parser** - Define the data contract and decode the Master Electronics naming convention ✓ 2026-05-04
-- [ ] **Phase 2: System Collectors** - Collect hardware stats and user profiles via WMI, psutil, and winreg
+- [x] **Phase 2: System Collectors** - Collect hardware stats and user profiles via WMI, psutil, and winreg ✓ 2026-05-04
 - [ ] **Phase 3: HTML Character Sheet Renderer** - Build the D&D-styled HTML output from mock data, nail the visual design
 - [ ] **Phase 4: App Detection and Compliance Engine** - Detect all 7 target apps via registry, file, and service checks
 - [ ] **Phase 5: Packaging and Distribution** - Package as PyInstaller --onedir .exe and validate USB output path
@@ -51,7 +51,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md — collectors/windows/hardware.py (collect_hardware + collect_profiles implementations) ✓ 2026-05-04
-- [ ] 02-02-PLAN.md — collectors/__init__.py collect_all() wiring + full unit test suite
+- [x] 02-02-PLAN.md — collectors/__init__.py collect_all() wiring + full unit test suite ✓ 2026-05-04
 
 ### Phase 3: HTML Character Sheet Renderer
 **Goal**: A visually complete D&D/RPG-styled character sheet is rendered from mock AuditReport data and saved as an HTML file, with all RPG mappings (class, guild, realm, HP bar, spellbook, quest status) correctly displayed
@@ -97,7 +97,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Models and Hostname Parser | 4/4 | Complete | 2026-05-04 |
-| 2. System Collectors | 1/2 | In progress | - |
+| 2. System Collectors | 2/2 | Complete | 2026-05-04 |
 | 3. HTML Character Sheet Renderer | 0/? | Not started | - |
 | 4. App Detection and Compliance Engine | 0/? | Not started | - |
 | 5. Packaging and Distribution | 0/? | Not started | - |
