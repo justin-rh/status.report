@@ -24,7 +24,7 @@
 ### Output
 
 - [ ] **OUT-01**: Tool generates an HTML character sheet with RPG/D&D-influenced aesthetic — stat block layout for hardware, class/guild/realm fields for device identity, equipment list for installed apps — that remains functionally readable as IT data without knowing RPG conventions
-- [ ] **OUT-02**: HTML file is saved to the same directory the .exe was launched from (i.e., the flash drive), derived from `sys.executable`, not `os.getcwd()`
+- [x] **OUT-02**: HTML file is saved to the same directory the .exe was launched from (i.e., the flash drive), derived from `sys.executable`, not `os.getcwd()` — *write_html(html, output_path) I/O layer implemented in Phase 3 Plan 01; output_path wired from sys.executable in Phase 5*
 - [x] **OUT-03**: Tool handles unrecognized or non-conforming hostnames gracefully (renders with "Unknown" device type and displays raw hostname without crashing)
 
 ### Packaging
@@ -78,7 +78,7 @@
 | APP-06 | Phase 4 | Pending |
 | APP-07 | Phase 4 | Pending |
 | OUT-01 | Phase 3 | Pending |
-| OUT-02 | Phase 3 | Pending |
+| OUT-02 | Phase 3 | Complete (03-01) |
 | OUT-03 | Phase 1 | Complete |
 | PKG-01 | Phase 5 | Pending |
 | PKG-02 | Phase 5 | Pending |

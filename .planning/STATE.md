@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 complete — verified 2026-05-04
-last_updated: "2026-05-04T22:10:00Z"
-last_activity: "2026-05-04 — Phase 2 verified (4/4 must-haves, 47 tests passing, Phase 3 next)"
+stopped_at: Completed 03-01-PLAN.md — 2026-05-04
+last_updated: "2026-05-04T22:56:58Z"
+last_activity: "2026-05-04 — Phase 3 Plan 01 complete (jinja2 installed, write_html implemented via TDD)"
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
-  percent: 40
+  total_plans: 8
+  completed_plans: 7
+  percent: 44
 ---
 
 # Project State
@@ -25,18 +25,18 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 
 ## Current Position
 
-Phase: 3 of 5 (HTML Character Sheet Renderer) — not started
-Plan: 0 of ? in current phase
-Status: Phase 2 verified complete — Phase 3 ready to begin
-Last activity: 2026-05-04 — Phase 2 verified (4/4 SC, 47 tests, 10 profiles enumerated live)
+Phase: 3 of 5 (HTML Character Sheet Renderer) — in progress
+Plan: 1 of 2 complete
+Status: 03-01 complete — 03-02 (renderer) ready to begin
+Last activity: 2026-05-04 — 03-01 complete (jinja2 installed, write_html TDD, 6/6 tests passing)
 
-Progress: [████░░░░░░] 40%
+Progress: [████░░░░░░] 44%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 2
+- Total plans completed: 7
 - Average duration: ~1 min
 - Total execution time: ~2 min
 
@@ -45,10 +45,11 @@ Progress: [████░░░░░░] 40%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 4 | ~4 min | ~1 min |
+| 03 | 1 | ~2 min | ~2 min |
 
 **Recent Trend:**
 
-- Last 5 plans: 01-01 (~1 min), 01-02 (~1 min), 01-03 (~1 min), 01-04 (~5 min)
+- Last 5 plans: 01-01 (~1 min), 01-02 (~1 min), 01-03 (~1 min), 01-04 (~5 min), 03-01 (~2 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - 02-01: psutil imported at module level for patchability in disk error tests
 - 02-02: collect_all() uses lazy import inside function body — keeps collectors/__init__.py importable on non-Windows platforms
 - 02-02: collect_hardware called before collect_profiles in collect_all() — D-10 ordering enforced
+- 03-01: requirements.txt created separate from requirements-dev.txt (runtime vs dev deps split)
+- 03-01: write_html uses pathlib.Path.write_text per project convention (no open() with string paths)
+- 03-01: Threat T-03-01-01 accepted — output_path validation is Phase 5 / main.py concern, not writers
 
 ### Pending Todos
 
@@ -101,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-04T21:55:43Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-05-04T22:56:58Z
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None

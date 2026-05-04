@@ -67,7 +67,7 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 03-01-PLAN.md — Jinja2 install + requirements.txt + writers/__init__.py write_html (D-17)
+- [x] 03-01-PLAN.md — Jinja2 install + requirements.txt + writers/__init__.py write_html (D-17) ✓ 2026-05-04
 - [ ] 03-02-PLAN.md — renderer/__init__.py + renderer/templates/character_sheet.html + tests/test_renderer.py
 
 ### Phase 4: App Detection and Compliance Engine
@@ -102,6 +102,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Models and Hostname Parser | 4/4 | Complete | 2026-05-04 |
 | 2. System Collectors | 2/2 | Complete | 2026-05-04 |
-| 3. HTML Character Sheet Renderer | 0/2 | Not started | - |
+| 3. HTML Character Sheet Renderer | 1/2 | In progress | - |
 | 4. App Detection and Compliance Engine | 0/? | Not started | - |
 | 5. Packaging and Distribution | 0/? | Not started | - |
