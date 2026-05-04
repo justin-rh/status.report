@@ -12,17 +12,16 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Parse PC hostname into: city, device type (warehouse workstation, user-assigned laptop, dept laptop, P3), department code, company code, and station number using the Master Electronics naming convention — *Validated in Phase 1: Models and Hostname Parser*
+- [x] Handle unrecognized or non-conforming device names gracefully (display raw hostname with "Unknown" device type, no exception raised) — *Validated in Phase 1: Models and Hostname Parser*
 
 ### Active
-
-- [ ] Parse PC hostname into: city, device type (warehouse workstation, user-assigned laptop, dept laptop, P3), department code, company code, and station number using the Master Electronics naming convention
 - [ ] Collect system information: hostname, OS version and build, CPU model, RAM amount, disk capacity/free space, currently logged-in user, and local user profiles
 - [ ] Detect presence and version of: NinjaRMM/NinjaOne, Microsoft 365 apps (Word, Excel, Outlook, Teams, OneDrive), Intune/Company Portal, CrowdStrike Falcon, Zoom, Google Chrome, Claude desktop app, and MERP (Master Electronics ERP)
 - [ ] Generate an HTML character sheet with D&D/RPG styling (stats, "class", equipment slots, etc.) displaying all collected data in a thematic layout
 - [ ] Write a structured log file (JSON) back to the flash drive with full collected data and a timestamp
 - [ ] Package as a self-contained .exe (PyInstaller) that runs on Windows without installation
-- [ ] Handle unrecognized or non-conforming device names gracefully (display as "Unknown Adventurer" class with raw name shown)
+
 
 ### Out of Scope
 
@@ -78,4 +77,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-04 after initialization*
+*Last updated: 2026-05-04 after Phase 1 completion*
