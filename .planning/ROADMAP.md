@@ -63,8 +63,12 @@ Plans:
   3. The "Quest Status" footer shows QUEST COMPLETE when all required apps are present and QUEST INCOMPLETE with a gap count when any are missing
   4. The HTML file is written to the directory passed as the output path, not to the current working directory
   5. The Jinja2 template is loaded via importlib.resources so the renderer works correctly from inside a PyInstaller bundle
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
+
+Plans:
+- [ ] 03-01-PLAN.md — Jinja2 install + requirements.txt + writers/__init__.py write_html (D-17)
+- [ ] 03-02-PLAN.md — renderer/__init__.py + renderer/templates/character_sheet.html + tests/test_renderer.py
 
 ### Phase 4: App Detection and Compliance Engine
 **Goal**: All 7 target applications are detected via registry enumeration across all four Uninstall key paths with filesystem and service fallbacks, and the compliance gap list is populated in the AuditReport
@@ -98,6 +102,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Models and Hostname Parser | 4/4 | Complete | 2026-05-04 |
 | 2. System Collectors | 2/2 | Complete | 2026-05-04 |
-| 3. HTML Character Sheet Renderer | 0/? | Not started | - |
+| 3. HTML Character Sheet Renderer | 0/2 | Not started | - |
 | 4. App Detection and Compliance Engine | 0/? | Not started | - |
 | 5. Packaging and Distribution | 0/? | Not started | - |
