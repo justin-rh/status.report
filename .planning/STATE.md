@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 ## Current Position
 
 Phase: 1 of 5 (Models and Hostname Parser)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-05-04 — Phase 1 Plan 01-02 complete (models.py data contract)
+Last activity: 2026-05-04 — Phase 1 Plan 01-03 complete (parsers/ hostname parser)
 
-Progress: [██░░░░░░░░] 10%
+Progress: [███░░░░░░░] 15%
 
 ## Performance Metrics
 
@@ -27,10 +27,10 @@ Progress: [██░░░░░░░░] 10%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 | 2 | ~2 min | ~1 min |
+| 01 | 3 | ~3 min | ~1 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (~1 min), 01-02 (~1 min)
+- Last 5 plans: 01-01 (~1 min), 01-02 (~1 min), 01-03 (~1 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -50,6 +50,9 @@ Recent decisions affecting current work:
 - 01-02: department field name (not dept_code) per ROADMAP SC1 and D-02
 - 01-02: parsed_hostname on AuditReport (not parsed_name) per ROADMAP SC1
 - 01-02: No frozen=True — Phase 2 collectors populate fields after construction
+- 01-03: P3_CODES check first in disambiguation chain (before seg3.isdigit) — Pitfall 1 guard
+- 01-03: station stored as int(seg3) — Pitfall 2 guard
+- 01-03: KUL/HKG excluded from CITY_CODES — unconfirmed for this convention
 
 ### Pending Todos
 
@@ -75,5 +78,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-04
-Stopped at: Completed 01-02-PLAN.md (models.py data contract)
-Resume file: .planning/phases/01-models-and-hostname-parser/01-03-PLAN.md
+Stopped at: Completed 01-03-PLAN.md (parsers/ hostname parser)
+Resume file: .planning/phases/01-models-and-hostname-parser/01-04-PLAN.md
