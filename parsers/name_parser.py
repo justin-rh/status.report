@@ -63,8 +63,8 @@ def parse_hostname(hostname: str) -> ParsedHostname:
             station=_parse_station(seg3),
         )
 
-    # Department Laptop — LAP substring in seg2 (D-01)
-    if 'LAP' in seg2:
+    # Department Laptop — LAP suffix in seg2 (D-01); suffix-only per CITY-DEPTLAP-### convention
+    if seg2.endswith('LAP'):
         return ParsedHostname(
             raw_hostname=hostname, city=city,
             device_type='Department Laptop',
