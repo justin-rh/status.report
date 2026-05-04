@@ -78,5 +78,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-04
-Stopped at: Phase 1 verified complete (5/5 must-haves) — ready to discuss/plan Phase 2
-Resume file: .planning/phases/02-collectors/ (not yet created — run /gsd-discuss-phase 2 or /gsd-plan-phase 2)
+Stopped at: Phase 2 context gathered — ready to plan Phase 2
+Resume file: .planning/phases/02-system-collectors/02-CONTEXT.md
