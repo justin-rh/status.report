@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 ## Current Position
 
 Phase: 2 of 5 (System Collectors)
-Plan: 0 of ? in current phase
-Status: Phase 1 verified complete — Phase 2 not yet planned
-Last activity: 2026-05-04 — Phase 1 verified (5/5 must-haves passed, COLL-01 + OUT-03 complete)
+Plan: 0 of 2 in current phase
+Status: Phase 2 planned (2 plans, 2 waves) — ready to execute
+Last activity: 2026-05-04 — Phase 2 planned (02-01: hardware collector, 02-02: wiring + tests)
 
 Progress: [████░░░░░░] 20%
 
