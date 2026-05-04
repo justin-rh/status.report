@@ -510,7 +510,7 @@ else:
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `local_profiles` appear in the character sheet?**
    - What we know: `local_profiles: list[str]` is on `AuditReport`. UI-SPEC omits it from the layout skeleton. D-discretion says Claude can include or omit.
