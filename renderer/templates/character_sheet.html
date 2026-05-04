@@ -276,19 +276,19 @@
       <div class="header-fields">
         <div class="header-field">
           <span class="field-label">Class</span>
-          <span class="field-value{% if not device_type %} muted{% endif %}">{{ device_type | default('—') }}</span>
+          <span class="field-value{% if not device_type %} muted{% endif %}">{{ device_type | default('—', true) }}</span>
         </div>
         <div class="header-field">
           <span class="field-label">Realm</span>
-          <span class="field-value{% if not city %} muted{% endif %}">{{ city | default('—') }}</span>
+          <span class="field-value{% if not city %} muted{% endif %}">{{ city | default('—', true) }}</span>
         </div>
         <div class="header-field">
           <span class="field-label">Guild</span>
-          <span class="field-value{% if not guild %} muted{% endif %}">{{ guild | default('—') }}</span>
+          <span class="field-value{% if not guild %} muted{% endif %}">{{ guild | default('—', true) }}</span>
         </div>
         <div class="header-field">
           <span class="field-label">Station</span>
-          <span class="field-value{% if station is none %} muted{% endif %}">{{ station | default('—') }}</span>
+          <span class="field-value{% if station is none %} muted{% endif %}">{{ station | default('—', true) }}</span>
         </div>
       </div>
     </div>
@@ -299,25 +299,25 @@
       <div class="stat-grid">
 
         <div class="stat-label">CPU</div>
-        <div class="stat-value{% if not cpu_model %} muted{% endif %}">{{ cpu_model | default('—') }}</div>
+        <div class="stat-value{% if not cpu_model %} muted{% endif %}">{{ cpu_model | default('—', true) }}</div>
 
         <div class="stat-label">RAM</div>
-        <div class="stat-value{% if ram_display is none %} muted{% endif %}">{{ ram_display | default('—') }}</div>
+        <div class="stat-value{% if ram_display is none %} muted{% endif %}">{{ ram_display | default('—', true) }}</div>
 
         <div class="stat-label">Disk</div>
         <div class="stat-hp-cell">
-          <div class="stat-value{% if disk_total_display is none %} muted{% endif %}">{{ disk_total_display | default('—') }}</div>
+          <div class="stat-value{% if disk_total_display is none %} muted{% endif %}">{{ disk_total_display | default('—', true) }}</div>
           <div class="hp-track">
             <div class="hp-fill {{ hp_class }}" style="width: {{ disk_pct }}%"></div>
           </div>
-          <div class="hp-label{% if disk_label is none %} muted{% endif %}">{{ disk_label | default('—') }}</div>
+          <div class="hp-label{% if disk_label is none %} muted{% endif %}">{{ disk_label | default('—', true) }}</div>
         </div>
 
         <div class="stat-label">OS</div>
-        <div class="stat-value{% if os_combined is none %} muted{% endif %}">{{ os_combined | default('—') }}</div>
+        <div class="stat-value{% if os_combined is none %} muted{% endif %}">{{ os_combined | default('—', true) }}</div>
 
         <div class="stat-label">Current User</div>
-        <div class="stat-value{% if not current_user %} muted{% endif %}">{{ current_user | default('—') }}</div>
+        <div class="stat-value{% if not current_user %} muted{% endif %}">{{ current_user | default('—', true) }}</div>
 
       </div>
     </div>
