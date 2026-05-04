@@ -231,6 +231,22 @@
     .badge-installed { background: var(--green); }
     .badge-missing   { background: var(--red); }
 
+    .app-name-cell { display: flex; align-items: center; gap: 8px; }
+
+    .app-icon {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0;
+    }
+
     /* ---------------------------------------------------------------------------
        QUEST STATUS footer
     --------------------------------------------------------------------------- */
@@ -335,9 +351,23 @@
           </tr>
         </thead>
         <tbody>
+          {% set _icons = {
+            'NinjaOne':           ('Nj', '#6366f1'),
+            'CrowdStrike Falcon': ('CS', '#dc2626'),
+            'MERP':               ('M',  '#f59e0b'),
+            'Word':               ('W',  '#185abd'),
+            'Excel':              ('X',  '#107c41'),
+            'Outlook':            ('Ol', '#0078d4'),
+            'Teams':              ('T',  '#5059c9'),
+            'OneDrive':           ('OD', '#0364b8'),
+            'Zoom':               ('Z',  '#2d8cff'),
+            'Chrome':             ('Ch', '#4285f4'),
+            'Claude desktop app': ('AI', '#d97757'),
+          } %}
           {% for app in apps %}
+          {% set _ic = _icons.get(app.name, (app.name[:2].upper() if app.name else '?', '#6b7280')) %}
           <tr>
-            <td>{{ app.name }}</td>
+            <td class="app-name-cell"><span class="app-icon" style="background:{{ _ic[1] }}">{{ _ic[0] }}</span>{{ app.name }}</td>
             <td>
               <span class="badge {% if app.installed %}badge-installed{% else %}badge-missing{% endif %}">
                 {% if app.installed %}&#10003; Installed{% else %}&#10007; Missing{% endif %}

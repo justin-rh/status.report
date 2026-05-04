@@ -72,7 +72,7 @@ def _build_context(report: AuditReport) -> dict:
         if report.disk_total_gb is not None else None
     )
     disk_label = (
-        f'{report.disk_free_gb:.0f} GB free / {report.disk_total_gb:.0f} GB total'
+        f'{report.disk_free_gb:.0f} GB free / {report.disk_total_gb:.0f} GB total ({pct:.0f}% free)'
         if report.disk_total_gb and report.disk_free_gb is not None else None
     )
 
