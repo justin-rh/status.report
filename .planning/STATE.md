@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 ## Current Position
 
 Phase: 1 of 5 (Models and Hostname Parser)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-05-04 — Phase 1 Plan 01-01 complete (venv + pytest)
+Last activity: 2026-05-04 — Phase 1 Plan 01-02 complete (models.py data contract)
 
-Progress: [█░░░░░░░░░] 5%
+Progress: [██░░░░░░░░] 10%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
+- Total plans completed: 2
 - Average duration: ~1 min
-- Total execution time: ~1 min
+- Total execution time: ~2 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 | 1 | ~1 min | ~1 min |
+| 01 | 2 | ~2 min | ~1 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (~1 min)
+- Last 5 plans: 01-01 (~1 min), 01-02 (~1 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -46,6 +46,10 @@ Recent decisions affecting current work:
 - Init: Win32_Product WMI class explicitly prohibited (MSI reconfiguration side effect)
 - Init: Output path derived from sys.executable, not os.getcwd()
 - Init: winreg used exclusively for app detection (all four Uninstall key paths)
+- 01-02: station: int | None (not str) per ROADMAP SC1
+- 01-02: department field name (not dept_code) per ROADMAP SC1 and D-02
+- 01-02: parsed_hostname on AuditReport (not parsed_name) per ROADMAP SC1
+- 01-02: No frozen=True — Phase 2 collectors populate fields after construction
 
 ### Pending Todos
 
@@ -71,5 +75,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-04
-Stopped at: Completed 01-01-PLAN.md (venv + pytest)
-Resume file: .planning/phases/01-models-and-hostname-parser/01-02-PLAN.md
+Stopped at: Completed 01-02-PLAN.md (models.py data contract)
+Resume file: .planning/phases/01-models-and-hostname-parser/01-03-PLAN.md
