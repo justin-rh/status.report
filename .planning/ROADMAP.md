@@ -47,7 +47,11 @@ Plans:
   2. All local user profile paths are enumerated from the registry (not just the currently logged-in user) and appear in the AuditReport
   3. When a WMI query fails or the process is running as a standard user, the affected field shows a degraded value (e.g., "Unavailable") rather than raising an exception
   4. Output path is derived from `Path(sys.executable).parent` when `sys.frozen` is set — console-printed path points to the USB drive directory, not the host PC
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — collectors/windows/hardware.py (collect_hardware + collect_profiles implementations)
+- [ ] 02-02-PLAN.md — collectors/__init__.py collect_all() wiring + full unit test suite
 
 ### Phase 3: HTML Character Sheet Renderer
 **Goal**: A visually complete D&D/RPG-styled character sheet is rendered from mock AuditReport data and saved as an HTML file, with all RPG mappings (class, guild, realm, HP bar, spellbook, quest status) correctly displayed
@@ -93,7 +97,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Models and Hostname Parser | 4/4 | Complete | 2026-05-04 |
-| 2. System Collectors | 0/? | Not started | - |
+| 2. System Collectors | 0/2 | Not started | - |
 | 3. HTML Character Sheet Renderer | 0/? | Not started | - |
 | 4. App Detection and Compliance Engine | 0/? | Not started | - |
 | 5. Packaging and Distribution | 0/? | Not started | - |
