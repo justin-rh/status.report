@@ -1,10 +1,11 @@
 ---
 phase: 3
 slug: html-character-sheet-renderer
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-05-04
+reviewed_at: 2026-05-04T00:00:00
 ---
 
 # Phase 3 — UI Design Contract
@@ -59,7 +60,7 @@ Exceptions: HP bar height fixed at 20px (functional display constraint, not a sp
 | Body | 14px | 400 | 1.5 | Stat values, table cell content, version strings |
 | Label | 12px | 600 | 1.4 | Section header labels, field names (CPU, RAM, Disk), badge text |
 | Heading | 20px | 600 | 1.2 | Section titles (STAT BLOCK, EQUIPMENT, QUEST STATUS) |
-| Display | 28px | 700 | 1.1 | Character name (hostname) in page header |
+| Display | 28px | 600 | 1.1 | Character name (hostname) in page header |
 
 Font stack: `system-ui, -apple-system, "Segoe UI", Arial, sans-serif`
 
@@ -117,7 +118,7 @@ Layout: single-column centered block, `#16213e` card background, `lg` (24px) pad
 | Guild | GUILD | `department` (warehouse) or `company_code` (user laptop) or `—` | ParsedHostname |
 | Station | STATION | Raw int or `—` | ParsedHostname.station |
 
-Hostname renders in Display (28px/700) white. Field labels render in Label (12px/600)
+Hostname renders in Display (28px/600) white. Field labels render in Label (12px/600)
 `#a8b2d8`. Field values render in Body (14px/400) `#e0e0e0`.
 
 ### Stat Block
