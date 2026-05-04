@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** Phase 1 — Models and Hostname Parser
+**Current focus:** Phase 2 — System Collectors
 
 ## Current Position
 
-Phase: 1 of 5 (Models and Hostname Parser)
-Plan: 4 of 4 in current phase
-Status: Phase 1 complete — ready for Phase 2
-Last activity: 2026-05-04 — Phase 1 Plan 01-04 complete (tests + stubs + checkpoint approved)
+Phase: 2 of 5 (System Collectors)
+Plan: 0 of ? in current phase
+Status: Phase 1 verified complete — Phase 2 not yet planned
+Last activity: 2026-05-04 — Phase 1 verified (5/5 must-haves passed, COLL-01 + OUT-03 complete)
 
 Progress: [████░░░░░░] 20%
 
@@ -78,5 +78,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-04
-Stopped at: Completed 01-04-PLAN.md (tests + stubs + checkpoint approved) — Phase 1 complete
-Resume file: .planning/phases/02-collectors/02-01-PLAN.md
+Stopped at: Phase 1 verified complete (5/5 must-haves) — ready to discuss/plan Phase 2
+Resume file: .planning/phases/02-collectors/ (not yet created — run /gsd-discuss-phase 2 or /gsd-plan-phase 2)

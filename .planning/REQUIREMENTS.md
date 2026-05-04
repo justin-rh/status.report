@@ -7,7 +7,7 @@
 
 ### Data Collection
 
-- [ ] **COLL-01**: Tool parses the PC hostname and decodes city, device type (warehouse workstation, user-assigned laptop, department laptop, P3), department code, company code, and station number using the Master Electronics naming convention
+- [x] **COLL-01**: Tool parses the PC hostname and decodes city, device type (warehouse workstation, user-assigned laptop, department laptop, P3), department code, company code, and station number using the Master Electronics naming convention
 - [ ] **COLL-02**: Tool collects hardware stats: CPU model, total RAM, disk capacity and free space, Windows OS version and build number
 - [ ] **COLL-03**: Tool enumerates all local user profiles on the machine (not just the currently logged-in user)
 
@@ -25,7 +25,7 @@
 
 - [ ] **OUT-01**: Tool generates an HTML character sheet with RPG/D&D-influenced aesthetic — stat block layout for hardware, class/guild/realm fields for device identity, equipment list for installed apps — that remains functionally readable as IT data without knowing RPG conventions
 - [ ] **OUT-02**: HTML file is saved to the same directory the .exe was launched from (i.e., the flash drive), derived from `sys.executable`, not `os.getcwd()`
-- [ ] **OUT-03**: Tool handles unrecognized or non-conforming hostnames gracefully (renders with "Unknown" device type and displays raw hostname without crashing)
+- [x] **OUT-03**: Tool handles unrecognized or non-conforming hostnames gracefully (renders with "Unknown" device type and displays raw hostname without crashing)
 
 ### Packaging
 
@@ -67,7 +67,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| COLL-01 | Phase 1 | Pending |
+| COLL-01 | Phase 1 | Complete |
 | COLL-02 | Phase 2 | Pending |
 | COLL-03 | Phase 2 | Pending |
 | APP-01 | Phase 4 | Pending |
@@ -79,7 +79,7 @@
 | APP-07 | Phase 4 | Pending |
 | OUT-01 | Phase 3 | Pending |
 | OUT-02 | Phase 3 | Pending |
-| OUT-03 | Phase 1 | Pending |
+| OUT-03 | Phase 1 | Complete |
 | PKG-01 | Phase 5 | Pending |
 | PKG-02 | Phase 5 | Pending |
 

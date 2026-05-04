@@ -12,7 +12,7 @@ StatusReport is built in five phases following strict data dependencies. The dat
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Models and Hostname Parser** - Define the data contract and decode the Master Electronics naming convention
+- [x] **Phase 1: Models and Hostname Parser** - Define the data contract and decode the Master Electronics naming convention ✓ 2026-05-04
 - [ ] **Phase 2: System Collectors** - Collect hardware stats and user profiles via WMI, psutil, and winreg
 - [ ] **Phase 3: HTML Character Sheet Renderer** - Build the D&D-styled HTML output from mock data, nail the visual design
 - [ ] **Phase 4: App Detection and Compliance Engine** - Detect all 7 target apps via registry, file, and service checks
@@ -33,10 +33,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Python 3.12 venv + pytest 8.x dev environment
-- [ ] 01-02-PLAN.md — models.py data contract (CollectionResult, ParsedHostname, AppStatus, AuditReport)
-- [ ] 01-03-PLAN.md — parsers/ package (parse_hostname pure function, 21 city codes)
-- [ ] 01-04-PLAN.md — pytest test suite + stub directories + human verification checkpoint
+- [x] 01-01-PLAN.md — Python 3.12 venv + pytest 8.x dev environment
+- [x] 01-02-PLAN.md — models.py data contract (CollectionResult, ParsedHostname, AppStatus, AuditReport)
+- [x] 01-03-PLAN.md — parsers/ package (parse_hostname pure function, 21 city codes)
+- [x] 01-04-PLAN.md — pytest test suite + stub directories + human verification checkpoint
 
 ### Phase 2: System Collectors
 **Goal**: Hardware facts and local user profiles are collected from the live Windows machine and stored in an AuditReport instance, with graceful degradation when running without elevation
@@ -92,7 +92,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Models and Hostname Parser | 0/4 | Not started | - |
+| 1. Models and Hostname Parser | 4/4 | Complete | 2026-05-04 |
 | 2. System Collectors | 0/? | Not started | - |
 | 3. HTML Character Sheet Renderer | 0/? | Not started | - |
 | 4. App Detection and Compliance Engine | 0/? | Not started | - |
