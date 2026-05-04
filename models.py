@@ -17,7 +17,7 @@ class CollectionResult(Generic[T]):
 
     @property
     def ok(self) -> bool:
-        return self.error is None
+        return not self.error
 
 
 @dataclass
