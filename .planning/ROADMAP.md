@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Models and Hostname Parser** - Define the data contract and decode the Master Electronics naming convention ✓ 2026-05-04
 - [x] **Phase 2: System Collectors** - Collect hardware stats and user profiles via WMI, psutil, and winreg ✓ 2026-05-04
-- [ ] **Phase 3: HTML Character Sheet Renderer** - Build the D&D-styled HTML output from mock data, nail the visual design
+- [x] **Phase 3: HTML Character Sheet Renderer** - Build the D&D-styled HTML output from mock data, nail the visual design ✓ 2026-05-04
 - [ ] **Phase 4: App Detection and Compliance Engine** - Detect all 7 target apps via registry, file, and service checks
 - [ ] **Phase 5: Packaging and Distribution** - Package as PyInstaller --onedir .exe and validate USB output path
 
@@ -68,7 +68,7 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Jinja2 install + requirements.txt + writers/__init__.py write_html (D-17) ✓ 2026-05-04
-- [ ] 03-02-PLAN.md — renderer/__init__.py + renderer/templates/character_sheet.html + tests/test_renderer.py
+- [x] 03-02-PLAN.md — renderer/__init__.py + renderer/templates/character_sheet.html + tests/test_renderer.py ✓ 2026-05-04
 
 ### Phase 4: App Detection and Compliance Engine
 **Goal**: All 7 target applications are detected via registry enumeration across all four Uninstall key paths with filesystem and service fallbacks, and the compliance gap list is populated in the AuditReport
@@ -102,6 +102,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Models and Hostname Parser | 4/4 | Complete | 2026-05-04 |
 | 2. System Collectors | 2/2 | Complete | 2026-05-04 |
-| 3. HTML Character Sheet Renderer | 1/2 | In progress | - |
+| 3. HTML Character Sheet Renderer | 2/2 | Complete | 2026-05-04 |
 | 4. App Detection and Compliance Engine | 0/? | Not started | - |
 | 5. Packaging and Distribution | 0/? | Not started | - |
