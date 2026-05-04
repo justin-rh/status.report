@@ -30,7 +30,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Given an unrecognized hostname like `DESKTOP-XYZ123`, the parser returns device_type=Unknown with the raw hostname preserved and no exception raised
   4. All 21 city codes and all known department codes are covered by unit tests that pass without any Windows API calls
   5. AuditReport, ParsedHostname, AppStatus, and CollectionResult dataclasses exist and can be imported from models.py
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Python 3.12 venv + pytest 8.x dev environment
+- [ ] 01-02-PLAN.md — models.py data contract (CollectionResult, ParsedHostname, AppStatus, AuditReport)
+- [ ] 01-03-PLAN.md — parsers/ package (parse_hostname pure function, 21 city codes)
+- [ ] 01-04-PLAN.md — pytest test suite + stub directories + human verification checkpoint
 
 ### Phase 2: System Collectors
 **Goal**: Hardware facts and local user profiles are collected from the live Windows machine and stored in an AuditReport instance, with graceful degradation when running without elevation
@@ -86,7 +92,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Models and Hostname Parser | 0/? | Not started | - |
+| 1. Models and Hostname Parser | 0/4 | Not started | - |
 | 2. System Collectors | 0/? | Not started | - |
 | 3. HTML Character Sheet Renderer | 0/? | Not started | - |
 | 4. App Detection and Compliance Engine | 0/? | Not started | - |
