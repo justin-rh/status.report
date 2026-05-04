@@ -235,12 +235,12 @@ def test_render_report_html_contains_missing_badge():
 
 
 def test_render_report_html_quest_incomplete():
-    """Rendered HTML contains QUEST INCOMPLETE for MOCK_REPORT (4 missing apps)."""
+    """Rendered HTML contains MISSING SOFTWARE banner for MOCK_REPORT (4 missing apps)."""
     from renderer import render_report
     with tempfile.TemporaryDirectory() as tmp:
         out = render_report(MOCK_REPORT, Path(tmp))
         html = out.read_text(encoding='utf-8')
-        assert 'QUEST INCOMPLETE' in html
+        assert 'MISSING SOFTWARE' in html
 
 
 def test_render_report_none_cpu_model_renders_emdash():

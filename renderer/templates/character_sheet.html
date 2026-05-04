@@ -271,19 +271,19 @@
 
     <!-- CHARACTER SHEET header -->
     <div class="header section-card">
-      <div class="section-title">Character Sheet</div>
+      <div class="section-title">Device Profile</div>
       <div class="header-hostname">{{ hostname }}</div>
       <div class="header-fields">
         <div class="header-field">
-          <span class="field-label">Class</span>
+          <span class="field-label">Type</span>
           <span class="field-value{% if not device_type %} muted{% endif %}">{{ device_type | default('—', true) }}</span>
         </div>
         <div class="header-field">
-          <span class="field-label">Realm</span>
+          <span class="field-label">Location</span>
           <span class="field-value{% if not city %} muted{% endif %}">{{ city | default('—', true) }}</span>
         </div>
         <div class="header-field">
-          <span class="field-label">Guild</span>
+          <span class="field-label">Department</span>
           <span class="field-value{% if not guild %} muted{% endif %}">{{ guild | default('—', true) }}</span>
         </div>
         <div class="header-field">
@@ -324,7 +324,7 @@
 
     <!-- EQUIPMENT -->
     <div class="equipment section-card">
-      <div class="section-title">Equipment</div>
+      <div class="section-title">Software</div>
       <table>
         <thead>
           <tr>
@@ -353,9 +353,9 @@
 
     <!-- QUEST STATUS -->
     {% if quest_complete %}
-    <div class="quest-status quest-complete">QUEST COMPLETE</div>
+    <div class="quest-status quest-complete">ALL SOFTWARE PRESENT</div>
     {% else %}
-    <div class="quest-status quest-incomplete">QUEST INCOMPLETE — {{ missing_count }} app(s) missing</div>
+    <div class="quest-status quest-incomplete">MISSING SOFTWARE — {{ missing_count }} app(s)</div>
     {% endif %}
 
     <!-- CHRONICLE -->
