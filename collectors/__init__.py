@@ -10,9 +10,12 @@ def collect_all(report: AuditReport) -> None:
     """Run all collectors in order. Mutates report in place. Never raises.
 
     Calls collect_hardware first (OS, CPU, RAM, disk, current user),
-    then collect_profiles (local user profiles from registry).
-    Both functions degrade gracefully — collection_errors accumulates failures.
+    then collect_profiles (local user profiles from registry),
+    then collect_apps (installed application detection).
+    All functions degrade gracefully — collection_errors accumulates failures.
     """
     from collectors.windows.hardware import collect_hardware, collect_profiles
+    from collectors.windows.apps import collect_apps
     collect_hardware(report)
     collect_profiles(report)
+    collect_apps(report)
