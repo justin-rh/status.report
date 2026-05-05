@@ -29,8 +29,8 @@
 
 ### Packaging
 
-- [ ] **PKG-01**: Tool is packaged as a Windows .exe using PyInstaller `--onedir` mode, runnable without installation or admin rights on Windows 10/11
-- [ ] **PKG-02**: All output (HTML file) is written to flash drive only — tool makes no writes to the host PC's filesystem, registry, or %TEMP%
+- [x] **PKG-01**: Tool is packaged as a Windows .exe using PyInstaller `--onedir` mode, runnable without installation or admin rights on Windows 10/11 — *Validated in Phase 5: Packaging and Distribution*
+- [x] **PKG-02**: All output (HTML file) is written to flash drive only — tool makes no writes to the host PC's filesystem, registry, or %TEMP% — *Validated in Phase 5: Packaging and Distribution*
 
 ## v2 Requirements
 
@@ -80,8 +80,8 @@
 | OUT-01 | Phase 3 | Pending |
 | OUT-02 | Phase 3 | Complete (03-01) |
 | OUT-03 | Phase 1 | Complete |
-| PKG-01 | Phase 5 | Pending |
-| PKG-02 | Phase 5 | Pending |
+| PKG-01 | Phase 5 | Complete |
+| PKG-02 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 15 total
