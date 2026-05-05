@@ -29,6 +29,10 @@ except ImportError:
 
 PROFILE_LIST_KEY = r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
 SYSTEM_SIDS = {"S-1-5-18", "S-1-5-19", "S-1-5-20"}
+_CPU_REGISTRY_PATH = r"HARDWARE\DESCRIPTION\System\CentralProcessor\0"
+_BIOS_PLACEHOLDER_VALUES = frozenset({
+    '', 'to be filled by o.e.m.', 'default string', 'none', 'n/a',
+})
 
 
 # ---------------------------------------------------------------------------
@@ -38,13 +42,14 @@ SYSTEM_SIDS = {"S-1-5-18", "S-1-5-19", "S-1-5-20"}
 def collect_hardware(report: AuditReport) -> None:
     """Populate hardware fields on *report* in place.
 
-    Calls four private helpers in order. No exception propagates out of this
+    Calls five private helpers in order. No exception propagates out of this
     function under any circumstances (D-01, D-02).
     """
     _collect_os(report)
     _collect_cpu_model(report)
     _collect_memory_and_disk(report)
     _collect_current_user(report)
+    _collect_serial_number(report)
 
 
 def collect_profiles(report: AuditReport) -> None:
@@ -66,30 +71,70 @@ def collect_profiles(report: AuditReport) -> None:
 def _collect_os(report: AuditReport) -> None:
     """Populate os_version and os_build from platform stdlib.
 
-    platform.release() / platform.version() never fail on Windows Python 3.12.
-    No try/except needed (D-07).
+    platform.version() returns "10.0.BBBBB.R" on both Windows 10 and 11.
+    Windows 11 is distinguished by build number >= 22000.
+    os_build stores only the build number (e.g. "22621"); os_version stores
+    the human-readable name ("Windows 11" or "Windows 10").
     """
-    report.os_version = platform.release()   # "10" or "11"
-    report.os_build = platform.version()     # "10.0.19045" (Windows 10 22H2)
+    full = platform.version()           # e.g. "10.0.22621.3155"
+    parts = full.split(".")
+    build_str = parts[2] if len(parts) >= 3 else full
+    try:
+        build_int = int(build_str)
+    except ValueError:
+        build_int = 0
+    report.os_build = build_str
+    if build_int >= 22000:
+        report.os_version = "Windows 11"
+    else:
+        release = platform.release()    # "10", "8", etc.
+        report.os_version = f"Windows {release}" if release else "Windows"
 
 
 def _collect_cpu_model(report: AuditReport) -> None:
-    """Populate cpu_model via WMI Win32_Processor (D-06).
+    """Populate cpu_model via WMI Win32_Processor with registry fallback.
 
-    The entire WMI import + instantiation + query is wrapped in one try/except.
-    If any step fails, cpu_model stays None (model default) and one error is
-    appended (D-02).
+    Tries WMI first. On failure or unavailability, falls back to
+    HKLM\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0 ProcessorNameString
+    which works without WMI at any privilege level.
+    """
+    if _WMI_AVAILABLE:
+        try:
+            c = _wmi_module.WMI()
+            processors = c.Win32_Processor()
+            if processors:
+                report.cpu_model = processors[0].Name.strip()
+                return
+        except Exception as exc:
+            report.collection_errors.append(
+                f"CPU model collection failed (WMI): {exc}"
+            )
+    # Registry fallback — always available on Windows, no elevation needed
+    try:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, _CPU_REGISTRY_PATH) as key:
+            name, _ = winreg.QueryValueEx(key, "ProcessorNameString")
+            report.cpu_model = name.strip()
+    except (FileNotFoundError, OSError):
+        pass  # Both paths failed; cpu_model stays None
+
+
+def _collect_serial_number(report: AuditReport) -> None:
+    """Populate serial_number via WMI Win32_BIOS.SerialNumber.
+
+    Ignores OEM placeholder strings. Degrades silently if WMI unavailable.
     """
     if not _WMI_AVAILABLE:
-        return  # wmi not installed; degrade silently (not a runtime failure)
+        return
     try:
         c = _wmi_module.WMI()
-        processors = c.Win32_Processor()
-        if processors:
-            report.cpu_model = processors[0].Name.strip()
+        bios_list = c.Win32_BIOS()
+        if bios_list:
+            sn = (bios_list[0].SerialNumber or '').strip()
+            if sn.lower() not in _BIOS_PLACEHOLDER_VALUES:
+                report.serial_number = sn
     except Exception as exc:
         report.collection_errors.append(
-            f"CPU model collection failed (WMI): {exc}"
+            f"Serial number collection failed (WMI): {exc}"
         )
 
 

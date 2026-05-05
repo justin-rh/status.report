@@ -84,17 +84,19 @@ def test_collect_hardware_populates_cpu_model_when_wmi_works():
 
 
 def test_collect_hardware_degrades_when_wmi_raises():
-    """cpu_model stays None and error is logged when WMI raises any exception."""
+    """WMI error is logged and registry fallback is attempted; if registry also
+    fails cpu_model stays None."""
     from collectors.windows.hardware import collect_hardware
     import collectors.windows.hardware as hw_mod
 
     mock_wmi_cls = MagicMock(side_effect=Exception("COM unavailable"))
 
-    with patch.object(hw_mod, "_wmi_module", create=True) as mock_mod:
+    with patch.object(hw_mod, "_wmi_module", create=True) as mock_mod, \
+         patch.object(hw_mod, "_WMI_AVAILABLE", True), \
+         patch.object(hw_mod.winreg, "OpenKey", side_effect=OSError):
         mock_mod.WMI = mock_wmi_cls
-        with patch.object(hw_mod, "_WMI_AVAILABLE", True):
-            report = make_report()
-            collect_hardware(report)
+        report = make_report()
+        collect_hardware(report)
 
     assert report.cpu_model is None
     assert len(report.collection_errors) >= 1
@@ -103,16 +105,18 @@ def test_collect_hardware_degrades_when_wmi_raises():
 
 
 def test_collect_hardware_skips_wmi_when_unavailable():
-    """When _WMI_AVAILABLE is False, cpu_model stays None with no crash."""
+    """When _WMI_AVAILABLE is False, registry fallback is used; if registry also
+    fails cpu_model stays None with no crash and no error logged."""
     from collectors.windows.hardware import collect_hardware
     import collectors.windows.hardware as hw_mod
 
-    with patch.object(hw_mod, "_WMI_AVAILABLE", False):
+    with patch.object(hw_mod, "_WMI_AVAILABLE", False), \
+         patch.object(hw_mod.winreg, "OpenKey", side_effect=OSError):
         report = make_report()
         collect_hardware(report)
 
     assert report.cpu_model is None
-    # No error logged when wmi simply not installed (degradation, not failure)
+    # No error logged — missing wmi + unreachable registry is silent degradation
 
 
 # ---------------------------------------------------------------------------

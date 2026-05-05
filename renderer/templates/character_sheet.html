@@ -346,6 +346,9 @@
         <div class="stat-label">OS</div>
         <div class="stat-value{% if os_combined is none %} muted{% endif %}">{{ os_combined | default('—', true) }}</div>
 
+        <div class="stat-label">Serial Number</div>
+        <div class="stat-value{% if serial_number is none %} muted{% endif %}">{{ serial_number | default('—', true) }}</div>
+
         <div class="stat-label">Current User</div>
         <div class="stat-value{% if not current_user %} muted{% endif %}">{{ current_user | default('—', true) }}</div>
 
@@ -400,6 +403,13 @@
     <div class="quest-status quest-complete">ALL SOFTWARE PRESENT</div>
     {% else %}
     <div class="quest-status quest-incomplete">MISSING SOFTWARE — {{ missing_count }} app(s)</div>
+    {% endif %}
+
+    <!-- OS UPGRADE WARNING -->
+    {% if os_warning %}
+    <div class="rename-warning">
+      &#9888; Device is running {{ os_combined | default('Windows 10', true) }} — upgrade to Windows 11 required
+    </div>
     {% endif %}
 
     <!-- RENAME WARNING -->

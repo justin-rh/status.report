@@ -111,6 +111,13 @@ def _build_context(report: AuditReport) -> dict:
     # Rename warning — shown when hostname could not be parsed
     rename_warning = ph.device_type == 'Unknown'
 
+    # OS upgrade warning — Windows 10 or earlier (build < 22000)
+    try:
+        _build_int = int(report.os_build or '0')
+    except ValueError:
+        _build_int = 0
+    os_warning = 0 < _build_int < 22000
+
     return {
         'hostname': report.hostname,
         'device_type': ph.device_type,
@@ -124,10 +131,12 @@ def _build_context(report: AuditReport) -> dict:
         'hp_class': hp_class,
         'disk_label': disk_label,
         'os_combined': os_combined,
+        'serial_number': report.serial_number,
         'current_user': report.current_user,
         'apps': report.apps,
         'quest_complete': len(missing) == 0,
         'missing_count': len(missing),
         'rename_warning': rename_warning,
+        'os_warning': os_warning,
         'timestamp': report.timestamp,
     }

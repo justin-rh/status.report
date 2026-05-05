@@ -52,6 +52,7 @@ class AuditReport:
     # Hardware — populated by Phase 2 collectors
     os_version: str | None = None
     os_build: str | None = None
+    serial_number: str | None = None
     cpu_model: str | None = None
     ram_gb: float | None = None
     disk_total_gb: float | None = None
