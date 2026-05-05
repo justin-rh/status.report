@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: System Collectors** - Collect hardware stats and user profiles via WMI, psutil, and winreg ✓ 2026-05-04
 - [x] **Phase 3: HTML Character Sheet Renderer** - Build the D&D-styled HTML output from mock data, nail the visual design ✓ 2026-05-04
 - [x] **Phase 4: App Detection and Compliance Engine** - Detect all 7 target apps via registry, file, and service checks ✓ 2026-05-05
-- [ ] **Phase 5: Packaging and Distribution** - Package as PyInstaller --onedir .exe and validate USB output path
+- [x] **Phase 5: Packaging and Distribution** - Package as PyInstaller --onedir .exe and validate USB output path ✓ 2026-05-05
 
 ## Phase Details
 
@@ -94,13 +94,13 @@ Plans:
   1. Running `status_report.exe` from a USB drive on a Windows 10 or 11 machine (as a standard user, no admin rights) produces an HTML character sheet in the same directory as the .exe within 30 seconds
   2. After the .exe completes, no files are written to the host PC's filesystem (no writes to C:\, %TEMP%, %APPDATA%, or registry)
   3. The packaged .exe directory is under 50 MB
-  4. Running the .exe on a CrowdStrike Falcon-enrolled machine does not trigger quarantine — test result (pass or documented fallback decision) is recorded before distribution
+  4. Running the .exe on a CrowdStrike Falcon-enrolled machine does not trigger quarantine — test result (pass or documented fallback decision) is recorded before distribution. **CrowdStrike Falcon test passed (2026-05-05) — no quarantine, no block. Distribution approved.**
 **Plans**: 3 plans
 
 Plans:
 - [x] 05-01-PLAN.md — .gitignore fix (remove *.spec) + pyinstaller==6.20.0 in requirements-dev.txt + render_html() added to renderer/__init__.py ✓ 2026-05-05
 - [x] 05-02-PLAN.md — main.py (pipeline entry point) + status_report.spec (build definition) + build.bat (one-command build) ✓ 2026-05-05
-- [ ] 05-03-PLAN.md — PyInstaller build + USB validation + CrowdStrike Falcon test checkpoint (D-11/D-13)
+- [x] 05-03-PLAN.md — PyInstaller build + USB validation + CrowdStrike Falcon test checkpoint (D-11/D-13) ✓ 2026-05-05
 
 ## Progress
 
@@ -113,4 +113,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. System Collectors | 2/2 | Complete | 2026-05-04 |
 | 3. HTML Character Sheet Renderer | 2/2 | Complete | 2026-05-04 |
 | 4. App Detection and Compliance Engine | 2/2 | Complete | 2026-05-05 |
-| 5. Packaging and Distribution | 2/3 | In progress | - |
+| 5. Packaging and Distribution | 3/3 | Complete | 2026-05-05 |

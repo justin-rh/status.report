@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 05-02-PLAN.md — main.py + spec + build.bat committed; 05-03 (CrowdStrike validation) is next
-last_updated: "2026-05-05T20:09:34Z"
-last_activity: "2026-05-05 — 05-02 complete (main.py pipeline entry point, status_report.spec --onedir build, build.bat one-command build)"
+status: complete
+stopped_at: Completed 05-03-PLAN.md — CrowdStrike Falcon validation passed; all phases complete; v1.0 milestone delivered
+last_updated: "2026-05-05T20:30:00Z"
+last_activity: "2026-05-05 — 05-03 complete (PyInstaller build validated on CrowdStrike-enrolled ME machine as standard user; no quarantine; HTML confirmed on USB; distribution approved)"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 14
-  completed_plans: 13
-  percent: 93
+  completed_plans: 14
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** Phase 5 — Packaging and Distribution
+**Current focus:** All phases complete — v1.0 milestone delivered
 
 ## Current Position
 
-Phase: 5 of 5 (Packaging and Distribution) — in progress
-Plan: 2 of 3 complete
-Status: 05-02 complete — main.py + status_report.spec + build.bat committed; 05-03 (CrowdStrike validation + build test) is next
-Last activity: 2026-05-05 — 05-02 complete (main.py pipeline entry point, status_report.spec --onedir build definition, build.bat one-command build)
+Phase: 5 of 5 (Packaging and Distribution) — complete
+Plan: 3 of 3 complete
+Status: 05-03 complete — CrowdStrike Falcon validation passed; all 14 plans complete; v1.0 milestone delivered
+Last activity: 2026-05-05 — 05-03 complete (PyInstaller --onedir exe validated on CrowdStrike Falcon-enrolled ME machine as standard user; no quarantine; HTML confirmed on USB logs/; distribution approved)
 
-Progress: [█████████░] 93%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -97,6 +97,7 @@ Recent decisions affecting current work:
 - 05-02: Collector failures warn and continue; only write failure (PermissionError, ENOSPC) exits with code 1 (D-06)
 - 05-02: spec uses Analysis+PYZ+EXE(exclude_binaries=True)+COLLECT — --onedir structure; NEVER EXE(onefile=True)
 - 05-02: upx=False in both EXE() and COLLECT() — two entries required per PyInstaller spec structure
+- 05-03: CrowdStrike Falcon test passed 2026-05-05 — no quarantine, no block on enrolled ME machine as standard user; --onedir + upx=False sufficient for v1.0; code signing (DIST-V2-01) deferred to v2
 
 ### Pending Todos
 
@@ -106,7 +107,7 @@ None yet.
 
 - Phase 1: Hostname naming convention must be validated against real production hostnames (including international offices: AMM, AMS, KUL, HKG) before parser is finalized — confirm with IT/Edgar
 - Phase 4: MERP registry path is unknown — must be confirmed with IT before APP-03 detection can be completed
-- Phase 5: CrowdStrike --onedir tenant policy behavior must be tested on an enrolled machine at the start of Phase 5; code-signing budget decision needed if blocked
+- Phase 5: CrowdStrike --onedir tenant policy behavior must be tested on an enrolled machine at the start of Phase 5; code-signing budget decision needed if blocked — RESOLVED 2026-05-05: test passed, no block, no exclusion needed
 
 ## Deferred Items
 
@@ -121,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-05T20:09:34Z
-Stopped at: Completed 05-02-PLAN.md — main.py + spec + build.bat committed; 05-03 is next
+Last session: 2026-05-05T20:30:00Z
+Stopped at: Completed 05-03-PLAN.md — CrowdStrike Falcon test passed; all 14 plans complete; v1.0 milestone delivered
 Resume file: None
