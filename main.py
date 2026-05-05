@@ -13,11 +13,10 @@ D-05: webbrowser.open(). D-06: collector failures warn + continue; write failure
 """
 from __future__ import annotations
 
-import base64
 import datetime
+import os
 import socket
 import sys
-import webbrowser
 from pathlib import Path
 
 from collectors import collect_all
@@ -80,10 +79,10 @@ def main() -> None:
 
     print(f"Saved: {output_path}")
     print("Opening in browser...")
-    # Open via data URI so the browser holds no file handle on the USB drive.
-    # A file:// path would keep the drive locked and prevent ejection.
-    data_uri = "data:text/html;base64," + base64.b64encode(html.encode("utf-8")).decode("ascii")
-    webbrowser.open(data_uri)  # best-effort; file already written (D-05)
+    try:
+        os.startfile(str(output_path))  # Windows ShellExecute — opens with default browser
+    except OSError:
+        pass  # best-effort; file is already saved on the USB
     print("Done.")
 
 
