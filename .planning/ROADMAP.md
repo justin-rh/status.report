@@ -95,7 +95,12 @@ Plans:
   2. After the .exe completes, no files are written to the host PC's filesystem (no writes to C:\, %TEMP%, %APPDATA%, or registry)
   3. The packaged .exe directory is under 50 MB
   4. Running the .exe on a CrowdStrike Falcon-enrolled machine does not trigger quarantine — test result (pass or documented fallback decision) is recorded before distribution
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — .gitignore fix (remove *.spec) + pyinstaller==6.20.0 in requirements-dev.txt + render_html() added to renderer/__init__.py
+- [ ] 05-02-PLAN.md — main.py (pipeline entry point) + status_report.spec (build definition) + build.bat (one-command build)
+- [ ] 05-03-PLAN.md — PyInstaller build + USB validation + CrowdStrike Falcon test checkpoint (D-11/D-13)
 
 ## Progress
 
@@ -108,4 +113,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. System Collectors | 2/2 | Complete | 2026-05-04 |
 | 3. HTML Character Sheet Renderer | 2/2 | Complete | 2026-05-04 |
 | 4. App Detection and Compliance Engine | 2/2 | Complete | 2026-05-05 |
-| 5. Packaging and Distribution | 0/? | Not started | - |
+| 5. Packaging and Distribution | 0/3 | Not started | - |
