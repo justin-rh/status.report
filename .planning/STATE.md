@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-02-PLAN.md — 2026-05-04
-last_updated: "2026-05-04T23:24:47Z"
-last_activity: "2026-05-04 — Phase 3 Plan 02 complete (renderer/__init__.py, character_sheet.html, 23 tests passing)"
+stopped_at: Completed 04-02-PLAN.md — Phase 4 complete
+last_updated: "2026-05-05T00:03:00Z"
+last_activity: "2026-05-05 — 04-02 complete (collectors/__init__.py wired, 9/9 app tests passing, 94/94 total tests passing)"
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
-  percent: 56
+  completed_phases: 4
+  total_plans: 11
+  completed_plans: 11
+  percent: 82
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** Phase 3 — HTML Character Sheet Renderer
+**Current focus:** Phase 5 — Packaging and Distribution
 
 ## Current Position
 
-Phase: 3 of 5 (HTML Character Sheet Renderer) — complete
+Phase: 4 of 5 (App Detection and Compliance Engine) — complete
 Plan: 2 of 2 complete
-Status: 03-02 complete — Phase 3 fully done; Phase 4 (App Detection) is next
-Last activity: 2026-05-04 — 03-02 complete (renderer/__init__.py, character_sheet.html, 23/23 tests passing)
+Status: 04-02 complete — Phase 4 fully done; Phase 5 (Packaging) is next
+Last activity: 2026-05-05 — 04-02 complete (collectors/__init__.py wired, tests/test_app_collector.py, 94/94 tests passing)
 
-Progress: [█████░░░░░] 56%
+Progress: [████████░░] 82%
 
 ## Performance Metrics
 
@@ -46,10 +46,11 @@ Progress: [█████░░░░░] 56%
 |-------|-------|-------|----------|
 | 01 | 4 | ~4 min | ~1 min |
 | 03 | 2 | ~7 min | ~3.5 min |
+| 04 | 2 | ~13 min | ~6.5 min |
 
 **Recent Trend:**
 
-- Last 5 plans: 01-03 (~1 min), 01-04 (~5 min), 03-01 (~2 min), 03-02 (~5 min)
+- Last 5 plans: 01-04 (~5 min), 03-01 (~2 min), 03-02 (~5 min), 04-01 (~10 min), 04-02 (~3 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -85,6 +86,10 @@ Recent decisions affecting current work:
 - 03-02: ir.files('renderer').joinpath('templates/character_sheet.html') — single-string joinpath form required
 - 03-02: HP bar falsy guard `if report.disk_total_gb` catches both None and 0.0 (D-13 Pitfall 3)
 - 03-02: autoescape=True on Environment — template author does not manually escape; chars auto-escaped
+- 04-01: CrowdStrike keywords set to 'CrowdStrike Windows Sensor' / 'CrowdStrike Sensor Platform' (not 'CrowdStrike Falcon') — live registry verified (Pitfall 1)
+- 04-01: Claude MSIX detection via 'Claude_' family prefix in AppModel repository as primary; standard keyword sweep as fallback (Pitfall 3)
+- 04-01: MERP filesystem-first at hardcoded PVX Plus path per D-02; registry search for version only on filesystem hit per D-03
+- 04-02: Claude MSIX test uses distinct context manager objects per OpenKey path so EnumKey dispatch can distinguish MSIX repo from Uninstall path enumeration
 
 ### Pending Todos
 
@@ -109,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-04T23:24:47Z
-Stopped at: Completed 03-02-PLAN.md — Phase 3 complete
+Last session: 2026-05-05T00:03:00Z
+Stopped at: Completed 04-02-PLAN.md — Phase 4 complete
 Resume file: None

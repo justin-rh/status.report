@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Models and Hostname Parser** - Define the data contract and decode the Master Electronics naming convention ✓ 2026-05-04
 - [x] **Phase 2: System Collectors** - Collect hardware stats and user profiles via WMI, psutil, and winreg ✓ 2026-05-04
 - [x] **Phase 3: HTML Character Sheet Renderer** - Build the D&D-styled HTML output from mock data, nail the visual design ✓ 2026-05-04
-- [ ] **Phase 4: App Detection and Compliance Engine** - Detect all 7 target apps via registry, file, and service checks
+- [x] **Phase 4: App Detection and Compliance Engine** - Detect all 7 target apps via registry, file, and service checks ✓ 2026-05-05
 - [ ] **Phase 5: Packaging and Distribution** - Package as PyInstaller --onedir .exe and validate USB output path
 
 ## Phase Details
@@ -83,8 +83,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — collectors/windows/apps.py (APP_SPECS table + detect_apps + collect_apps + helper functions)
-- [ ] 04-02-PLAN.md — collectors/__init__.py wiring + tests/test_app_collector.py (full unit test suite)
+- [x] 04-01-PLAN.md — collectors/windows/apps.py (APP_SPECS table + detect_apps + collect_apps + helper functions) ✓ 2026-05-05
+- [x] 04-02-PLAN.md — collectors/__init__.py wiring + tests/test_app_collector.py (full unit test suite) ✓ 2026-05-05
 
 ### Phase 5: Packaging and Distribution
 **Goal**: The complete tool is packaged as a PyInstaller --onedir .exe that runs from a USB flash drive without installation, writes HTML output back to the drive, and leaves no artifacts on the host PC
@@ -107,5 +107,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Models and Hostname Parser | 4/4 | Complete | 2026-05-04 |
 | 2. System Collectors | 2/2 | Complete | 2026-05-04 |
 | 3. HTML Character Sheet Renderer | 2/2 | Complete | 2026-05-04 |
-| 4. App Detection and Compliance Engine | 0/2 | Not started | - |
+| 4. App Detection and Compliance Engine | 2/2 | Complete | 2026-05-05 |
 | 5. Packaging and Distribution | 0/? | Not started | - |
