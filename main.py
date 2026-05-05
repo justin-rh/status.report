@@ -9,12 +9,11 @@ Output path: Path(sys.executable).parent / "logs" / "status_{hostname}_{date}.ht
   - NEVER write to host PC (PKG-02, CLAUDE.md)
 
 D-01: pipeline order. D-02: output path. D-03: filename. D-04: console + print().
-D-05: webbrowser.open(). D-06: collector failures warn + continue; write failure exits.
+D-05: print path + eject message. D-06: collector failures warn + continue; write failure exits.
 """
 from __future__ import annotations
 
 import datetime
-import os
 import socket
 import sys
 from pathlib import Path
@@ -78,12 +77,8 @@ def main() -> None:
         sys.exit(1)
 
     print(f"Saved: {output_path}")
-    print("Opening in browser...")
-    try:
-        os.startfile(str(output_path))  # Windows ShellExecute — opens with default browser
-    except OSError:
-        pass  # best-effort; file is already saved on the USB
-    print("Done.")
+    print("Done. Open the file above in a browser to view the report.")
+    print("You can safely eject the USB drive once this window closes.")
 
 
 if __name__ == "__main__":
