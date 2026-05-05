@@ -124,3 +124,12 @@ The D-11 CrowdStrike test on an enrolled machine remains the only blocker before
 ---
 *Phase: 05-packaging-and-distribution*
 *Completed: 2026-05-05*
+
+## Self-Check: PASSED
+
+- main.py: FOUND
+- status_report.spec: FOUND
+- build.bat: FOUND
+- Commit 361dde3 (main.py): FOUND
+- Commit 61cd108 (spec + build.bat): FOUND
+- SUMMARY.md: FOUND

@@ -13,6 +13,11 @@ dist/
 # Distribution output directory
 dist_out/
 
+# Generated HTML reports and preview output (unfrozen dev runs)
+status_report.html
+preview_output/
+logs/
+
 # IDE
 .vscode/
 .idea/

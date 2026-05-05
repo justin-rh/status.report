@@ -119,9 +119,12 @@ def _collect_cpu_model(report: AuditReport) -> None:
 
 
 def _collect_serial_number(report: AuditReport) -> None:
-    """Populate serial_number via WMI Win32_BIOS.SerialNumber.
+    """Populate serial_number via WMI Win32_BIOS.SerialNumber with
+    Win32_ComputerSystemProduct.IdentifyingNumber fallback.
 
-    Ignores OEM placeholder strings. Degrades silently if WMI unavailable.
+    Some enterprise laptops report a placeholder in BIOS but a real S/N in
+    ComputerSystemProduct. Ignores OEM placeholder strings. Degrades silently
+    if WMI unavailable.
     """
     if not _WMI_AVAILABLE:
         return
@@ -130,6 +133,14 @@ def _collect_serial_number(report: AuditReport) -> None:
         bios_list = c.Win32_BIOS()
         if bios_list:
             sn = (bios_list[0].SerialNumber or '').strip()
+            if sn.lower() not in _BIOS_PLACEHOLDER_VALUES:
+                report.serial_number = sn
+                return
+        # Fallback: ComputerSystemProduct.IdentifyingNumber is more reliably
+        # populated on enterprise laptops where BIOS serial is a placeholder.
+        products = c.Win32_ComputerSystemProduct()
+        if products:
+            sn = (products[0].IdentifyingNumber or '').strip()
             if sn.lower() not in _BIOS_PLACEHOLDER_VALUES:
                 report.serial_number = sn
     except Exception as exc:

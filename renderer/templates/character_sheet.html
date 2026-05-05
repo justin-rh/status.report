@@ -286,6 +286,30 @@
     }
 
     /* ---------------------------------------------------------------------------
+       DEPARTMENT REFERENCE
+    --------------------------------------------------------------------------- */
+    .dept-grid {
+      display: grid;
+      grid-template-columns: 48px 1fr 48px 1fr;
+      column-gap: 16px;
+      padding: 12px 16px;
+    }
+
+    .dept-code {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: 0.05em;
+      padding: 3px 0;
+    }
+
+    .dept-name {
+      font-size: 11px;
+      color: var(--text-body);
+      padding: 3px 0;
+    }
+
+    /* ---------------------------------------------------------------------------
        CHRONICLE
     --------------------------------------------------------------------------- */
     .chronicle {
@@ -352,6 +376,9 @@
         <div class="stat-label">Current User</div>
         <div class="stat-value{% if not current_user %} muted{% endif %}">{{ current_user | default('—', true) }}</div>
 
+        <div class="stat-label">Other Profiles</div>
+        <div class="stat-value{% if not other_profiles %} muted{% endif %}">{% if other_profiles %}{{ other_profiles | join(', ') }}{% else %}—{% endif %}</div>
+
       </div>
     </div>
 
@@ -372,14 +399,10 @@
             'NinjaOne':           ('Nj', '#6366f1'),
             'CrowdStrike Falcon': ('CS', '#dc2626'),
             'MERP':               ('M',  '#f59e0b'),
-            'Word':               ('W',  '#185abd'),
-            'Excel':              ('X',  '#107c41'),
-            'Outlook':            ('Ol', '#0078d4'),
-            'Teams':              ('T',  '#5059c9'),
-            'OneDrive':           ('OD', '#0364b8'),
+            'Microsoft 365':      ('M3', '#185abd'),
             'Zoom Workplace':     ('Z',  '#2d8cff'),
-            'Chrome':             ('Ch', '#4285f4'),
-            'Claude desktop app': ('AI', '#d97757'),
+            'Google Chrome':      ('Ch', '#34a853'),
+            'Claude':             ('AI', '#e87040'),
           } %}
           {% for app in apps %}
           {% set _ic = _icons.get(app.name, (app.name[:2].upper() if app.name else '?', '#6b7280')) %}
@@ -418,6 +441,17 @@
       &#9888; Device needs to be renamed — hostname "{{ hostname }}" does not match the Master Electronics naming convention
     </div>
     {% endif %}
+
+    <!-- DEPARTMENT REFERENCE -->
+    <div class="section-card">
+      <div class="section-title">Department Reference</div>
+      <div class="dept-grid">
+        {% for code, name in dept_codes %}
+        <span class="dept-code">{{ code }}</span>
+        <span class="dept-name">{{ name }}</span>
+        {% endfor %}
+      </div>
+    </div>
 
     <!-- CHRONICLE -->
     <div class="chronicle">Generated: {{ timestamp }}</div>
