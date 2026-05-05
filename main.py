@@ -54,7 +54,12 @@ def main() -> None:
     usb_root = Path(sys.executable).parent
     logs_dir = usb_root / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
-    output_path = logs_dir / f"status_{hostname}_{date_str}.html"
+    base_name = f"status_{hostname}_{date_str}"
+    output_path = logs_dir / f"{base_name}.html"
+    counter = 2
+    while output_path.exists():
+        output_path = logs_dir / f"{base_name} ({counter}).html"
+        counter += 1
 
     html = render_html(report)  # returns str; main.py controls filename (D-03)
 
