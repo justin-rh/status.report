@@ -80,7 +80,11 @@ Plans:
   3. Each of the M365 apps (Word, Excel, Outlook, Teams, OneDrive) is detected individually and correctly reflects installed/missing state on a provisioned M365 machine
   4. Zoom, Chrome, and Claude desktop app are each independently detected and their registry-reported versions are captured in AppStatus
   5. APP-03 (MERP) detection uses the registry path confirmed with IT before this phase begins; if MERP is not installed the field shows Missing without crashing
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — collectors/windows/apps.py (APP_SPECS table + detect_apps + collect_apps + helper functions)
+- [ ] 04-02-PLAN.md — collectors/__init__.py wiring + tests/test_app_collector.py (full unit test suite)
 
 ### Phase 5: Packaging and Distribution
 **Goal**: The complete tool is packaged as a PyInstaller --onedir .exe that runs from a USB flash drive without installation, writes HTML output back to the drive, and leaves no artifacts on the host PC
@@ -103,5 +107,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Models and Hostname Parser | 4/4 | Complete | 2026-05-04 |
 | 2. System Collectors | 2/2 | Complete | 2026-05-04 |
 | 3. HTML Character Sheet Renderer | 2/2 | Complete | 2026-05-04 |
-| 4. App Detection and Compliance Engine | 0/? | Not started | - |
+| 4. App Detection and Compliance Engine | 0/2 | Not started | - |
 | 5. Packaging and Distribution | 0/? | Not started | - |
