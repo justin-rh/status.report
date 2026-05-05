@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-01-PLAN.md — Wave 1 prereqs done; Wave 2 (main.py + spec) is next
-last_updated: "2026-05-05T20:04:22Z"
-last_activity: "2026-05-05 — 05-01 complete (*.spec unblocked, pyinstaller==6.20.0 declared, render_html() added, 94/94 tests passing)"
+stopped_at: Completed 05-02-PLAN.md — main.py + spec + build.bat committed; 05-03 (CrowdStrike validation) is next
+last_updated: "2026-05-05T20:09:34Z"
+last_activity: "2026-05-05 — 05-02 complete (main.py pipeline entry point, status_report.spec --onedir build, build.bat one-command build)"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 14
-  completed_plans: 12
-  percent: 86
+  completed_plans: 13
+  percent: 93
 ---
 
 # Project State
@@ -26,17 +26,17 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 ## Current Position
 
 Phase: 5 of 5 (Packaging and Distribution) — in progress
-Plan: 1 of 3 complete
-Status: 05-01 complete — Wave 1 prereqs done; Wave 2 (main.py + spec + build.bat) is next
-Last activity: 2026-05-05 — 05-01 complete (*.spec unblocked in .gitignore, pyinstaller==6.20.0 declared, render_html() added to renderer, 94/94 tests passing)
+Plan: 2 of 3 complete
+Status: 05-02 complete — main.py + status_report.spec + build.bat committed; 05-03 (CrowdStrike validation + build test) is next
+Last activity: 2026-05-05 — 05-02 complete (main.py pipeline entry point, status_report.spec --onedir build definition, build.bat one-command build)
 
-Progress: [████████░░] 86%
+Progress: [█████████░] 93%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: ~1 min
 - Total execution time: ~2 min
 
@@ -47,11 +47,11 @@ Progress: [████████░░] 86%
 | 01 | 4 | ~4 min | ~1 min |
 | 03 | 2 | ~7 min | ~3.5 min |
 | 04 | 2 | ~13 min | ~6.5 min |
-| 05 | 1 (of 3) | ~2 min | ~2 min |
+| 05 | 2 (of 3) | ~5 min | ~2.5 min |
 
 **Recent Trend:**
 
-- Last 5 plans: 03-01 (~2 min), 03-02 (~5 min), 04-01 (~10 min), 04-02 (~3 min), 05-01 (~2 min)
+- Last 5 plans: 03-02 (~5 min), 04-01 (~10 min), 04-02 (~3 min), 05-01 (~2 min), 05-02 (~3 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -93,6 +93,10 @@ Recent decisions affecting current work:
 - 04-02: Claude MSIX test uses distinct context manager objects per OpenKey path so EnumKey dispatch can distinguish MSIX repo from Uninstall path enumeration
 - 05-01: render_html(report) -> str added as Option A interface — returns HTML string without writing; main.py controls path and write (avoids breaking 94 existing tests)
 - 05-01: *.spec removed entirely from .gitignore (not negation rule) — simpler, allows status_report.spec to be committed (D-08/Pitfall 4)
+- 05-02: Output path uses Path(sys.executable).parent/logs/status_{hostname}_{date}.html (D-02/D-03) — USB-only, CLAUDE.md constraint enforced
+- 05-02: Collector failures warn and continue; only write failure (PermissionError, ENOSPC) exits with code 1 (D-06)
+- 05-02: spec uses Analysis+PYZ+EXE(exclude_binaries=True)+COLLECT — --onedir structure; NEVER EXE(onefile=True)
+- 05-02: upx=False in both EXE() and COLLECT() — two entries required per PyInstaller spec structure
 
 ### Pending Todos
 
@@ -117,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-05T20:04:22Z
-Stopped at: Completed 05-01-PLAN.md — Wave 1 prereqs done
+Last session: 2026-05-05T20:09:34Z
+Stopped at: Completed 05-02-PLAN.md — main.py + spec + build.bat committed; 05-03 is next
 Resume file: None
