@@ -51,7 +51,7 @@ a = Analysis(
         'xml',
         'xmlrpc',
         'http',
-        'urllib',
+        # urllib removed: zipfile._path (stdlib) requires urllib; excluding it crashes pyi_rth_inspect
         'multiprocessing',
         'concurrent',
         'asyncio',
