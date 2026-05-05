@@ -9,7 +9,6 @@ __pycache__/
 # PyInstaller build output
 build/
 dist/
-*.spec
 
 # Distribution output directory
 dist_out/
