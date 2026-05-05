@@ -1,5 +1,6 @@
 """HTML character sheet renderer. Phase 3.
-render_report(report, output_path) is the single public entry point.
+render_report(report, output_path) writes HTML to a directory (existing interface).
+render_html(report) returns the HTML string without writing (Phase 5 addition, D-01).
 Never raises on None hardware fields — D-12/D-13 None handling is in _build_context().
 """
 from __future__ import annotations
@@ -12,10 +13,18 @@ from jinja2 import Environment
 from models import AuditReport
 from writers import write_html
 
+_STANDARD_RAM_SIZES = (2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128)
+
+
+def _nearest_standard_ram(gb: float) -> int:
+    return min(_STANDARD_RAM_SIZES, key=lambda s: abs(s - gb))
+
+
 _DEPT_NAMES: dict[str, str] = {
     'AGG': 'Aggregation',
     'ASI': 'Autostore Induction',
     'ASP': 'Autostore Picking',
+    'DCC': 'DC Connect',
     'FLX': 'Flex',
     'INV': 'Inventory',
     'LTL': 'Less than Truckload',
@@ -49,6 +58,21 @@ def render_report(report: AuditReport, output_path: Path) -> Path:
     ctx = _build_context(report)
     html = template.render(**ctx)
     return write_html(html, output_path)
+
+
+def render_html(report: AuditReport) -> str:
+    """Return rendered HTML string without writing to disk.
+
+    Phase 5 addition (Option A interface resolution — RESEARCH.md § Interface Conflict).
+    main.py calls this to get the HTML string, then writes it directly to the
+    dynamically-named output path (D-02/D-03: status_{hostname}_{date}.html).
+    render_report() is unchanged — no breakage to existing 94 tests.
+    """
+    template_source = _load_template_source()
+    env = Environment(autoescape=True)
+    template = env.from_string(template_source)
+    ctx = _build_context(report)
+    return template.render(**ctx)
 
 
 def _load_template_source() -> str:
@@ -87,7 +111,11 @@ def _build_context(report: AuditReport) -> dict:
         hp_class = 'hp-none'
 
     # RAM display — D-06
-    ram_display = f'{report.ram_gb:.1f} GB' if report.ram_gb is not None else None
+    if report.ram_gb is not None:
+        nearest = _nearest_standard_ram(report.ram_gb)
+        ram_display = f'{report.ram_gb:.1f} GB ({nearest} GB)'
+    else:
+        ram_display = None
 
     # Disk total display — D-06
     disk_total_display = (
@@ -118,6 +146,13 @@ def _build_context(report: AuditReport) -> dict:
         _build_int = 0
     os_warning = 0 < _build_int < 22000
 
+    other_profiles = [
+        p for p in report.local_profiles
+        if not p.lower().startswith('adm_') and p != report.current_user
+    ]
+
+    dept_codes = sorted(_DEPT_NAMES.items())
+
     return {
         'hostname': report.hostname,
         'device_type': ph.device_type,
@@ -133,6 +168,8 @@ def _build_context(report: AuditReport) -> dict:
         'os_combined': os_combined,
         'serial_number': report.serial_number,
         'current_user': report.current_user,
+        'other_profiles': other_profiles,
+        'dept_codes': dept_codes,
         'apps': report.apps,
         'quest_complete': len(missing) == 0,
         'missing_count': len(missing),
