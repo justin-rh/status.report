@@ -70,8 +70,9 @@ APP_SPECS: list[dict] = [
         "display_name_keywords": ["Microsoft 365", "Microsoft Office"],
     },
     {
-        "name": "Zoom",
+        "name": "Zoom Workplace",
         "display_name_keywords": ["Zoom Workplace", "Zoom"],
+        "display_name_excludes": ["Outlook Plugin"],
     },
     {
         "name": "Google Chrome",
@@ -89,15 +90,20 @@ APP_SPECS: list[dict] = [
 # Private helpers
 # ---------------------------------------------------------------------------
 
-def _search_uninstall_keys(keywords: list[str]) -> tuple[bool, str | None]:
+def _search_uninstall_keys(
+    keywords: list[str],
+    excludes: list[str] | None = None,
+) -> tuple[bool, str | None]:
     """Return (installed, version) for the first Uninstall subkey whose
-    DisplayName contains any of *keywords* (case-insensitive substring).
+    DisplayName contains any of *keywords* (case-insensitive substring)
+    and none of *excludes* (also case-insensitive substring).
 
     Iterates all 4 UNINSTALL_PATHS. First match across all paths wins and
     returns immediately — no duplicate AppStatus entries (D-14, Pitfall 5).
     Unreadable root keys and subkeys are silently skipped (mirrors hardware.py).
     Returns (False, None) if all paths are exhausted with no match.
     """
+    _excludes = [e.lower() for e in excludes] if excludes else []
     for hive, path in UNINSTALL_PATHS:
         try:
             with winreg.OpenKey(hive, path) as root:
@@ -111,7 +117,10 @@ def _search_uninstall_keys(keywords: list[str]) -> tuple[bool, str | None]:
                     try:
                         with winreg.OpenKey(root, subkey_name) as subkey:
                             display_name, _ = winreg.QueryValueEx(subkey, "DisplayName")
-                            if any(kw.lower() in display_name.lower() for kw in keywords):
+                            dn_lower = display_name.lower()
+                            if any(kw.lower() in dn_lower for kw in keywords):
+                                if any(ex in dn_lower for ex in _excludes):
+                                    continue  # Excluded match (e.g. Zoom Outlook Plugin)
                                 try:
                                     version, _ = winreg.QueryValueEx(subkey, "DisplayVersion")
                                 except (FileNotFoundError, OSError):
@@ -192,18 +201,20 @@ def _detect_one_app(spec: dict, report: AuditReport) -> None:
             version = msix_version
             # detection_method stays 'registry' — MSIX repo is still a registry path
 
+    _excludes = spec.get("display_name_excludes")
+
     # Step 2: Filesystem check (primary for MERP; D-02)
     if not installed and "filesystem_path" in spec:
         if Path(spec["filesystem_path"]).exists():
             installed = True
             detection_method = "filesystem"
             # Attempt registry search for version only (D-03); ignore installed bool
-            _, reg_version = _search_uninstall_keys(spec["display_name_keywords"])
+            _, reg_version = _search_uninstall_keys(spec["display_name_keywords"], _excludes)
             version = reg_version  # None is acceptable if registry has no entry
 
     # Step 3: Standard Uninstall registry sweep (all other apps + fallbacks)
     if not installed:
-        reg_found, reg_version = _search_uninstall_keys(spec["display_name_keywords"])
+        reg_found, reg_version = _search_uninstall_keys(spec["display_name_keywords"], _excludes)
         if reg_found:
             installed = True
             version = reg_version

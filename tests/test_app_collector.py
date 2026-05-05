@@ -292,7 +292,7 @@ def test_all_apps_always_present():
         "CrowdStrike Falcon",
         "MERP",
         "Microsoft 365",
-        "Zoom",
+        "Zoom Workplace",
         "Google Chrome",
         "Claude",
     ]

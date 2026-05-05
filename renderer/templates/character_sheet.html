@@ -272,6 +272,20 @@
     }
 
     /* ---------------------------------------------------------------------------
+       RENAME WARNING
+    --------------------------------------------------------------------------- */
+    .rename-warning {
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      background: #431407;
+      border: 2px solid var(--amber);
+      color: var(--amber);
+    }
+
+    /* ---------------------------------------------------------------------------
        CHRONICLE
     --------------------------------------------------------------------------- */
     .chronicle {
@@ -360,7 +374,7 @@
             'Outlook':            ('Ol', '#0078d4'),
             'Teams':              ('T',  '#5059c9'),
             'OneDrive':           ('OD', '#0364b8'),
-            'Zoom':               ('Z',  '#2d8cff'),
+            'Zoom Workplace':     ('Z',  '#2d8cff'),
             'Chrome':             ('Ch', '#4285f4'),
             'Claude desktop app': ('AI', '#d97757'),
           } %}
@@ -386,6 +400,13 @@
     <div class="quest-status quest-complete">ALL SOFTWARE PRESENT</div>
     {% else %}
     <div class="quest-status quest-incomplete">MISSING SOFTWARE — {{ missing_count }} app(s)</div>
+    {% endif %}
+
+    <!-- RENAME WARNING -->
+    {% if rename_warning %}
+    <div class="rename-warning">
+      &#9888; Device needs to be renamed — hostname "{{ hostname }}" does not match the Master Electronics naming convention
+    </div>
     {% endif %}
 
     <!-- CHRONICLE -->

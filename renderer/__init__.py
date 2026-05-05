@@ -108,6 +108,9 @@ def _build_context(report: AuditReport) -> dict:
     # Quest status — D-11
     missing = [app for app in report.apps if not app.installed]
 
+    # Rename warning — shown when hostname could not be parsed
+    rename_warning = ph.device_type == 'Unknown'
+
     return {
         'hostname': report.hostname,
         'device_type': ph.device_type,
@@ -125,5 +128,6 @@ def _build_context(report: AuditReport) -> dict:
         'apps': report.apps,
         'quest_complete': len(missing) == 0,
         'missing_count': len(missing),
+        'rename_warning': rename_warning,
         'timestamp': report.timestamp,
     }
