@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 5 context gathered
-last_updated: "2026-05-05T12:30:00Z"
-last_activity: "2026-05-05 — Phase 5 context captured (main.py UX, output filename, CrowdStrike contingency, build process)"
+stopped_at: Completed 05-01-PLAN.md — Wave 1 prereqs done; Wave 2 (main.py + spec) is next
+last_updated: "2026-05-05T20:04:22Z"
+last_activity: "2026-05-05 — 05-01 complete (*.spec unblocked, pyinstaller==6.20.0 declared, render_html() added, 94/94 tests passing)"
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 11
-  completed_plans: 11
-  percent: 82
+  total_plans: 14
+  completed_plans: 12
+  percent: 86
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 
 ## Current Position
 
-Phase: 4 of 5 (App Detection and Compliance Engine) — complete
-Plan: 2 of 2 complete
-Status: 04-02 complete — Phase 4 fully done; Phase 5 (Packaging) is next
-Last activity: 2026-05-05 — 04-02 complete (collectors/__init__.py wired, tests/test_app_collector.py, 94/94 tests passing)
+Phase: 5 of 5 (Packaging and Distribution) — in progress
+Plan: 1 of 3 complete
+Status: 05-01 complete — Wave 1 prereqs done; Wave 2 (main.py + spec + build.bat) is next
+Last activity: 2026-05-05 — 05-01 complete (*.spec unblocked in .gitignore, pyinstaller==6.20.0 declared, render_html() added to renderer, 94/94 tests passing)
 
-Progress: [████████░░] 82%
+Progress: [████████░░] 86%
 
 ## Performance Metrics
 
@@ -47,10 +47,11 @@ Progress: [████████░░] 82%
 | 01 | 4 | ~4 min | ~1 min |
 | 03 | 2 | ~7 min | ~3.5 min |
 | 04 | 2 | ~13 min | ~6.5 min |
+| 05 | 1 (of 3) | ~2 min | ~2 min |
 
 **Recent Trend:**
 
-- Last 5 plans: 01-04 (~5 min), 03-01 (~2 min), 03-02 (~5 min), 04-01 (~10 min), 04-02 (~3 min)
+- Last 5 plans: 03-01 (~2 min), 03-02 (~5 min), 04-01 (~10 min), 04-02 (~3 min), 05-01 (~2 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -90,6 +91,8 @@ Recent decisions affecting current work:
 - 04-01: Claude MSIX detection via 'Claude_' family prefix in AppModel repository as primary; standard keyword sweep as fallback (Pitfall 3)
 - 04-01: MERP filesystem-first at hardcoded PVX Plus path per D-02; registry search for version only on filesystem hit per D-03
 - 04-02: Claude MSIX test uses distinct context manager objects per OpenKey path so EnumKey dispatch can distinguish MSIX repo from Uninstall path enumeration
+- 05-01: render_html(report) -> str added as Option A interface — returns HTML string without writing; main.py controls path and write (avoids breaking 94 existing tests)
+- 05-01: *.spec removed entirely from .gitignore (not negation rule) — simpler, allows status_report.spec to be committed (D-08/Pitfall 4)
 
 ### Pending Todos
 
@@ -114,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-05T00:03:00Z
-Stopped at: Completed 04-02-PLAN.md — Phase 4 complete
+Last session: 2026-05-05T20:04:22Z
+Stopped at: Completed 05-01-PLAN.md — Wave 1 prereqs done
 Resume file: None
