@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Warnings, Mac Parity, and NinjaOne Compatibility
 status: in_progress
-stopped_at: Milestone v2.0 started — defining requirements
+stopped_at: Milestone v2.0 roadmap created — ready for Phase 6
 last_updated: "2026-05-07T00:00:00Z"
-last_activity: "2026-05-07 — Milestone v2.0 started"
+last_activity: "2026-05-07 — Milestone v2.0 roadmap created (5 phases, 10 requirements)"
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,26 +21,26 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-07)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** Milestone v2.0 — defining requirements
+**Current focus:** Milestone v2.0 — Phase 6 is next (Warning Data Model)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 6 — Warning Data Model (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-05-07 — Milestone v2.0 started
+Status: Roadmap created; ready to plan Phase 6
+Last activity: 2026-05-07 — Milestone v2.0 roadmap created
 
-Progress: [██████████] 100%
+Progress: [__________] 0% (0/5 v2.0 phases)
 
 ## Performance Metrics
 
-**Velocity:**
+**Velocity (v1.0 baseline):**
 
-- Total plans completed: 8
-- Average duration: ~1 min
-- Total execution time: ~2 min
+- Total plans completed: 14 (v1.0)
+- Average duration: ~3 min/plan
+- Total execution time: ~2 days (2026-05-04 → 2026-05-05)
 
-**By Phase:**
+**By Phase (v1.0):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -48,11 +48,6 @@ Progress: [██████████] 100%
 | 03 | 2 | ~7 min | ~3.5 min |
 | 04 | 2 | ~13 min | ~6.5 min |
 | 05 | 2 (of 3) | ~5 min | ~2.5 min |
-
-**Recent Trend:**
-
-- Last 5 plans: 03-02 (~5 min), 04-01 (~10 min), 04-02 (~3 min), 05-01 (~2 min), 05-02 (~3 min)
-- Trend: —
 
 *Updated after each plan completion*
 
@@ -99,28 +94,38 @@ Recent decisions affecting current work:
 - 05-02: upx=False in both EXE() and COLLECT() — two entries required per PyInstaller spec structure
 - 05-03: CrowdStrike Falcon test passed 2026-05-05 — no quarantine, no block on enrolled ME machine as standard user; --onedir + upx=False sufficient for v1.0; code signing (DIST-V2-01) deferred to v2
 
+### v2.0 Open Decisions (require stakeholder input before implementation)
+
+| Decision | Needed For | Default If No Answer |
+|----------|-----------|---------------------|
+| NinjaOne output path — confirm C:\ProgramData\MasterElectronics\StatusReport\logs\ | Phase 8 | Use that path — SYSTEM-writable, IT-retrievable |
+| Company Portal row naming — enrollment vs app presence vs both | Phase 9 | Show both as separate signals, clearly labeled |
+| NinjaOne Mac agent app path — validate /Applications/NinjaRMMAgent/ against fleet Mac | Phase 10 | Use that path per NinjaOne official docs |
+| OS warning threshold — confirm minimum acceptable build | Phase 6 | Warn on any Win10 (build < 22000); informational for Win11 below 22631 |
+| Disk space thresholds — confirm 15% / 10 GB dual threshold | Phase 6 | Ship those defaults; constants in warnings.py, easy to adjust |
+
 ### Pending Todos
 
-None yet.
+- Validate NinjaOne Mac agent path against a real Mac in the fleet before Phase 10 closes
+- Confirm Company Portal row naming with IT before Phase 9 closes
+- Confirm NinjaOne output path (ProgramData) with IT before Phase 8 closes
 
 ### Blockers/Concerns
 
-- Phase 1: Hostname naming convention must be validated against real production hostnames (including international offices: AMM, AMS, KUL, HKG) before parser is finalized — confirm with IT/Edgar
-- Phase 4: MERP registry path is unknown — must be confirmed with IT before APP-03 detection can be completed
-- Phase 5: CrowdStrike --onedir tenant policy behavior must be tested on an enrolled machine at the start of Phase 5; code-signing budget decision needed if blocked — RESOLVED 2026-05-05: test passed, no block, no exclusion needed
+- Phase 10: Mac app bundle paths require live Mac validation — no Mac build tested yet (MEDIUM confidence)
+- Phase 10: system_profiler chip_type vs cpu_type — unit test fixtures needed from both Intel and Apple Silicon
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| Output | JSON audit log (OUT-V2-01) | v2 | Init |
-| Output | Auto-open HTML in browser (OUT-V2-02) | v2 | Init |
-| App Detection | Intune/Company Portal (APP-V2-01) | v2 | Init |
-| App Detection | Remote access tools (APP-V2-02) | v2 | Init |
-| Platform | Mac support (PLAT-V2-01) | v2 | Init |
-| Distribution | Code-signed .exe (DIST-V2-01) | v2 | Init |
+| Output | JSON audit log (OUT-V2-01) | v3 | v2.0 planning |
+| Output | Auto-open HTML in browser (OUT-V2-02) | v3 | v2.0 planning (incompatible with SYSTEM/headless) |
+| App Detection | Remote access tools (APP-V2-02) | v3 | v2.0 planning |
+| Distribution | Code-signed .exe (DIST-V2-01) | v3 | v1.0 close (budget decision) |
+| Platform | Mac PyInstaller packaging (.app/notarization) | v3 | v2.0 planning (requires Apple Developer account) |
 
-### Acknowledged at Milestone Close (2026-05-07)
+### Acknowledged at v1.0 Milestone Close (2026-05-07)
 
 Items deferred rather than resolved before milestone close:
 
@@ -132,6 +137,7 @@ Items deferred rather than resolved before milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-05T20:30:00Z
-Stopped at: Completed 05-03-PLAN.md — CrowdStrike Falcon test passed; all 14 plans complete; v1.0 milestone delivered
+Last session: 2026-05-07
+Stopped at: Milestone v2.0 roadmap created — 5 phases (6–10), 10 requirements mapped
 Resume file: None
+Next action: /gsd-plan-phase 6

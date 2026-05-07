@@ -52,17 +52,15 @@
 
 ## Traceability
 
-_Filled by roadmapper._
-
-| REQ-ID | Phase |
-|--------|-------|
-| APP-V2-01 | — |
-| WARN-01 | — |
-| WARN-02 | — |
-| WARN-03 | — |
-| PLAT-V2-01 | — |
-| PLAT-V2-02 | — |
-| PLAT-V2-03 | — |
-| PLAT-V2-04 | — |
-| NINJA-01 | — |
-| NINJA-02 | — |
+| REQ-ID | Phase | Status |
+|--------|-------|--------|
+| WARN-01 | Phase 6 | Pending |
+| WARN-02 | Phase 6 | Pending |
+| WARN-03 | Phase 7 | Pending |
+| NINJA-01 | Phase 8 | Pending |
+| NINJA-02 | Phase 8 | Pending |
+| APP-V2-01 | Phase 9 | Pending |
+| PLAT-V2-01 | Phase 10 | Pending |
+| PLAT-V2-02 | Phase 10 | Pending |
+| PLAT-V2-03 | Phase 10 | Pending |
+| PLAT-V2-04 | Phase 10 | Pending |
