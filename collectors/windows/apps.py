@@ -8,6 +8,8 @@ exceptions are caught individually and appended to report.collection_errors (D-1
 """
 from __future__ import annotations
 
+import json
+import os
 import winreg
 from pathlib import Path
 
@@ -82,6 +84,10 @@ APP_SPECS: list[dict] = [
         "name": "Claude",
         "display_name_keywords": ["Claude"],
         "msix_family_prefix": "Claude_",
+        "sub_apps": [
+            {"name": "Claude Code", "npm_global_package": "@anthropic-ai/claude-code"},
+            {"name": "Node.js", "display_name_keywords": ["Node.js"]},
+        ],
     },
 ]
 
@@ -176,6 +182,55 @@ def _detect_msix(family_prefix: str) -> tuple[bool, str | None]:
     return False, None
 
 
+def _detect_npm_global(package: str) -> tuple[bool, str | None]:
+    """Return (installed, version) for an npm global package.
+
+    Checks %APPDATA%\\npm\\node_modules\\{package}\\package.json and reads
+    the 'version' key. Scoped packages (e.g. '@scope/name') are split on '/'
+    into separate path segments. Returns (False, None) if APPDATA is absent,
+    the path does not exist, or the JSON is malformed.
+    """
+    appdata = os.environ.get('APPDATA')
+    if not appdata:
+        return False, None
+    package_json = Path(appdata).joinpath(
+        'npm', 'node_modules', *package.split('/'), 'package.json'
+    )
+    try:
+        if not package_json.exists():
+            return False, None
+        data = json.loads(package_json.read_text(encoding='utf-8'))
+        return True, data.get('version')
+    except (OSError, ValueError):
+        return False, None
+
+
+def _detect_sub_app(spec: dict) -> AppStatus:
+    """Run detection for a sub-app spec and return an AppStatus (no side effects).
+
+    Supports two detection methods:
+    - npm_global_package: filesystem check via %APPDATA%\\npm\\node_modules\\{pkg}\\package.json
+    - display_name_keywords: standard 4-path Uninstall registry sweep
+    """
+    installed = False
+    version: str | None = None
+    detection_method = 'registry'
+
+    if 'npm_global_package' in spec:
+        installed, version = _detect_npm_global(spec['npm_global_package'])
+        detection_method = 'filesystem'
+    elif 'display_name_keywords' in spec:
+        _excludes = spec.get('display_name_excludes')
+        installed, version = _search_uninstall_keys(spec['display_name_keywords'], _excludes)
+
+    return AppStatus(
+        name=spec['name'],
+        installed=installed,
+        version=version,
+        detection_method=detection_method,
+    )
+
+
 def _detect_one_app(spec: dict, report: AuditReport) -> None:
     """Run detection logic for a single app spec and append one AppStatus to report.apps.
 
@@ -224,12 +279,21 @@ def _detect_one_app(spec: dict, report: AuditReport) -> None:
     if installed and "service_key" in spec:
         service_state = _read_service_start(spec["service_key"])
 
+    # Step 5: Sub-app detection — generic, per-spec, never raises (D-16 extended)
+    sub_apps: list[AppStatus] = []
+    for sub_spec in spec.get('sub_apps', []):
+        try:
+            sub_apps.append(_detect_sub_app(sub_spec))
+        except Exception:
+            pass  # Sub-app failure is silently swallowed; parent entry is still recorded
+
     report.apps.append(AppStatus(
         name=spec["name"],
         installed=installed,
         version=version,
         service_state=service_state,
         detection_method=detection_method,
+        sub_apps=sub_apps,
     ))
 
 

@@ -384,3 +384,64 @@ def test_build_context_warnings_keys_present():
     assert isinstance(ctx['has_warnings'], bool), (
         f"'has_warnings' must be a bool, got {type(ctx['has_warnings']).__name__}"
     )
+
+
+# ---------------------------------------------------------------------------
+# Sub-apps collapsible — HTML output tests
+# ---------------------------------------------------------------------------
+
+def _make_app_with_sub_apps(all_installed: bool) -> AppStatus:
+    """Return a Claude AppStatus with Claude Code and Node.js sub_apps."""
+    return AppStatus(
+        name='Claude',
+        installed=True,
+        version='1.0.0',
+        sub_apps=[
+            AppStatus(name='Claude Code', installed=all_installed, version='1.5.0' if all_installed else None, detection_method='filesystem'),
+            AppStatus(name='Node.js', installed=True, version='20.11.0'),
+        ],
+    )
+
+
+def test_render_report_sub_apps_detail_present():
+    """Rendered HTML contains sub-apps-detail element when app has sub_apps."""
+    from renderer import render_report
+    report = make_report(apps=[_make_app_with_sub_apps(True)])
+    with tempfile.TemporaryDirectory() as tmp:
+        html = render_report(report, Path(tmp)).read_text(encoding='utf-8')
+    assert 'sub-apps-detail' in html, 'sub-apps-detail class not found in rendered HTML'
+    assert 'Claude Code' in html
+    assert 'Node.js' in html
+
+
+def test_render_report_sub_apps_open_when_missing():
+    """Sub-apps details element has open attribute when a component is missing."""
+    from renderer import render_report
+    report = make_report(apps=[_make_app_with_sub_apps(False)])
+    with tempfile.TemporaryDirectory() as tmp:
+        html = render_report(report, Path(tmp)).read_text(encoding='utf-8')
+    assert 'sub-apps-detail' in html
+    assert 'sub-apps-detail" open' in html or "sub-apps-detail' open" in html or \
+           'sub-apps-detail" open>' in html, 'open attribute missing when component not installed'
+
+
+def test_render_report_sub_apps_closed_when_all_present():
+    """Sub-apps details element has no open attribute when all components installed."""
+    from renderer import render_report
+    report = make_report(apps=[_make_app_with_sub_apps(True)])
+    with tempfile.TemporaryDirectory() as tmp:
+        html = render_report(report, Path(tmp)).read_text(encoding='utf-8')
+    assert 'sub-apps-detail' in html
+    assert 'sub-apps-detail" open' not in html, \
+        'open attribute should be absent when all sub_apps are installed'
+
+
+def test_render_report_no_sub_apps_row_for_plain_app():
+    """Apps with no sub_apps do not produce a sub-apps-detail element in the HTML body."""
+    from renderer import render_report
+    report = make_report(apps=[AppStatus(name='NinjaOne', installed=True, version='5.8')])
+    with tempfile.TemporaryDirectory() as tmp:
+        html = render_report(report, Path(tmp)).read_text(encoding='utf-8')
+    # The CSS rule exists in <style> but the <details> element must not be rendered
+    assert '<details class="sub-apps-detail"' not in html, \
+        'sub-apps-detail details element should not appear for apps with no sub_apps'

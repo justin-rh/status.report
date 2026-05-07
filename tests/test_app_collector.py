@@ -298,3 +298,106 @@ def test_all_apps_always_present():
     ]
     for expected in expected_names:
         assert expected in app_names, f"Expected '{expected}' in report.apps but got: {app_names}"
+
+
+# ---------------------------------------------------------------------------
+# Tests: _detect_npm_global
+# ---------------------------------------------------------------------------
+
+def test_detect_npm_global_found():
+    """npm global package.json present with version → (True, version)."""
+    import json as _json
+    fake_data = _json.dumps({"name": "@anthropic-ai/claude-code", "version": "1.2.3"})
+
+    with patch.dict('os.environ', {'APPDATA': 'C:\\Users\\test\\AppData\\Roaming'}), \
+         patch('collectors.windows.apps.Path') as mock_path:
+        mock_path.return_value.joinpath.return_value = mock_path.return_value
+        mock_path.return_value.exists.return_value = True
+        mock_path.return_value.read_text.return_value = fake_data
+        found, version = apps_mod._detect_npm_global('@anthropic-ai/claude-code')
+
+    assert found is True
+    assert version == '1.2.3'
+
+
+def test_detect_npm_global_not_found():
+    """npm global package.json absent → (False, None)."""
+    with patch.dict('os.environ', {'APPDATA': 'C:\\Users\\test\\AppData\\Roaming'}), \
+         patch('collectors.windows.apps.Path') as mock_path:
+        mock_path.return_value.joinpath.return_value = mock_path.return_value
+        mock_path.return_value.exists.return_value = False
+        found, version = apps_mod._detect_npm_global('@anthropic-ai/claude-code')
+
+    assert found is False
+    assert version is None
+
+
+def test_detect_npm_global_no_appdata():
+    """APPDATA env var absent → (False, None) without touching filesystem."""
+    env = {k: v for k, v in __import__('os').environ.items() if k != 'APPDATA'}
+    with patch.dict('os.environ', env, clear=True):
+        found, version = apps_mod._detect_npm_global('@anthropic-ai/claude-code')
+
+    assert found is False
+    assert version is None
+
+
+# ---------------------------------------------------------------------------
+# Tests: Claude sub_apps
+# ---------------------------------------------------------------------------
+
+def test_claude_has_sub_apps_entries():
+    """Claude AppStatus always has sub_apps list with Claude Code and Node.js entries."""
+    with patch.object(apps_mod.winreg, "OpenKey", side_effect=OSError("no reg")), \
+         patch('collectors.windows.apps.Path') as mock_path, \
+         patch.dict('os.environ', {'APPDATA': 'C:\\fake'}):
+        mock_path.return_value.joinpath.return_value = mock_path.return_value
+        mock_path.return_value.exists.return_value = False
+        report = make_report()
+        apps_mod.collect_apps(report)
+
+    claude = next(a for a in report.apps if a.name == "Claude")
+    sub_names = [s.name for s in claude.sub_apps]
+    assert "Claude Code" in sub_names
+    assert "Node.js" in sub_names
+
+
+def test_claude_code_sub_app_detected_via_npm():
+    """Claude Code sub_app detected when npm package.json present."""
+    import json as _json
+    fake_pkg = _json.dumps({"version": "1.5.0"})
+
+    def path_side(*args, **kwargs):
+        m = MagicMock()
+        m.joinpath.return_value = m
+        # package.json for claude-code exists; MERP filesystem path does not
+        m.exists.return_value = True
+        m.read_text.return_value = fake_pkg
+        return m
+
+    with patch.object(apps_mod.winreg, "OpenKey", side_effect=OSError("no reg")), \
+         patch('collectors.windows.apps.Path', side_effect=path_side), \
+         patch.dict('os.environ', {'APPDATA': 'C:\\fake'}):
+        report = make_report()
+        apps_mod.collect_apps(report)
+
+    claude = next(a for a in report.apps if a.name == "Claude")
+    cc = next(s for s in claude.sub_apps if s.name == "Claude Code")
+    assert cc.installed is True
+    assert cc.version == "1.5.0"
+    assert cc.detection_method == "filesystem"
+
+
+def test_non_claude_apps_have_no_sub_apps():
+    """Apps without sub_apps spec (NinjaOne, Chrome, etc.) have empty sub_apps list."""
+    with patch.object(apps_mod.winreg, "OpenKey", side_effect=OSError("no reg")), \
+         patch('collectors.windows.apps.Path') as mock_path, \
+         patch.dict('os.environ', {'APPDATA': 'C:\\fake'}):
+        mock_path.return_value.joinpath.return_value = mock_path.return_value
+        mock_path.return_value.exists.return_value = False
+        report = make_report()
+        apps_mod.collect_apps(report)
+
+    for app in report.apps:
+        if app.name != "Claude":
+            assert app.sub_apps == [], f"{app.name} should have no sub_apps"

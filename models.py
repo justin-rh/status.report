@@ -1,6 +1,8 @@
 """StatusReport data contract. All layers import from this module.
 ROADMAP SC5: AuditReport, ParsedHostname, AppStatus, CollectionResult importable here.
 """
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Generic, TypeVar
 
@@ -42,6 +44,7 @@ class AppStatus:
     service_state: str | None = None    # 'Running' | 'Stopped' | None
     detection_method: str = 'registry'  # 'registry' | 'filesystem' | 'service'
     error: str | None = None
+    sub_apps: list[AppStatus] = field(default_factory=list)
 
 
 @dataclass

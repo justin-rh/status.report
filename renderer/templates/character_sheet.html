@@ -234,6 +234,14 @@
 
     .app-name-cell { display: flex; align-items: center; gap: 8px; }
 
+    /* Sub-apps collapsible row */
+    .equipment tbody tr.sub-apps-row { background: transparent !important; }
+    .sub-apps-detail { padding: 0 16px 10px 40px; }
+    .sub-apps-detail > summary { cursor: pointer; list-style: none; font-size: 12px; color: var(--text-muted); padding: 4px 0 6px; }
+    .sub-apps-detail > summary::-webkit-details-marker { display: none; }
+    .sub-apps-detail table { width: 100%; border-collapse: collapse; }
+    .sub-apps-detail td { padding: 3px 8px; font-size: 13px; color: var(--text-body); }
+
     .app-icon {
       flex-shrink: 0;
       display: inline-flex;
@@ -417,6 +425,32 @@
             <td>{{ app.version or '' }}</td>
             <td>{{ app.service_state or '' }}</td>
           </tr>
+          {% if app.sub_apps %}
+          <tr class="sub-apps-row">
+            <td colspan="4" style="padding: 0;">
+              {% set _sub_missing = app.sub_apps | selectattr('installed', 'equalto', False) | list | length %}
+              <details class="sub-apps-detail"{% if _sub_missing %} open{% endif %}>
+                <summary>
+                  {% if _sub_missing %}
+                    <span style="color: var(--amber);">&#9888; Components &#8212; {{ _sub_missing }} missing</span>
+                  {% else %}
+                    <span style="color: var(--green);">&#10003; All components present</span>
+                  {% endif %}
+                </summary>
+                <table>
+                  {% for sub in app.sub_apps %}
+                  <tr>
+                    <td>{{ sub.name }}</td>
+                    <td><span class="badge {% if sub.installed %}badge-installed{% else %}badge-missing{% endif %}">{% if sub.installed %}&#10003; Installed{% else %}&#10007; Missing{% endif %}</span></td>
+                    <td>{{ sub.version or '' }}</td>
+                    <td></td>
+                  </tr>
+                  {% endfor %}
+                </table>
+              </details>
+            </td>
+          </tr>
+          {% endif %}
           {% endfor %}
         </tbody>
       </table>
