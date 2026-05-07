@@ -82,7 +82,9 @@ Plans:
   2. MDM enrollment status (Enrolled / Not Enrolled) appears in the Service column for the Company Portal row, derived from HKLM Enrollments UPN value
   3. GUID keys without a UPN value are treated as stale artifacts and do not report as enrolled (no false positives)
   4. "Not Found" is shown cleanly in the equipment table on a machine where Company Portal is not installed
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 09-01-PLAN.md — Add _detect_mdm_enrollment() helper, Company Portal APP_SPECS entry, MDM hook in _detect_one_app(), and 6 new tests in test_app_collector.py
 
 ### Phase 10: Mac Collectors
 **Goal**: Running the tool on macOS produces the same D&D HTML character sheet as Windows, populated with Mac hardware stats, user profiles, and app detection results
@@ -108,5 +110,5 @@ Plans:
 | 6. Warning Data Model | v2.0 | 2/2 | Complete | 2026-05-07 |
 | 7. HTML Warnings Section | v2.0 | 3/3 | Complete | 2026-05-07 |
 | 8. NinjaOne Compatibility | v2.0 | 1/1 | Complete | 2026-05-07 |
-| 9. Company Portal Detection | v2.0 | 0/? | Not started | - |
+| 9. Company Portal Detection | v2.0 | 0/1 | Not started | - |
 | 10. Mac Collectors | v2.0 | 0/? | Not started | - |
