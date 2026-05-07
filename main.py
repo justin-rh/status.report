@@ -81,11 +81,21 @@ def main() -> None:
         sys.exit(1)
 
     print(f"Saved: {output_path}")
-    try:
-        os.startfile(str(output_path))
-    except OSError:
-        pass  # best-effort; file is already saved
-    input("\nPress Enter to close this window, then eject the USB drive.")
+
+    warning_count = len([w for w in report.warnings if w.severity == 'WARN'])
+    disk_used_pct = 0
+    if report.disk_total_gb:
+        disk_used_pct = round((report.disk_total_gb - (report.disk_free_gb or 0)) / report.disk_total_gb * 100)
+    cpu = report.cpu_model or "Unknown CPU"
+    ram = f"{round(report.ram_gb)} GB RAM" if report.ram_gb else "Unknown RAM"
+    print(f"[SUMMARY] {hostname} | {report.os_version or 'Unknown OS'} | {cpu} | {ram} | {disk_used_pct}% disk used | {warning_count} warnings")
+
+    if sys.stdin.isatty():
+        try:
+            os.startfile(str(output_path))
+        except OSError:
+            pass
+        input("\nPress Enter to close this window, then eject the USB drive.")
 
 
 if __name__ == "__main__":
