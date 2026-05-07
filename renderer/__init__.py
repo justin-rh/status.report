@@ -136,16 +136,6 @@ def _build_context(report: AuditReport) -> dict:
     # Quest status — D-11
     missing = [app for app in report.apps if not app.installed]
 
-    # Rename warning — shown when hostname could not be parsed
-    rename_warning = ph.device_type == 'Unknown'
-
-    # OS upgrade warning — Windows 10 or earlier (build < 22000)
-    try:
-        _build_int = int(report.os_build or '0')
-    except ValueError:
-        _build_int = 0
-    os_warning = 0 < _build_int < 22000
-
     other_profiles = [
         p for p in report.local_profiles
         if not p.lower().startswith('adm_') and p != report.current_user
@@ -173,7 +163,7 @@ def _build_context(report: AuditReport) -> dict:
         'apps': report.apps,
         'quest_complete': len(missing) == 0,
         'missing_count': len(missing),
-        'rename_warning': rename_warning,
-        'os_warning': os_warning,
+        'warnings': report.warnings,
+        'has_warnings': any(w.severity == 'WARN' for w in report.warnings),
         'timestamp': report.timestamp,
     }
