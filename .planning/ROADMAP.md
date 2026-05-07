@@ -23,7 +23,7 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 ### v2.0 — Warnings, Mac Parity, and NinjaOne Compatibility
 
 - [x] **Phase 6: Warning Data Model** — Warning dataclass + evaluate_warnings() module; pure Python, no OS dependency — completed 2026-05-07
-- [ ] **Phase 7: HTML Warnings Section** — Collapsible warnings box in character sheet template; wired into renderer and main.py
+- [x] **Phase 7: HTML Warnings Section** — Collapsible warnings box in character sheet template; wired into renderer and main.py — completed 2026-05-07
 - [ ] **Phase 8: NinjaOne Compatibility** — SYSTEM-account execution safety; stdout summary line for log capture
 - [ ] **Phase 9: Company Portal Detection** — Company Portal MSIX detection + Intune MDM enrollment registry check
 - [ ] **Phase 10: Mac Collectors** — Full macOS hardware, profile, and app collectors; HTML output on Mac
@@ -57,7 +57,7 @@ Plans:
 Plans:
 - [x] 07-01-PLAN.md — Add _check_rename helper to health_checks.py; update test_health_checks.py with RENAME_REQUIRED tests and always-three guarantee
 - [x] 07-02-PLAN.md — Update renderer/_build_context() and character_sheet.html with warnings box; wire evaluate_warnings in main.py
-- [ ] 07-03-PLAN.md — Add warnings box HTML tests to test_renderer.py; populate MOCK_REPORT.warnings
+- [x] 07-03-PLAN.md — Add warnings box HTML tests to test_renderer.py; populate MOCK_REPORT.warnings
 **UI hint**: yes
 
 ### Phase 8: NinjaOne Compatibility
@@ -104,7 +104,7 @@ Plans:
 | 4. App Detection and Compliance Engine | v1.0 | 2/2 | Complete | 2026-05-05 |
 | 5. Packaging and Distribution | v1.0 | 3/3 | Complete | 2026-05-05 |
 | 6. Warning Data Model | v2.0 | 2/2 | Complete | 2026-05-07 |
-| 7. HTML Warnings Section | v2.0 | 2/3 | In progress | - |
+| 7. HTML Warnings Section | v2.0 | 3/3 | Complete | 2026-05-07 |
 | 8. NinjaOne Compatibility | v2.0 | 0/? | Not started | - |
 | 9. Company Portal Detection | v2.0 | 0/? | Not started | - |
 | 10. Mac Collectors | v2.0 | 0/? | Not started | - |
