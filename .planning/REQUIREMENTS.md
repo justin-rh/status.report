@@ -10,7 +10,7 @@
 
 - [ ] **WARN-01**: HTML sheet warns when the device runs Windows 10 or earlier (OS build < 22000)
 - [ ] **WARN-02**: HTML sheet warns when disk free space is ≤ 15% of total capacity
-- [ ] **WARN-03**: Warnings appear in a collapsible box at the bottom of the sheet; each check shows OK or WARN status; box is collapsed with a green "All checks passed" header when all pass, auto-expanded when any warning fires
+- [x] **WARN-03**: Warnings appear in a collapsible box at the bottom of the sheet; each check shows OK or WARN status; box is collapsed with a green "All checks passed" header when all pass, auto-expanded when any warning fires
 
 ### Mac Platform
 
@@ -56,7 +56,7 @@
 |--------|-------|--------|
 | WARN-01 | Phase 6 | Pending |
 | WARN-02 | Phase 6 | Pending |
-| WARN-03 | Phase 7 | Pending |
+| WARN-03 | Phase 7 | Complete |
 | NINJA-01 | Phase 8 | Pending |
 | NINJA-02 | Phase 8 | Pending |
 | APP-V2-01 | Phase 9 | Pending |

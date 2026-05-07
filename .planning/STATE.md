@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Warnings, Mac Parity, and NinjaOne Compatibility
 status: in_progress
-stopped_at: Phase 7 planned — 3 plans (2 waves) ready to execute
-last_updated: "2026-05-07T21:00:00Z"
-last_activity: "2026-05-07 — Phase 7 planned (3 plans, 2 waves; WARN-03 covered; verification passed)"
+stopped_at: Phase 7 plan 02 complete — warnings box wired, 32 renderer tests pass
+last_updated: "2026-05-07T21:08:25Z"
+last_activity: "2026-05-07 — Phase 7 plan 02 complete (WARN-03 complete — renderer + main.py wired)"
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 3
+  completed_plans: 3
   percent: 20
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 ## Current Position
 
 Phase: 7 — HTML Warnings Section (in progress)
-Plan: 01 (complete) — 07-01: _check_rename helper + always-three guarantee
-Status: Phase 7 plan 1/3 complete — _check_rename added, evaluate_warnings returns 3 items, 22 tests pass
-Last activity: 2026-05-07 — Phase 7 plan 01 complete (WARN-03 partial — health_checks done; renderer next)
+Plan: 02 (complete) — 07-02: warnings box wired into renderer and main.py
+Status: Phase 7 plan 2/3 complete — warnings pipeline end-to-end, 32 renderer tests pass
+Last activity: 2026-05-07 — Phase 7 plan 02 complete (WARN-03 fully satisfied)
 
 Progress: [██________] 20% (1/5 v2.0 phases complete)
 
@@ -93,6 +93,9 @@ Recent decisions affecting current work:
 - 05-02: spec uses Analysis+PYZ+EXE(exclude_binaries=True)+COLLECT — --onedir structure; NEVER EXE(onefile=True)
 - 05-02: upx=False in both EXE() and COLLECT() — two entries required per PyInstaller spec structure
 - 05-03: CrowdStrike Falcon test passed 2026-05-05 — no quarantine, no block on enrolled ME machine as standard user; --onedir + upx=False sufficient for v1.0; code signing (DIST-V2-01) deferred to v2
+- 07-02: Warnings box uses <details open> auto-expand when has_warnings is true — no JS required
+- 07-02: has_warnings computed in _build_context() (not template) — keeps template logic-free per D-12 pattern
+- 07-02: evaluate_warnings placed after collect_all and before render_html in main.py pipeline
 
 ### v2.0 Open Decisions (require stakeholder input before implementation)
 
@@ -138,6 +141,6 @@ Items deferred rather than resolved before milestone close:
 ## Session Continuity
 
 Last session: 2026-05-07
-Stopped at: Phase 7 plan 01 complete — _check_rename helper added, 22 health_checks tests pass
+Stopped at: Completed 07-02-PLAN.md — warnings pipeline wired, 32 renderer tests pass
 Resume file: None
-Next action: Execute 07-02-PLAN.md (renderer + character_sheet.html warnings box)
+Next action: Execute 07-03-PLAN.md (if exists) or next phase
