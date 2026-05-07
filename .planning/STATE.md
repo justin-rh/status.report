@@ -1,34 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: complete
-stopped_at: Completed 05-03-PLAN.md — CrowdStrike Falcon validation passed; all phases complete; v1.0 milestone delivered
-last_updated: "2026-05-05T20:30:00Z"
-last_activity: "2026-05-05 — 05-03 complete (PyInstaller build validated on CrowdStrike-enrolled ME machine as standard user; no quarantine; HTML confirmed on USB; distribution approved)"
+milestone: v2.0
+milestone_name: Warnings, Mac Parity, and NinjaOne Compatibility
+status: in_progress
+stopped_at: Milestone v2.0 started — defining requirements
+last_updated: "2026-05-07T00:00:00Z"
+last_activity: "2026-05-07 — Milestone v2.0 started"
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 14
-  completed_plans: 14
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-04)
+See: .planning/PROJECT.md (updated 2026-05-07)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** All phases complete — v1.0 milestone delivered
+**Current focus:** Milestone v2.0 — defining requirements
 
 ## Current Position
 
-Phase: 5 of 5 (Packaging and Distribution) — complete
-Plan: 3 of 3 complete
-Status: 05-03 complete — CrowdStrike Falcon validation passed; all 14 plans complete; v1.0 milestone delivered
-Last activity: 2026-05-05 — 05-03 complete (PyInstaller --onedir exe validated on CrowdStrike Falcon-enrolled ME machine as standard user; no quarantine; HTML confirmed on USB logs/; distribution approved)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-07 — Milestone v2.0 started
 
 Progress: [██████████] 100%
 

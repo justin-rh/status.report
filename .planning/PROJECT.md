@@ -8,6 +8,16 @@ A self-contained Windows .exe that runs from a USB flash drive and audits a Wind
 
 IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
 
+## Current Milestone: v2.0 Warnings, Mac Parity, and NinjaOne Compatibility
+
+**Goal:** Extend the audit tool with proactive health warnings, full Mac support, Company Portal detection, and NinjaOne-driven remote execution compatibility.
+
+**Target features:**
+- Company Portal / Intune detection (Windows)
+- Warnings system: OS version check, disk space check, collapsible HTML box
+- Mac collectors with full parity (hardware, profiles, app detection)
+- NinjaOne compatibility: SYSTEM-account execution, stdout summary, no interactive session required
+
 ## Current State (v1.0)
 
 - **Shipped:** 2026-05-05
