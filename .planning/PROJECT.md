@@ -20,10 +20,10 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 
 ## Current State (v2.0 — in progress)
 
-- **Last shipped:** v1.0 on 2026-05-05; v2.0 Phase 7 complete 2026-05-07
-- **Tests:** 121 passing (name parser, hardware collectors, renderer, app detection, health checks)
-- **Phase 7 complete:** Collapsible warnings box in HTML sheet; `evaluate_warnings()` wired end-to-end; WARN-03 satisfied
-- **Phase 8 next:** NinjaOne compatibility — SYSTEM-account execution, stdout summary line
+- **Last shipped:** v1.0 on 2026-05-05; v2.0 Phase 8 complete 2026-05-07
+- **Tests:** 135 passing (name parser, hardware collectors, renderer, app detection, health checks, warnings, NinjaOne headless safety)
+- **Phase 8 complete:** isatty() guard wraps os.startfile()/input(); [SUMMARY] stdout line emitted on every run for NinjaOne log capture; NINJA-01 + NINJA-02 satisfied
+- **Phase 9 next:** Company Portal Detection — MSIX detection + Intune MDM enrollment registry check
 - **Stack:** Python 3.12 + psutil + wmi + winreg + Jinja2 + PyInstaller `--onedir`
 
 ## Requirements
@@ -104,4 +104,4 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 | JSON output deferred to v2 | v1 scope decision; HTML is sufficient for immediate IT use case | — v2 backlog (OUT-V2-01) |
 
 ---
-*Last updated: 2026-05-07 after v1.0 milestone*
+*Last updated: 2026-05-07 after Phase 8 (NinjaOne Compatibility) complete*
