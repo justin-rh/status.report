@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Warnings, Mac Parity, and NinjaOne Compatibility
 status: in_progress
-stopped_at: Phase 8 context gathered — NinjaOne compatibility decisions captured; ready for planning
-last_updated: "2026-05-07T21:30:00Z"
-last_activity: "2026-05-07 — Phase 7 complete — WARN-03 verified, 121 tests, collapsible warnings box shipped"
+stopped_at: Phase 8 Plan 01 complete — NINJA-01 and NINJA-02 satisfied, 135 tests pass
+last_updated: "2026-05-07T22:20:41Z"
+last_activity: "2026-05-07 — Phase 8 Plan 01 complete (isatty guard + [SUMMARY] stdout + 4 tests)"
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 3
-  completed_plans: 3
-  percent: 40
+  completed_phases: 3
+  total_plans: 4
+  completed_plans: 4
+  percent: 60
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 
 ## Current Position
 
-Phase: 8 — NinjaOne Compatibility (not started)
-Plan: — (phase not yet planned)
-Status: Phase 7 complete — WARN-03 verified, collapsible warnings box shipped, 121 tests pass
-Last activity: 2026-05-07 — Phase 7 complete (3/3 plans, verification passed)
+Phase: 8 — NinjaOne Compatibility (complete)
+Plan: 01 (1/1 complete)
+Status: Phase 8 complete — NINJA-01 and NINJA-02 satisfied; isatty() guard + [SUMMARY] stdout line shipped; 135 tests pass
+Last activity: 2026-05-07 — Phase 8 Plan 01 complete (isatty guard, [SUMMARY] stdout, 4 new tests)
 
-Progress: [████______] 40% (2/5 v2.0 phases complete)
+Progress: [██████____] 60% (3/5 v2.0 phases complete)
 
 ## Performance Metrics
 
@@ -96,6 +96,12 @@ Recent decisions affecting current work:
 - 07-02: Warnings box uses <details open> auto-expand when has_warnings is true — no JS required
 - 07-02: has_warnings computed in _build_context() (not template) — keeps template logic-free per D-12 pattern
 - 07-02: evaluate_warnings placed after collect_all and before render_html in main.py pipeline
+- 08-01: sys.stdin.isatty() as single headless guard — wraps os.startfile() and input() only (D-01)
+- 08-01: [SUMMARY] print is outside isatty() guard — emitted on every run, headless and interactive (D-07)
+- 08-01: if report.disk_total_gb: guard prevents ZeroDivisionError on None/0 (T-08-03 mitigated)
+- 08-01: report.ram_gb is the correct AuditReport field (plan interface section listed total_ram_gb incorrectly)
+- 08-01: _detect_msix() HKCU exception handling already present — SC4 satisfied, no code change (D-08)
+- 08-01: Patch target is main.os.startfile (not os.startfile) — main.py uses import os, not from-import
 
 ### v2.0 Open Decisions (require stakeholder input before implementation)
 
@@ -141,6 +147,6 @@ Items deferred rather than resolved before milestone close:
 ## Session Continuity
 
 Last session: 2026-05-07
-Stopped at: Completed 07-03-PLAN.md — 5 warnings box tests added, 121 tests pass
+Stopped at: Completed 08-01-PLAN.md — isatty guard + [SUMMARY] stdout + 4 tests; 135 tests pass
 Resume file: None
-Next action: Phase 7 complete — proceed to next v2.0 phase
+Next action: Phase 8 complete — proceed to next v2.0 phase (Phase 9: Company Portal / Intune detection)

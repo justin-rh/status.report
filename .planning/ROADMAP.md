@@ -24,7 +24,7 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 
 - [x] **Phase 6: Warning Data Model** — Warning dataclass + evaluate_warnings() module; pure Python, no OS dependency — completed 2026-05-07
 - [x] **Phase 7: HTML Warnings Section** — Collapsible warnings box in character sheet template; wired into renderer and main.py — completed 2026-05-07
-- [ ] **Phase 8: NinjaOne Compatibility** — SYSTEM-account execution safety; stdout summary line for log capture
+- [x] **Phase 8: NinjaOne Compatibility** — SYSTEM-account execution safety; stdout summary line for log capture — completed 2026-05-07
 - [ ] **Phase 9: Company Portal Detection** — Company Portal MSIX detection + Intune MDM enrollment registry check
 - [ ] **Phase 10: Mac Collectors** — Full macOS hardware, profile, and app collectors; HTML output on Mac
 
@@ -71,7 +71,7 @@ Plans:
   4. HKCU registry reads (MSIX detection for Claude and Company Portal) return "Not Found" without exception when running under the SYSTEM account
 **Plans**: 1 plan
 Plans:
-- [ ] 08-01-PLAN.md — Add [SUMMARY] stdout line and isatty() guard to main.py; create tests/test_main.py
+- [x] 08-01-PLAN.md — Add [SUMMARY] stdout line and isatty() guard to main.py; create tests/test_main.py
 
 ### Phase 9: Company Portal Detection
 **Goal**: IT staff can see whether Company Portal is installed and whether the device is enrolled in Intune, as distinct signals in the character sheet
@@ -107,6 +107,6 @@ Plans:
 | 5. Packaging and Distribution | v1.0 | 3/3 | Complete | 2026-05-05 |
 | 6. Warning Data Model | v2.0 | 2/2 | Complete | 2026-05-07 |
 | 7. HTML Warnings Section | v2.0 | 3/3 | Complete | 2026-05-07 |
-| 8. NinjaOne Compatibility | v2.0 | 0/1 | Not started | - |
+| 8. NinjaOne Compatibility | v2.0 | 1/1 | Complete | 2026-05-07 |
 | 9. Company Portal Detection | v2.0 | 0/? | Not started | - |
 | 10. Mac Collectors | v2.0 | 0/? | Not started | - |
