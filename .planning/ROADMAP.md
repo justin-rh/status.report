@@ -39,7 +39,10 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
   2. evaluate_warnings() called with a mock AuditReport returns a WARN for Windows 10 (build < 22000) and OK for Windows 11
   3. evaluate_warnings() called with a mock AuditReport returns a WARN when disk free is at or below 15% and OK when above
   4. AuditReport.warnings field defaults to empty list; all 85+ existing tests still pass with no modification
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 06-01-PLAN.md — Add Warning dataclass to models.py and implement health_checks.py with evaluate_warnings()
+- [ ] 06-02-PLAN.md — Write parametrized test suite for evaluate_warnings() boundary cases
 
 ### Phase 7: HTML Warnings Section
 **Goal**: The character sheet renders a collapsible warnings box that auto-expands on any warning and shows green "All checks passed" when all pass
@@ -96,7 +99,7 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 | 3. HTML Character Sheet Renderer | v1.0 | 2/2 | Complete | 2026-05-04 |
 | 4. App Detection and Compliance Engine | v1.0 | 2/2 | Complete | 2026-05-05 |
 | 5. Packaging and Distribution | v1.0 | 3/3 | Complete | 2026-05-05 |
-| 6. Warning Data Model | v2.0 | 0/? | Not started | - |
+| 6. Warning Data Model | v2.0 | 0/2 | Not started | - |
 | 7. HTML Warnings Section | v2.0 | 0/? | Not started | - |
 | 8. NinjaOne Compatibility | v2.0 | 0/? | Not started | - |
 | 9. Company Portal Detection | v2.0 | 0/? | Not started | - |
