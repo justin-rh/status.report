@@ -1,236 +1,524 @@
-# Feature Research
+# Feature Research — v2.0 Milestone Update
 
-**Domain:** Windows IT audit executable — USB-portable, read-only PC inventory with RPG-themed HTML output
-**Researched:** 2026-05-04
-**Confidence:** HIGH
-
----
-
-## Feature Landscape
-
-### Table Stakes (Users Expect These)
-
-Features that any IT staff member doing a PC audit expects to find. Missing these makes the tool feel broken or incomplete.
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Hostname display | First thing IT looks at — tells you what you're dealing with | LOW | Raw hostname always shown even if decode fails |
-| Hostname decode (naming convention) | Master Electronics' convention encodes city + type + dept — this IS the audit context | MEDIUM | 4 device types: Warehouse WS, User Laptop, Dept Laptop, P3. 21 city codes. Must show unknown gracefully |
-| OS version + build number | Required to assess patch status, upgrade eligibility, Win10 EOL risk (Oct 2025) | LOW | `platform.version()` or `wmi.Win32_OperatingSystem` — readable by standard user |
-| CPU model | Identifies hardware tier; used when assessing upgrade suitability | LOW | `wmi.Win32_Processor` |
-| RAM amount | Immediate triage signal: 4GB = problem, 16GB = fine | LOW | `wmi.Win32_ComputerSystem.TotalPhysicalMemory` |
-| Disk capacity + free space | Is this machine full? Is it about to run out of space? | LOW | `shutil.disk_usage` or `wmi.Win32_LogicalDisk` — works without admin |
-| Currently logged-in user | Who's on this machine right now? Essential for user-assigned laptop audits | LOW | `os.getlogin()` or `wmi.Win32_ComputerSystem.UserName` |
-| Installed app detection — target list | Is NinjaRMM on here? CrowdStrike? M365? These are compliance questions | MEDIUM | Registry method preferred over WMI Win32_Product (see PITFALLS). Check HKLM\Software\...\Uninstall + WOW6432Node + file-system fallbacks |
-| App presence + version | Not just present/absent — knowing version matters (outdated CrowdStrike is a risk) | MEDIUM | Pull DisplayVersion from registry Uninstall key |
-| HTML output file | The deliverable — IT staff needs something to look at, share, or print | HIGH | D&D character sheet styling. Self-contained single file (inline CSS + data) |
-| JSON log file written to USB | The audit trail — machine-readable, timestamped, lives on the flash drive | LOW | `json.dumps` with timestamp; writes to `os.path.dirname(sys.argv[0])` |
-| No installation required | IT may run this on pre-enrollment, fresh-image, or unmanaged machines | HIGH | PyInstaller one-file .exe. Build from minimal venv to stay under 50MB |
-| Graceful handling of unknown hostnames | Not every machine follows convention; tool must not crash or confuse | LOW | Show "Unknown Adventurer" class with raw hostname |
+**Domain:** Windows + macOS IT audit executable — USB-portable, read-only PC inventory with RPG-themed HTML output
+**Researched:** 2026-05-07
+**Milestone:** v2.0 — Warnings, Mac Parity, Company Portal, NinjaOne Compatibility
+**Confidence:** HIGH (primary paths), MEDIUM (Mac app paths), HIGH (HTML pattern)
 
 ---
 
-### Differentiators (Competitive Advantage)
+## v2.0 Scope Summary
 
-Features that make this tool genuinely more useful than running `msinfo32` or `Get-ComputerInfo` manually.
+Four new feature areas on top of the v1.0 shipped base:
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| D&D/RPG character sheet HTML output | Memorable, scannable, actually fun — IT staff will show this to their teams; reduces cognitive load compared to raw data dumps | HIGH | This is the core product differentiator. See RPG Theming section below |
-| Hostname decode with human-readable label | Turning "PHX-INV-003" into "Phoenix — Inventory Dept Warehouse Workstation #3" eliminates the lookup step that every technician currently does manually | MEDIUM | The convention was created internally (Edgar, 2025) — this tool gives it a UI |
-| Compliance status at-a-glance | Color-coded PASS/FAIL/MISSING for each target app. IT sees in 3 seconds if a machine is fully provisioned | LOW | CSS color coding: green = present, red = missing, yellow = present but outdated |
-| "Gaps" section | Explicit list of missing required apps — what needs to be installed — so IT doesn't have to mentally diff the app list | LOW | Derived from required app list vs detected list |
-| Local user profiles list | Shows what accounts exist on the machine — important for decommission or user migration scenarios | MEDIUM | `wmi.Win32_UserAccount` or registry `ProfileList` — may need elevation for full list; degrade gracefully |
-| Multiple detection methods per app | Registry-first, file-system fallback. More reliable than WMI Win32_Product alone | MEDIUM | NinjaOne: check service + registry. CrowdStrike: check C:\Program Files\CrowdStrike\CSFalconController.exe + registry. Intune: check "Company Portal" in registry + MDM enrollment status |
-| Elevation-aware output | Notes which data points were limited by running without admin, so the technician knows if they got the full picture | LOW | Flag specific fields with "elevated required for full data" note in output |
-| Audit timestamp + machine fingerprint | Every JSON log records when the audit ran, the machine hostname, and the auditing user — creates an audit trail without any server | LOW | `datetime.now(timezone.utc).isoformat()` + hostname + logged-in user |
-| Self-describing output | The HTML explains what each field means — junior IT staff can use it without memorizing naming conventions | LOW | Tooltips or a legend section in the HTML; the "class" decode table |
+1. **Company Portal / Intune detection** (Windows, new collector)
+2. **HTML warnings system** (collapsible box, OS EOL check, disk threshold check)
+3. **Mac-compatible collectors** (full parity — same data models, same HTML output)
+4. **NinjaOne remote execution compatibility** (SYSTEM context, stdout summary, no interactive session)
+
+The v1.0 table stakes and differentiators (hostname decode, hardware stats, D&D HTML sheet, existing app detection) are already shipped and are NOT re-researched here.
 
 ---
 
-### Anti-Features (Commonly Requested, Often Problematic)
+## Feature 1: Company Portal / Intune Detection (Windows)
 
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Write anything to the host PC | "It would be useful to auto-create a report shortcut on the desktop" | Violates the core constraint — tool must be read-only. Leaves artifacts. Creates IT policy questions. May trigger AV/DLP | All output goes to the USB directory only. Show the HTML path prominently at end of run |
-| Require internet / phone home | "Could we upload results to a central dashboard automatically?" | Breaks the offline use case (pre-enrollment, air-gapped machines). Creates security/trust concerns. v1 scope specifically excludes this | JSON log on USB is the audit trail. A future milestone can add optional upload |
-| Require admin / elevation | "We could get more data with admin rights" | Many target machines (especially pre-enrollment) won't have IT staff with local admin. Mandatory elevation breaks usability | Design for standard user; document and display which checks were limited by privilege level |
-| Active Directory / LDAP queries | "We could pull department info from AD instead of just the hostname" | Adds network dependency. Fails on machines not yet domain-joined — exactly the machines most in need of auditing | Decode from hostname convention only. AD enrichment is a future milestone |
-| Detect all installed software (full list) | "Show me every installed app" | Output becomes unreadably long. Slows down the tool. The value is the targeted app compliance check, not a general inventory | Show full app count as a number; only surface the target app list with pass/fail. MERP/proprietary detection matters more than generic inventory |
-| Auto-update mechanism | "The tool should check for updates when it runs" | Requires internet. Adds complexity. The USB distribution model means IT controls which version is on the drive | Version-stamp the .exe and display it in the output. IT manually updates the USB |
-| WMI Win32_Product for software detection | Common tutorial approach | Triggers consistency checks on every MSI-installed app — causes silent repairs, performance impact, and potential instability on production machines | Use registry Uninstall keys (HKLM\...\Uninstall + WOW6432Node) + targeted file-system checks |
-| Network discovery / remote scan | "While I have this plugged in, could it scan other machines?" | Entirely different security profile. Requires network permissions. Breaks the USB-portable, single-machine model | This tool is intentionally single-machine. Remote auditing is a different product |
+### What to Detect
 
----
+Two distinct signals, both useful independently:
 
-## RPG Theming Opportunities
+| Signal | What It Means | Detection Method |
+|--------|--------------|-----------------|
+| **Intune MDM enrollment** | Device is under Intune management policy | Registry: `HKLM\SOFTWARE\Microsoft\Enrollments\<GUID>` |
+| **Company Portal app installed** | The Company Portal UWP app is present | Registry Uninstall keys + PowerShell Get-AppxPackage fallback |
 
-This is the primary differentiator. The mapping is natural and should be leaned into fully.
+### Intune Enrollment Detection — Specific Registry Paths
 
-| IT Concept | D&D/RPG Equivalent | Display Label | Notes |
-|------------|--------------------|---------------|-------|
-| Device type (from hostname) | Character Class | "Class: Warehouse Workstation" | Class icon per device type — shield for warehouse, scroll for laptop, etc. |
-| Department code | Guild / Faction | "Guild: Inventory" | Show full department name alongside code |
-| City code | Realm / Origin | "Realm: Phoenix" | Map all 21 city codes to readable names |
-| Station number | Level or Rank | "Level 3" (station #3) | The sequence within a department |
-| CPU model + core count | Strength | "STR 16 — Intel Core i7-12th Gen (8 cores)" | Higher cores = higher STR stat |
-| RAM amount | Constitution | "CON 14 — 16 GB" | Low RAM = low CON; 4GB = CON 6 (sickly) |
-| Free disk space | Endurance / HP | "HP 247/512 GB" | Disk as health bar — visually shows how full the drive is |
-| Disk total capacity | Max HP | Part of HP bar display | |
-| OS version | Age / Era | "Era: Windows 11 (Build 22631)" | Could show "ancient" for Win7, "seasoned" for Win10, "current" for Win11 |
-| Logged-in user | Bound Hero | "Bound to: jsmith" | User-assigned laptops show who the device belongs to |
-| Local user profiles | Known Companions | "Known Companions: [list]" | Secondary accounts on the machine |
-| NinjaRMM present | Guild Contract (RMM) | Green checkmark "Enrolled in NinjaOne" | Missing = warning |
-| Intune / Company Portal | Realm Registry | Green "Registered with Intune" | Missing = unmanaged — red flag |
-| CrowdStrike Falcon | Armor / Defense | "Armor: CrowdStrike Falcon v7.x — Active" | Missing = "UNARMORED" in red |
-| M365 apps | Spellbook / Abilities | "Abilities: Word, Excel, Outlook, Teams, OneDrive" | List which M365 apps are installed |
-| Zoom | Communication Rune | "Communication Rune: Zoom v6.x" | |
-| Chrome | Scout's Glass | "Scout's Glass: Chrome v124" | |
-| MERP (ERP) | Ancient Tome | "Ancient Tome: MERP — Installed" | Proprietary = "Ancient" or "Legendary" item |
-| Claude desktop | Arcane Intelligence | "Arcane Intelligence: Claude — Installed" | Fun Easter egg framing |
-| Missing required app | "Missing Equipment" warning | Red banner: "MISSING: CrowdStrike Falcon — Critical Gap" | Drives action |
-| Audit timestamp | Chronicle Date | "Chronicle: 2026-05-04 14:32 UTC" | |
-| Overall compliance status | Quest Status | "QUEST COMPLETE" vs "QUEST INCOMPLETE — 2 gaps" | Top of sheet summary |
-
-**Visual structure recommendation:**
-- Top: Character header (name = hostname decoded, class = device type, realm = city, guild = department, level = station)
-- Middle left: Core Stats block (CPU=STR, RAM=CON, Disk HP bar, OS era)
-- Middle right: Equipment / Abilities (installed apps with pass/fail states, styled as inventory slots)
-- Bottom: Gaps / warnings section ("Missing Equipment" list)
-- Footer: Chronicle (audit timestamp, auditor username, tool version)
-
----
-
-## Feature Dependencies
+**Primary path (HIGH confidence — Microsoft Learn + multiple community sources):**
 
 ```
-Hostname decode
-    └──requires──> Hostname collection (wmi.Win32_ComputerSystem.Name)
-    └──enables──>  Character Class display
-    └──enables──>  Guild / Department display
-    └──enables──>  Realm display
-
-App detection
-    └──requires──> Registry reader (winreg)
-    └──enhances──> File-system fallback (os.path.exists)
-    └──enables──>  Compliance status / gaps list
-    └──enables──>  "Missing Equipment" RPG display
-
-HTML output
-    └──requires──> All data collection complete
-    └──requires──> RPG theme mapping (concept above)
-    └──enables──>  Shareable/printable audit artifact
-
-JSON log
-    └──requires──> All data collection complete
-    └──requires──> USB write path resolution (dirname of sys.argv[0])
-    └──enables──>  Future dashboard / aggregation
-
-Elevation-aware behavior
-    └──requires──> Privilege check at startup
-    └──enhances──> Local user profile collection (more complete with admin)
-    └──enhances──> Some WMI fields (more reliable with admin)
-
-PyInstaller packaging
-    └──requires──> Minimal venv build (not system Python — size constraint)
-    └──requires──> All dependencies installable in isolation
-    └──conflicts--> Conda/Anaconda build environment (produces 100-200MB+ binaries)
+HKLM\SOFTWARE\Microsoft\Enrollments\<GUID>\
+    ProviderID          = "MS DM Server"       ← confirms this is Intune, not MAM/other MDM
+    DiscoveryServiceFullURL = "https://enrollment.manage.microsoft.com/..."
+    EnrollmentType      = 6                    ← MDM full enrollment (not MAM = 1)
 ```
 
-### Dependency Notes
+**How to read it in Python/winreg:**
+- Open `HKLM\SOFTWARE\Microsoft\Enrollments` with `winreg.OpenKey`
+- Enumerate all subkeys (GUIDs) with `winreg.EnumKey`
+- For each subkey, read `ProviderID` — if any subkey has `ProviderID == "MS DM Server"`, device is Intune-enrolled
+- Optionally read `EnrollmentType` (6 = MDM device enrollment; 1 = MAM = app-only, not full device enrollment)
+- This key is readable by standard users — no elevation required
 
-- **App detection requires registry reader:** The preferred detection path is `winreg` → `HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall` (64-bit) and `WOW6432Node\...\Uninstall` (32-bit). This is readable by standard users. WMI Win32_Product is explicitly excluded due to consistency-check side effects.
-- **File-system fallback enhances app detection:** For apps like CrowdStrike that also have a known install path (`C:\Program Files\CrowdStrike\CSFalconController.exe`), a file existence check is a reliable secondary signal.
-- **HTML output requires all data collection:** The template renders once at the end; there is no streaming or partial output. This is fine — the whole audit runs in seconds.
-- **JSON log requires USB write path:** Must resolve to `os.path.dirname(os.path.abspath(sys.argv[0]))`. Test this path: if it's a temp directory (PyInstaller --onefile extracts there), the logic needs to find the original .exe location via `sys.executable` instead.
+**Secondary confirmation path:**
+```
+HKLM\SOFTWARE\Microsoft\PolicyManager\Providers\<GUID>\
+```
+Presence of any GUID here confirms MDM policy is being applied. Less informative for version but confirms enrollment.
+
+**Additional signal (co-management / Intune Management Extension):**
+```
+HKLM\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps\
+```
+Presence indicates IME is active — used for Win32 app deployment via Intune. Not always present on freshly enrolled devices.
+
+### Company Portal App Detection
+
+Company Portal on Windows 10/11 is a **UWP/MSIX app**, not a traditional Win32 MSI. This means it does NOT appear under standard Uninstall keys at `HKLM\...\Uninstall`. Detection requires a different approach.
+
+**Option A — PowerShell subprocess (MEDIUM complexity, reliable):**
+```python
+import subprocess
+result = subprocess.run(
+    ["powershell", "-NonInteractive", "-Command",
+     "Get-AppxPackage -AllUsers -Name 'Microsoft.CompanyPortal' | Select-Object -ExpandProperty Version"],
+    capture_output=True, text=True, timeout=10
+)
+version = result.stdout.strip()  # e.g. "11.2.502.0" or empty string
+installed = bool(version)
+```
+- Works as standard user for system-provisioned apps (Intune-pushed Company Portal)
+- For user-installed apps, may need `-AllUsers` (requires elevation) or per-user query
+- PowerShell subprocess adds ~1-2s latency; acceptable for audit tool
+
+**Option B — PackageManager registry path (LOW reliability, avoid):**
+UWP apps do write to `HKCU\SOFTWARE\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\Microsoft.CompanyPortal_*` but the path includes a hash component that changes per install. Fragile.
+
+**Option C — Filesystem check (HIGH reliability as fallback):**
+```
+C:\Program Files\WindowsApps\Microsoft.CompanyPortal_*\
+```
+Directory exists if Company Portal is installed system-wide. Path contains version hash; use `glob` pattern match. Requires standard user access (WindowsApps is accessible, just not listable without admin in some configurations).
+
+**Recommended implementation:** Option A (PowerShell) as primary, Option C (glob) as fallback. Return version string if found.
+
+### RPG Theme Mapping
+
+| Detection Result | D&D Display |
+|-----------------|-------------|
+| Intune-enrolled | "Realm Registry: Enrolled (Intune MDM)" — green |
+| Company Portal installed | "Company Portal: Installed v{version}" |
+| Neither | "Realm Registry: UNREGISTERED" — red warning |
+| Portal installed, no MDM enrollment | "Company Portal: Installed (enrollment pending?)" — yellow |
+
+### Complexity: MEDIUM
+- Enrollment detection via winreg: LOW complexity (standard subkey enumeration)
+- Company Portal version via PowerShell subprocess: MEDIUM (error handling, timeout, UWP path)
+- Dependency: None — independent of existing collectors
 
 ---
 
-## MVP Definition
+## Feature 2: HTML Warnings System
 
-### Launch With (v1)
+### Warnings UX Pattern
 
-These are in scope per PROJECT.md. Every item maps to an active requirement.
+**Recommended: Native HTML `<details>` + `<summary>` elements (CSS-styled)**
 
-- [ ] Hostname collection + decode (all 4 device types, 21 cities, dept codes) — the product's core intelligence
-- [ ] Hardware stats: OS version/build, CPU, RAM, disk capacity/free space, logged-in user — table stakes
-- [ ] App detection for 8 target apps: NinjaRMM, M365 (Word/Excel/Outlook/Teams/OneDrive), Intune, CrowdStrike, Zoom, Chrome, Claude, MERP — the compliance check
-- [ ] D&D/RPG themed HTML character sheet output — the differentiator
-- [ ] JSON log written to USB directory — the audit trail
-- [ ] PyInstaller one-file .exe packaging — the distribution method
-- [ ] Graceful unknown hostname handling ("Unknown Adventurer" class) — robustness
+This is the correct approach for a self-contained HTML file with no JavaScript dependency:
 
-### Add After Validation (v1.x)
+```html
+<details class="warnings-box" open>
+  <summary class="warnings-header">
+    ⚠ 2 Warnings Found — click to expand
+  </summary>
+  <div class="warnings-content">
+    <div class="warning-item critical">
+      OS End of Life: Windows 10 (Build 19045) — support ended October 14, 2025
+    </div>
+    <div class="warning-item moderate">
+      Low Disk Space: C: drive is 12% free (18 GB of 150 GB available)
+    </div>
+  </div>
+</details>
+```
 
-Add once v1 is in field use and gathering feedback.
+- `<details open>` renders expanded by default (correct for IT audit — warnings should be visible)
+- Pure HTML5, zero JavaScript, works in all modern browsers
+- CSS can style the summary marker, colors, and animation
+- Accessible: keyboard-navigable, works with screen readers
+- Fits the existing Jinja2 template rendering pipeline (conditional block if `warnings` list is non-empty)
 
-- [ ] Local user profiles list — useful for decommission audits; deferred because it benefits from elevation (which v1 is designed to not require)
-- [ ] Elevation-aware output flag — show which fields had limited data due to running as standard user; useful once IT staff ask "why doesn't it show X?"
-- [ ] Printer / peripheral detection — IT sometimes needs this for workstation audits
-- [ ] BitLocker status — security-relevant; requires elevation on most machines
+**Interaction pattern:** Collapsed = summary line shows count. Expanded = each warning with severity styling.
 
-### Future Consideration (v2+)
+### Warning 1: OS Version / EOL Check
 
-Defer until v1 is validated in the field.
+**Thresholds (HIGH confidence — Microsoft official EOL dates confirmed):**
 
-- [ ] Mac support — out of scope for v1 per PROJECT.md; Python abstraction in v1 should make this feasible
-- [ ] Optional JSON upload to central log collector — useful for multi-machine fleet audits
-- [ ] Aggregate dashboard across all USB-collected JSON logs — requires separate tooling
-- [ ] Remote scan mode — entirely different security/permission profile; effectively a different product
+| OS | Build Range | Status | Warning Level |
+|----|------------|--------|---------------|
+| Windows 7 / 8.1 | < 10.0.10240 | CRITICAL — far past EOL | Critical |
+| Windows 10 (any version) | 10.0.10240 – 10.0.19045 | WARNING — EOL October 14, 2025 | Critical (already past) |
+| Windows 11 21H2 | 10.0.22000 | WARNING — early build, check update status | Moderate |
+| Windows 11 22H2+ | 10.0.22621+ | OK — current supported branch | OK |
+| Windows 11 23H2+ | 10.0.22631+ | OK — current supported branch | OK |
+
+**Detection in Python (already collected in v1):**
+- `platform.version()` returns `"10.0.19045"` format on Windows
+- Parse major/build: `build = int(platform.version().split(".")[2])`
+- `build < 22000` → Windows 10 or earlier → EOL warning
+- `build >= 22000` → Windows 11 → OK (refine by specific build if needed)
+
+**Warning text template:**
+- Windows 10: "OS End of Life: This machine runs Windows 10 (Build {build}). Microsoft ended security updates on October 14, 2025. Upgrade required."
+- Windows 11 early: "OS Version: Windows 11 build {build} is an early release. Confirm update policy is active."
+
+### Warning 2: Disk Space Check
+
+**Threshold formula (MEDIUM confidence — industry standard varies, 15% is reasonable):**
+
+Standard monitoring practice uses a dual threshold approach:
+- **Percentage-based:** Free space < 15% of total capacity
+- **Absolute bytes floor:** Free space < 10 GB (catches edge case of large drives where 15% = lots of space but small drives where 15% = very little)
+
+The warning fires if **either** condition is true. This matches enterprise monitoring tool defaults (SCOM uses percentage + MB dual threshold).
+
+```python
+import shutil
+usage = shutil.disk_usage("C:/")  # already collected in v1
+free_pct = (usage.free / usage.total) * 100
+free_gb = usage.free / (1024 ** 3)
+warn = free_pct < 15.0 or free_gb < 10.0
+```
+
+**Warning text:** "Low Disk Space: C: drive has {free_gb:.1f} GB free ({free_pct:.0f}% of {total_gb:.0f} GB). Performance and update installation may be affected."
+
+**Dependency:** Uses existing `disk_usage` data already collected in `collectors/hardware.py` — no new collection needed.
+
+### Jinja2 Template Integration
+
+The warnings block should be conditionally rendered:
+
+```jinja
+{% if warnings %}
+<details class="warnings-box" open>
+  <summary>⚠ {{ warnings|length }} Warning{{ 's' if warnings|length != 1 else '' }}</summary>
+  <div class="warnings-content">
+    {% for w in warnings %}
+    <div class="warning-item {{ w.level }}">{{ w.message }}</div>
+    {% endfor %}
+  </div>
+</details>
+{% endif %}
+```
+
+Where `warnings` is a list of `Warning(level: str, message: str)` dataclass instances passed into the template context.
+
+### Complexity: LOW
+- OS check: trivial — data already in `AuditReport`, add threshold logic in renderer
+- Disk check: trivial — data already collected, add formula
+- HTML: `<details>/<summary>` pattern is minimal CSS addition to existing Jinja2 template
+- Dependency: Requires `AuditReport` to carry a `warnings: list[Warning]` field (new model field)
 
 ---
 
-## Feature Prioritization Matrix
+## Feature 3: Mac-Compatible Collectors
 
-| Feature | User Value | Implementation Cost | Priority |
-|---------|------------|---------------------|----------|
-| Hostname decode + RPG class display | HIGH | MEDIUM | P1 |
-| Hardware stats (CPU, RAM, Disk, OS) | HIGH | LOW | P1 |
-| Target app detection (registry method) | HIGH | MEDIUM | P1 |
-| D&D HTML character sheet output | HIGH | HIGH | P1 |
-| JSON log to USB | HIGH | LOW | P1 |
-| PyInstaller .exe packaging | HIGH | MEDIUM | P1 |
-| Unknown hostname graceful handling | MEDIUM | LOW | P1 |
-| Compliance gaps / "Missing Equipment" section | HIGH | LOW | P1 — derived from detection results |
-| App version display | MEDIUM | LOW | P1 — trivial add-on to detection |
-| Color-coded pass/fail status | HIGH | LOW | P1 — CSS only |
-| Local user profiles list | MEDIUM | MEDIUM | P2 |
-| Elevation-aware degradation flags | MEDIUM | LOW | P2 |
-| M365 individual app breakdown | MEDIUM | LOW | P1 — each app checked separately |
+### Architecture Approach
+
+The v1 architecture already abstracts OS-specific calls under `collectors/windows/`. Mac support adds `collectors/mac/` with the same interface — same `CollectionResult` envelope, same `AuditReport` data model, same HTML template output.
+
+**Platform dispatch in `collectors/__init__.py`:**
+```python
+import sys
+if sys.platform == "win32":
+    from collectors.windows import cpu, ram, disk, os_info, profiles, apps
+elif sys.platform == "darwin":
+    from collectors.mac import cpu, ram, disk, os_info, profiles, apps
+```
+
+### Mac Hardware Collectors
+
+**CPU (model name):**
+- `psutil.cpu_count()` → core count (cross-platform, works on Mac including Apple Silicon)
+- CPU model name: `platform.processor()` returns useful string on Intel Mac; returns `""` or `"arm"` on Apple Silicon
+- **Preferred:** `subprocess.run(["sysctl", "-n", "machdep.cpu.brand_string"], ...)` → returns full model string on both Intel and M-series
+- Example output: `"Apple M2 Pro"` or `"Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz"`
+- psutil `cpu_freq()` is unreliable on Apple Silicon — skip or handle `AttributeError`
+
+**RAM:**
+- `psutil.virtual_memory().total` — works on macOS (same as Windows, HIGH confidence)
+
+**Disk:**
+- `shutil.disk_usage("/")` — works on macOS, same as Windows
+- Note: macOS uses `/` not `C:/`; disk path needs to be platform-conditional
+
+**OS version:**
+- `platform.mac_ver()` → returns `("14.5", ..., "arm64")` tuple
+- macOS version name mapping: `14.x` = Sonoma, `13.x` = Ventura, `12.x` = Monterey, `11.x` = Big Sur
+- Build number: `platform.mac_ver()[1]` → rarely needed for IT audit, version string sufficient
+
+**Logged-in user:**
+- `os.getlogin()` — works on macOS
+- `os.environ.get("USER")` — fallback, works in SYSTEM-like contexts
+
+### Mac Local User Profile Detection
+
+```python
+import subprocess
+result = subprocess.run(
+    ["dscl", ".", "-list", "/Users", "UniqueID"],
+    capture_output=True, text=True
+)
+# Filter: UniqueID >= 501 = real human accounts; < 501 = system accounts
+# Also filter: names starting with "_" are daemon accounts
+```
+
+Standard pattern (HIGH confidence — confirmed by macOS community):
+- `dscl . list /Users | grep -v "^_"` — filters daemon accounts
+- Filter by UID >= 501 to exclude system accounts like root, nobody, daemon
+- Returns list of human user account names
+
+Python subprocess equivalent provides same data as Windows `ProfileList` registry enumeration.
+
+### Mac App Detection — Specific Paths
+
+**Detection method: filesystem check on `.app` bundle + plistlib version read (HIGH confidence)**
+
+The standard and most reliable macOS app detection approach:
+1. Check if `/Applications/AppName.app` exists (`os.path.isdir`)
+2. Read `/Applications/AppName.app/Contents/Info.plist` with `plistlib.load()`
+3. Extract `CFBundleShortVersionString` for version, `CFBundleIdentifier` for verification
+
+```python
+import plistlib, os
+
+def detect_mac_app(app_path: str) -> tuple[bool, str | None]:
+    """Returns (installed, version_string)."""
+    plist_path = os.path.join(app_path, "Contents", "Info.plist")
+    if not os.path.isdir(app_path):
+        return False, None
+    try:
+        with open(plist_path, "rb") as f:
+            info = plistlib.load(f)
+        return True, info.get("CFBundleShortVersionString")
+    except (FileNotFoundError, Exception):
+        return False, None
+```
+
+**Specific app paths and identifiers (confidence levels per source quality):**
+
+| App | Primary Path | Bundle ID | Notes |
+|-----|-------------|-----------|-------|
+| NinjaRMM agent | `/Applications/NinjaRMMAgent/` | `com.ninjarmm.*` | Directory; plist at `programfiles/njbar.app/Contents/Info.plist` |
+| CrowdStrike Falcon | `/Applications/Falcon.app` | `com.crowdstrike.falcon.App` | HIGH confidence — multiple MDM sources |
+| Microsoft Word | `/Applications/Microsoft Word.app` | `com.microsoft.Word` | HIGH confidence — standard M365 path |
+| Microsoft Excel | `/Applications/Microsoft Excel.app` | `com.microsoft.Excel` | HIGH confidence |
+| Microsoft Outlook | `/Applications/Microsoft Outlook.app` | `com.microsoft.Outlook` | HIGH confidence |
+| Microsoft Teams | `/Applications/Microsoft Teams.app` | `com.microsoft.teams2` (new Teams) | MEDIUM — Teams Classic was `com.microsoft.teams` |
+| Zoom | `/Applications/zoom.us.app` | `us.zoom.xos` | HIGH confidence — standard install path |
+| Google Chrome | `/Applications/Google Chrome.app` | `com.google.Chrome` | HIGH confidence — standard install path |
+| Claude Desktop | `/Applications/Claude.app` | `com.anthropic.claudefordesktop` (inferred) | MEDIUM — Anthropic docs confirm `/Applications` install, bundle ID not officially documented in search results |
+| MERP | N/A — Windows-only ERP | N/A | Out of scope for Mac; Mac template should show "N/A" or omit |
+
+**NinjaRMM Mac-specific detection notes:**
+- Primary filesystem check: `os.path.isdir("/Applications/NinjaRMMAgent")`
+- LaunchDaemon presence as secondary signal: `/Library/LaunchDaemons/com.ninjarmm.agentd.plist`
+- Version: read from `/Applications/NinjaRMMAgent/programfiles/njbar.app/Contents/Info.plist` → `CFBundleShortVersionString`
+- HIGH confidence — NinjaOne official docs confirm `/Applications/NinjaRMMAgent/programfiles/ninjarmm-macagent` as the primary agent binary
+
+**CrowdStrike Mac-specific detection notes:**
+- Primary: `os.path.isdir("/Applications/Falcon.app")`
+- Version: `/Applications/Falcon.app/Contents/Info.plist` → `CFBundleShortVersionString`
+- Service status: `subprocess.run(["sudo", "falconctl", "stats"])` — requires elevation; degrade gracefully
+- HIGH confidence — confirmed by Applivery, SimpleMDM, JumpCloud, Duke OIT documentation
+
+**M365 Mac detection notes:**
+- Each app installed separately to `/Applications/` — no suite registry entry (different from Windows)
+- M365 subscription status NOT detectable without network call — just check if apps are present
+- Teams: two possible paths — check both `Microsoft Teams.app` (classic) and `Microsoft Teams (work or school).app` (new)
+
+### Mac Packaging Considerations
+
+- No PyInstaller on macOS for v2 — the Mac collector is a Python script invoked directly or packaged separately
+- `wmi` library is Windows-only — all WMI calls must be guarded with `sys.platform == "win32"` check (v1 already has `_WMI_AVAILABLE` guard pattern)
+- `winreg` is Windows-only — same guard pattern needed
+- `psutil` is cross-platform — use freely
+
+### Complexity: HIGH
+- New `collectors/mac/` module tree (cpu, ram, disk, os_info, profiles, apps)
+- Platform dispatch logic in collector init
+- plistlib-based version detection (new pattern, not used in Windows collectors)
+- Testing requires macOS environment or mocking filesystem
+- Dependency: Existing `AuditReport` data model must be shared; Mac collectors return same fields
+- MERP is Windows-only — Mac template must handle absent MERP gracefully
 
 ---
 
-## Competitor Feature Analysis
+## Feature 4: NinjaOne Remote Execution Compatibility
 
-| Feature | Belarc Advisor | EZ Audit (USB) | Free PC Audit | StatusReport (this tool) |
-|---------|----------------|----------------|---------------|--------------------------|
-| USB portable, no install | No (installer required) | Yes | Yes (portable .exe) | Yes (PyInstaller .exe) |
-| Works offline / no network | Yes | Yes | Yes | Yes |
-| Custom app detection list | No — generic inventory | Partial (configurable) | No | Yes — 8 named target apps |
-| Naming convention decode | No | No | No | Yes — Master Electronics specific |
-| HTML output | Yes (browser report) | Yes (report) | Yes | Yes — D&D/RPG themed |
-| JSON structured log | No | No | No | Yes |
-| No write to host PC | No — writes locally | No — installs | Yes | Yes — USB-only output |
-| Standard user (no admin) | Partial | Requires admin for full scan | Partial | Designed for standard user |
-| Compliance gap view | No | No | No | Yes — explicit gaps list |
-| Memorable / shareable output | No — clinical | No — clinical | No — clinical | Yes — RPG framing |
+### Execution Context
 
-The gap this tool fills: no existing portable tool combines targeted compliance detection, naming convention decode, and a genuinely readable output format. Belarc Advisor is the closest in concept (local HTML report) but requires installation, writes to the host PC, and produces a clinical data dump rather than an actionable compliance view.
+When NinjaOne runs a script on a Windows device, it executes as **SYSTEM account** in a **non-interactive session**. Key implications for this tool:
+
+| Factor | Implication |
+|--------|-------------|
+| SYSTEM account | No user profile loaded; `os.getlogin()` may raise `OSError`; `os.environ["USERNAME"]` = "SYSTEM" |
+| Non-interactive | No console window; stdout is captured by NinjaOne's agent process |
+| No display | HTML auto-open (`webbrowser.open()`) will silently fail or open in SYSTEM session desktop |
+| Drive context | `sys.executable` points to where NinjaOne deployed the script, not a USB drive |
+| Output capture | NinjaOne captures everything written to stdout |
+
+### Stdout Output Format
+
+NinjaOne captures the full stdout from script execution and displays it in the script activity log. The format is **plain text, human-readable**. There is no special JSON or key=value protocol for the results panel — the agent captures all `print()` output verbatim.
+
+**For the NinjaOne use case, the tool should print a plain-text summary to stdout.** IT admin running the script via NinjaOne sees this output in the activity log immediately after execution.
+
+**Recommended stdout summary format:**
+```
+=== StatusReport v2.0 Audit Summary ===
+Host: PHX-INV-003
+OS: Windows 11 (Build 22631) — OK
+RAM: 16 GB
+Disk: 245 GB free / 512 GB (47%)
+NinjaOne: Installed v8.0.1.100
+CrowdStrike: Installed v7.14.17106 — Active
+Company Portal: Installed (Intune enrolled)
+M365: Installed
+Zoom: Installed v6.2.1
+Chrome: Installed v124
+Claude: Not installed
+MERP: Not installed
+Warnings: None
+HTML report written to: C:\ProgramData\NinjaRMM\logs\PHX-INV-003_2026-05-07.html
+=======================================
+```
+
+This is plain `print()` output — no special format needed. NinjaOne captures it wholesale.
+
+### SYSTEM Context Fixes Required
+
+**Problem 1: `os.getlogin()` crashes under SYSTEM:**
+- `os.getlogin()` raises `OSError` in non-interactive sessions
+- Fix: wrap in try/except; fallback to `os.environ.get("USERNAME", "SYSTEM")` or `os.environ.get("COMPUTERNAME")`
+- The v1.0 architecture uses `CollectionResult(value, error)` envelope — this is the correct place to absorb the error
+
+**Problem 2: Output path under NinjaOne:**
+- `Path(sys.executable).parent` no longer points to USB drive — points to NinjaOne temp/deploy directory
+- Fix: Add `--output-dir` CLI argument so IT admin can specify output path when invoking via NinjaOne
+- Fallback: write to `Path(os.environ.get("TEMP", "C:/Temp"))` with hostname-timestamped filename
+
+**Problem 3: HTML auto-open:**
+- `webbrowser.open()` in SYSTEM session opens in session 0 desktop — invisible to user
+- Fix: Skip auto-open if running as SYSTEM; detect with `os.environ.get("USERNAME", "") == "SYSTEM"`
+
+**Problem 4: WMI under SYSTEM:**
+- WMI is accessible from SYSTEM account — no change needed; existing WMI calls work
+- CrowdStrike service state check via WMI will work correctly as SYSTEM
+
+### NinjaOne Output Path Strategy
+
+| Invocation Mode | Output Path Strategy |
+|----------------|---------------------|
+| USB (v1 mode) | `Path(sys.executable).parent / "logs/"` |
+| NinjaOne (SYSTEM) | `--output-dir` CLI arg, or `C:\ProgramData\NinjaRMM\reporting\` as default |
+| NinjaOne (user context) | `--output-dir` CLI arg, or user TEMP |
+
+### Complexity: MEDIUM
+- SYSTEM context guard: `os.environ.get("USERNAME") == "SYSTEM"` check
+- `os.getlogin()` try/except already exists in v1 — confirm it propagates correctly
+- `--output-dir` CLI argument: add to `main.py` argument parser
+- Stdout summary: new function `print_summary(report: AuditReport)` called at end of main
+- HTML auto-open guard: single conditional on SYSTEM check
+- Dependency: requires `AuditReport` to be fully populated before stdout summary can print
+
+---
+
+## Updated Feature Dependencies (v2.0 additions)
+
+```
+Company Portal / Intune detection
+    └──requires──> winreg (existing pattern)
+    └──requires──> PowerShell subprocess for UWP app detection
+    └──independent of──> existing app detectors (separate collector)
+    └──enables──> "Realm Registry" RPG display field
+
+Warnings system
+    └──requires──> OS version (already in AuditReport.os_info)
+    └──requires──> Disk usage (already in AuditReport.hardware.disk)
+    └──requires──> New Warning dataclass + AuditReport.warnings field
+    └──enables──> <details>/<summary> HTML warnings box in template
+
+Mac collectors
+    └──requires──> Platform dispatch (sys.platform == "darwin")
+    └──requires──> subprocess + plistlib (stdlib — no new deps)
+    └──requires──> dscl for user profiles (macOS-specific)
+    └──shares──> AuditReport data model (unchanged)
+    └──shares──> Jinja2 HTML renderer (unchanged — same template)
+    └──conflicts--> wmi, winreg (must remain Windows-only behind guards)
+
+NinjaOne compatibility
+    └──requires──> os.getlogin() try/except (confirm existing v1 guard)
+    └──requires──> --output-dir CLI argument (new argparse addition)
+    └──requires──> print_summary() function (new)
+    └──requires──> SYSTEM context guard for webbrowser.open()
+    └──independent of──> HTML template (stdout is separate output channel)
+```
+
+---
+
+## Anti-Features for v2.0
+
+| Feature | Why Avoid | What to Do Instead |
+|---------|-----------|-------------------|
+| PowerShell for all app detection | Adds 1-2s per call; overkill for Win32 apps | PowerShell only for UWP (Company Portal); winreg for all else |
+| mdfind on macOS for app detection | Spotlight index may be disabled/stale; unreliable in audit context | Direct filesystem check on `/Applications/*.app` — deterministic |
+| popen("powershell Get-AppxPackage") without timeout | Hangs on machines with broken AppX stack | Always use `subprocess.run(..., timeout=10)` |
+| Detecting all macOS apps in /Applications | Slow, noisy, not the goal | Fixed list only: NinjaOne, CrowdStrike, M365, Zoom, Chrome, Claude |
+| JSON output to NinjaOne custom fields | Requires NinjaOne CLI integration; out of scope | Plain stdout summary is sufficient for v2 |
+| Collapsible warnings with JavaScript | Adds complexity; breaks in restricted browser environments | `<details>/<summary>` is pure HTML5, zero JS |
+| Interactive prompt in SYSTEM context | Will hang forever with no user to respond | All execution must be non-interactive; use `--output-dir` arg |
+
+---
+
+## v2.0 MVP Definition
+
+### Must Ship (v2.0)
+
+| Feature | Why | Complexity |
+|---------|-----|------------|
+| Intune enrollment detection via registry | Core compliance signal — is this device managed? | LOW |
+| Company Portal detection via PowerShell | Secondary signal — is management app present? | MEDIUM |
+| OS EOL warning (Win10 EOL = Oct 2025) | Every Win10 machine in the fleet needs upgrade action | LOW |
+| Disk space warning (<15% or <10GB) | Actionable — IT needs to know before it causes problems | LOW |
+| `<details>/<summary>` collapsible warnings box | UX requirement — warnings visible but non-obstructive | LOW |
+| Mac hardware collectors (CPU, RAM, disk, OS) | Parity goal for Mac fleet | MEDIUM |
+| Mac app detection (NinjaOne, CS, M365, Zoom, Chrome, Claude) | Same compliance check on Mac | MEDIUM |
+| Mac user profile detection via dscl | Match Windows profile collector | LOW |
+| SYSTEM context guard (`os.getlogin()` safe) | NinjaOne remote exec will fail without this | LOW |
+| `--output-dir` CLI argument | Required for NinjaOne output path control | LOW |
+| `print_summary()` stdout function | NinjaOne operators see results in activity log | LOW |
+| HTML auto-open guard for SYSTEM context | Prevent broken open in session 0 | LOW |
+
+### Defer to v2.x
+
+| Feature | Reason |
+|---------|--------|
+| Code-signed .exe (DIST-V2-01) | Budget decision; CrowdStrike still passes without it |
+| JSON log file (OUT-V2-01) | HTML sufficient; JSON adds complexity without immediate v2 value |
+| Remote access tool detection (TeamViewer, AnyDesk, RDP) | Requires separate research; not in this milestone scope |
+| macOS packaging (pkg/dmg) | Mac users invoke via Python directly for v2; packaging is v3 |
+| NinjaOne custom field integration | Requires ninjarmm-cli; stdout summary achieves v2 goal |
 
 ---
 
 ## Sources
 
-- [EZ Audit USB Portable Tool Features](https://www.ezaudit.net/network-inventory-audit-tool-for-support-team-features.asp) — competitor feature reference (MEDIUM confidence)
-- [InvGate: IT Audit Software Tools Compared](https://blog.invgate.com/it-audit-software) — feature categories for IT audit tools (MEDIUM confidence)
-- [Microsoft Learn: Registry Uninstall Key paths](https://learn.microsoft.com/en-us/answers/questions/179854/get-installed-software-list) — authoritative on detection method (HIGH confidence)
-- [xkln.net: Stop Using Win32_Product](https://xkln.net/blog/please-stop-using-win32product-to-find-installed-software-alternatives-inside/) — critical guidance on WMI pitfall (HIGH confidence via community consensus)
-- [Shelf.nu: Top PC Naming Conventions](https://www.shelf.nu/blog/top-pc-naming-conventions-for-system-admins) — naming convention patterns (MEDIUM confidence)
-- [PyInstaller size reduction practices](https://coderslegacy.com/python/reduce-size-pyinstaller-exe/) — packaging constraint guidance (MEDIUM confidence)
-- [GSDSolutions: PC Audit Checklist](https://gsdsolutions.io/a-pc-audit-checklist-from-an-it-services-provider/) — what IT staff actually check (MEDIUM confidence)
-- [Belarc Advisor product page](https://www.belarc.com/products/belarc-advisor) — closest competitor reference (HIGH confidence)
+- [Microsoft Learn: Diagnose MDM enrollment failures](https://learn.microsoft.com/en-us/windows/client-management/mdm-diagnose-enrollment) — Enrollment registry paths (HIGH confidence)
+- [IT trip: HKLM\SOFTWARE\Microsoft\Enrollments Explained](https://en.ittrip.xyz/windows/enrollments-registry-check) — ProviderID = "MS DM Server" pattern (MEDIUM confidence)
+- [NinjaOne macOS Agent Installation](https://www.ninjaone.com/docs/new-to-ninjaone/agent-installation/macos-device-agent-installation/) — Mac install paths (HIGH confidence)
+- [Applivery: CrowdStrike Falcon Sensor on macOS](https://www.applivery.com/docs/mobile-device-management/apple-mdm/macos/configure-crowdstrike-falcon-sensor-on-macos-devices/) — `/Applications/Falcon.app`, bundle ID (HIGH confidence)
+- [Python docs: plistlib](https://docs.python.org/3/library/plistlib.html) — plist parsing standard library (HIGH confidence)
+- [Apple Developer: Core Foundation Keys](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html) — CFBundleShortVersionString definition (HIGH confidence)
+- [DEV Community: Collapsible section with HTML only](https://dev.to/jordanfinners/creating-a-collapsible-section-with-nothing-but-html-4ip9) — `<details>/<summary>` pattern (HIGH confidence)
+- [Microsoft Support: Windows 10 EOL October 14 2025](https://support.microsoft.com/en-us/windows/windows-10-support-has-ended-on-october-14-2025-2ca8b313-1946-43d3-b55c-2b95b107f281) — EOL date confirmed (HIGH confidence)
+- [NinjaOne: Automation Script Variable Types](https://www.ninjaone.com/docs/endpoint-management/scripting-and-automation/automation-script-variable-types/) — SYSTEM context variables (MEDIUM confidence)
+- [NinjaOne Removal Guide PDF](https://vector-nas01.direct.quickconnect.to/Public-FTP/Ninja_Removal/old/NinjaOne%20Removal%20Guide%20%E2%80%93%20NinjaOne%20Dojo.pdf) — LaunchDaemon paths com.ninjarmm.agentd.plist (MEDIUM confidence)
+- [Anthropic: Deploy Claude Desktop for macOS](https://support.claude.com/en/articles/12611117-deploy-claude-desktop-for-macos) — installs to /Applications (HIGH confidence)
+- [Paessler KB: Disk space threshold % vs bytes](https://kb.paessler.com/en/topic/79473-is-it-possible-to-set-xx-gb-free-space-as-threshold-instead-of-percent) — dual threshold pattern (MEDIUM confidence)
+- [4iT: List User Accounts Mac OSX](https://4it.com.au/kb/article/list-user-accounts-mac-osx-using-terminal-command-line/) — dscl detection (HIGH confidence)
+- [Jamf Community: dscl filter system accounts](https://community.jamf.com/t5/jamf-pro/dscl-command-to-list-local-users-but-exclude-system-accounts/m-p/45350) — UID >= 501 filter (HIGH confidence)
 
 ---
 
-*Feature research for: Windows IT audit USB executable (StatusReport)*
-*Researched: 2026-05-04*
+*Feature research for: StatusReport v2.0 milestone*
+*Researched: 2026-05-07 — replaces v1.0 research dated 2026-05-04*

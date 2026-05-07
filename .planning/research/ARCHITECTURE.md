@@ -1,419 +1,661 @@
-# Architecture Research
+# Architecture Research — v2.0 Update
 
-**Domain:** Windows IT audit executable — self-contained PyInstaller .exe, USB-deployed, read-only
-**Researched:** 2026-05-04
-**Confidence:** HIGH
-
----
-
-## Standard Architecture
-
-### System Overview
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                            Entry Point (main.py)                         │
-│  Orchestrates run: collect → normalize → render → write                  │
-└──────────────────────────────┬──────────────────────────────────────────┘
-                               │
-             ┌─────────────────▼──────────────────┐
-             │           Collector Layer            │
-             │  (platform-abstracted via ABC)       │
-             │                                      │
-             │  ┌───────────┐  ┌──────────────┐    │
-             │  │ SysInfo   │  │  AppDetector │    │
-             │  │ Collector │  │  Collector   │    │
-             │  └─────┬─────┘  └──────┬───────┘    │
-             │        │               │             │
-             │  ┌─────▼──────────────▼───────────┐ │
-             │  │         NameParser              │ │
-             │  │   (hostname → structured dict)  │ │
-             │  └────────────────────────────────┘ │
-             └──────────────┬─────────────────────┘
-                            │ AuditReport dataclass
-             ┌──────────────▼─────────────────────┐
-             │           Render Layer               │
-             │                                      │
-             │  ┌──────────────────────────────┐   │
-             │  │  HTMLRenderer (Jinja2)        │   │
-             │  │  template embedded in package │   │
-             │  └──────────────────────────────┘   │
-             └──────────────┬─────────────────────┘
-                            │ rendered strings
-             ┌──────────────▼─────────────────────┐
-             │           Output Layer               │
-             │                                      │
-             │  ┌──────────────┐  ┌─────────────┐  │
-             │  │  HTMLWriter  │  │  JSONLogger │  │
-             │  │  (to USB)    │  │  (to USB)   │  │
-             │  └──────────────┘  └─────────────┘  │
-             └────────────────────────────────────-─┘
-```
+**Domain:** Windows/Mac IT audit executable — self-contained PyInstaller .exe, USB-deployed, read-only
+**Researched:** 2026-05-07
+**Confidence:** HIGH (based on direct source inspection of shipped v1.0 codebase)
 
 ---
 
-## Component Responsibilities
+## Current Architecture (v1.0 Confirmed)
 
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| `main.py` | Entry point; calls each layer in order; catches top-level exceptions; sets exit code | All layers |
-| `collectors/base.py` | Abstract base class `BaseCollector` with `collect() -> dict` contract | Nothing — defines interface only |
-| `collectors/windows/sysinfo.py` | Reads hostname, OS version, CPU, RAM, disk, logged-in user, local profiles via WMI + winreg + psutil | `base.py` |
-| `collectors/windows/appdetector.py` | Detects presence and version of target apps via registry HKLM\...\Uninstall and known filesystem paths | `base.py` |
-| `parsers/name_parser.py` | Pure function: hostname string → `ParsedHostname` dataclass (city, device type, dept, company code, station) | Nothing — pure function |
-| `models.py` | `AuditReport` dataclass — the single normalized data container passed between layers | All layers read/write |
-| `renderer/html_renderer.py` | Loads Jinja2 template (embedded via `importlib.resources`), renders to HTML string | `models.py`, template file |
-| `renderer/templates/character_sheet.html` | D&D-styled Jinja2 template — no logic beyond conditionals and loops | `html_renderer.py` |
-| `writers/html_writer.py` | Writes rendered HTML to `<exe_dir>/status_report_<hostname>_<timestamp>.html` | `renderer/` |
-| `writers/json_logger.py` | Serializes `AuditReport` to JSON, writes to `<exe_dir>/log_<hostname>_<timestamp>.json` | `models.py` |
-| `utils/path_helper.py` | Resolves output directory = directory of running .exe (handles PyInstaller `sys.frozen` + `sys._MEIPASS`) | `writers/` |
-| `utils/error_handler.py` | `CollectionResult` wrapper — holds `value` or `error` string; never raises; used by all collectors | `collectors/` |
+This section documents the actual shipped state, not the planned state. Several v1.0 decisions
+differ from the original research doc and must be understood before extending.
 
----
-
-## Recommended Project Structure
+### Confirmed File Structure
 
 ```
-status_report/
-├── main.py                         # Orchestrator — collect, render, write
-├── models.py                       # AuditReport dataclass (the data contract)
+status.report/
+├── main.py                             # Orchestrator — collect_all → render_html → write
+├── models.py                           # AuditReport, ParsedHostname, AppStatus, CollectionResult
 │
 ├── collectors/
-│   ├── base.py                     # Abstract BaseCollector (ABC)
-│   ├── windows/
-│   │   ├── __init__.py
-│   │   ├── sysinfo.py              # WMI + psutil + winreg system facts
-│   │   └── appdetector.py          # Registry + filesystem app checks
-│   └── mac/                        # (stub — future milestone)
+│   ├── __init__.py                     # collect_all() — platform dispatch (Windows only for now)
+│   ├── base.py                         # Stub (empty — no ABC defined yet)
+│   └── windows/
 │       ├── __init__.py
-│       └── sysinfo.py              # subprocess + plistlib equivalents
+│       ├── hardware.py                 # collect_hardware(), collect_profiles()
+│       └── apps.py                     # detect_apps(), collect_apps(), APP_SPECS table
 │
 ├── parsers/
-│   └── name_parser.py              # Pure function: hostname → ParsedHostname
+│   └── name_parser.py                  # parse_hostname(str) → ParsedHostname
 │
 ├── renderer/
-│   ├── html_renderer.py            # Jinja2 rendering logic
+│   ├── __init__.py                     # render_html(report) → str, render_report(report, path) → Path
 │   └── templates/
-│       └── character_sheet.html    # D&D HTML template
+│       └── character_sheet.html        # Jinja2 D&D character sheet
 │
-├── writers/
-│   ├── html_writer.py              # Write HTML to USB output dir
-│   └── json_logger.py              # Write JSON log to USB output dir
-│
-└── utils/
-    ├── path_helper.py              # PyInstaller-aware exe/output dir resolution
-    └── error_handler.py            # CollectionResult wrapper for safe returns
+└── writers/
+    └── __init__.py                     # write_html(html, output_path) → Path
 ```
 
-### Structure Rationale
+**No mac/ directory exists yet.** The v1.0 architecture doc called for stubs; none were created.
 
-- **`collectors/windows/` vs `collectors/mac/`:** Platform isolation lives entirely in the `collectors/` subdirectories. `main.py` selects the right collector set using `platform.system()` at startup — everything above the collector layer is platform-agnostic.
-- **`models.py` as single source of truth:** All layers communicate through `AuditReport`. Collectors produce it; renderers consume it; writers serialize it. No layer passes raw WMI objects or registry handles to another layer.
-- **`renderer/templates/`:** Template is a plain file in the package, bundled by PyInstaller via `--add-data` and loaded at runtime with `importlib.resources`. This is preferable to embedding the template as a Python string because it allows the template to be edited without touching Python code.
-- **`utils/error_handler.py`:** Collectors never raise exceptions to `main.py`. They return `CollectionResult(value=..., error=None)` on success or `CollectionResult(value=None, error="description")` on failure. The renderer then shows "unavailable" in the HTML for any errored field — the audit completes even if half the checks fail.
+### Actual Data Flow (v1.0)
 
----
-
-## Architectural Patterns
-
-### Pattern 1: Platform-Dispatch Collector Selection
-
-**What:** `main.py` selects the correct collector module at startup based on `platform.system()`. The rest of the program only sees `BaseCollector`.
-
-**When to use:** Any time OS-specific APIs must be isolated from cross-platform logic. This is the correct extension point for the Mac milestone.
-
-**Trade-offs:** Adds one indirection level but keeps all Windows-isms out of the orchestrator and renderer. Stub mac/ directory costs nothing and documents intent clearly.
-
-```python
-# main.py
-import platform
-from collectors.base import BaseCollector
-
-def get_collectors() -> list[BaseCollector]:
-    os_name = platform.system()
-    if os_name == "Windows":
-        from collectors.windows.sysinfo import WindowsSysInfoCollector
-        from collectors.windows.appdetector import WindowsAppDetector
-        return [WindowsSysInfoCollector(), WindowsAppDetector()]
-    elif os_name == "Darwin":
-        from collectors.mac.sysinfo import MacSysInfoCollector
-        return [MacSysInfoCollector()]
-    else:
-        raise RuntimeError(f"Unsupported platform: {os_name}")
+```
+main.py
+  └─ socket.gethostname() + parse_hostname()
+  └─ AuditReport(...) constructed
+  └─ collect_all(report)                     ← mutates report in place
+       ├─ collect_hardware(report)           [hardware.py]
+       ├─ collect_profiles(report)           [hardware.py]
+       └─ collect_apps(report)              [apps.py]
+  └─ render_html(report) → html str         [renderer/__init__.py]
+       └─ _build_context(report)            derives display values, flags
+       └─ Jinja2 template render
+  └─ output_path = logs_dir / f"status_{hostname}_{date_str}.html"
+  └─ output_path.write_text(html)
+  └─ os.startfile(output_path)              ← PROBLEM for NinjaOne (no display)
+  └─ input("Press Enter...")                ← PROBLEM for NinjaOne (no TTY)
 ```
 
-### Pattern 2: CollectionResult Error Envelope
-
-**What:** Every collector method returns a `CollectionResult` (a dataclass with `value` and `error` fields) rather than raising exceptions or returning `None`. Callers check `result.error` to decide whether to display a fallback.
-
-**When to use:** Any read that can fail silently: missing registry key, WMI service unavailable, permission denied.
-
-**Trade-offs:** Slightly more verbose call sites, but the audit tool never crashes and always produces output — which is the primary constraint.
+### Actual models.py (v1.0)
 
 ```python
-# utils/error_handler.py
-from dataclasses import dataclass
-from typing import Any
-
 @dataclass
-class CollectionResult:
-    value: Any
+class CollectionResult(Generic[T]):
+    value: T | None
     error: str | None = None
-
-    @property
-    def ok(self) -> bool:
-        return self.error is None
-
-# Usage in sysinfo.py
-def get_os_version() -> CollectionResult:
-    try:
-        import platform
-        return CollectionResult(value=platform.version())
-    except Exception as e:
-        return CollectionResult(value=None, error=str(e))
-```
-
-### Pattern 3: AuditReport as the Single Data Contract
-
-**What:** A frozen `@dataclass` (or nested dataclasses) that represents everything collected. Constructed in `main.py` from collector outputs and passed to both the renderer and JSON logger. No raw dicts cross layer boundaries.
-
-**When to use:** Always — the `AuditReport` is the contract between collection and output.
-
-**Trade-offs:** Requires upfront field design, but makes the renderer completely independent of collection implementation details.
-
-```python
-# models.py
-from dataclasses import dataclass, field
+    ok: bool (property)
 
 @dataclass
 class ParsedHostname:
+    raw_hostname: str
     city: str | None
-    device_type: str | None       # "Warehouse Workstation", "User Laptop", etc.
+    device_type: str | None
     department: str | None
     company_code: str | None
-    station: str | None
-    raw: str
-    parse_error: str | None = None
+    station: int | None
 
 @dataclass
 class AppStatus:
     name: str
-    detected: bool
-    version: str | None
-    detection_method: str         # "registry" | "filesystem" | "wmi"
+    installed: bool
+    version: str | None = None
+    service_state: str | None = None
+    detection_method: str = 'registry'
     error: str | None = None
 
 @dataclass
 class AuditReport:
     hostname: str
-    parsed_name: ParsedHostname
-    os_version: str | None
-    os_build: str | None
-    cpu_model: str | None
-    ram_gb: float | None
-    disk_total_gb: float | None
-    disk_free_gb: float | None
-    current_user: str | None
+    parsed_hostname: ParsedHostname
+    os_version: str | None = None
+    os_build: str | None = None
+    serial_number: str | None = None
+    cpu_model: str | None = None
+    ram_gb: float | None = None
+    disk_total_gb: float | None = None
+    disk_free_gb: float | None = None
+    current_user: str | None = None
     local_profiles: list[str] = field(default_factory=list)
     apps: list[AppStatus] = field(default_factory=list)
     collection_errors: list[str] = field(default_factory=list)
-    timestamp: str = ""
+    timestamp: str = ''
 ```
 
-### Pattern 4: Jinja2 Template via importlib.resources
+### Key v1.0 Patterns Already Established
 
-**What:** The HTML template lives in `renderer/templates/character_sheet.html` as a regular file. PyInstaller includes it via `--add-data`. At runtime, the renderer loads it using `importlib.resources` (Python 3.9+) which correctly resolves the path whether running from source or from the extracted PyInstaller bundle.
+- **Mutation pattern:** `collect_all(report)` mutates `AuditReport` in place. No return value from collectors.
+- **Error pattern:** Collectors catch all exceptions, append to `report.collection_errors`, never raise.
+- **APP_SPECS table:** `apps.py` uses a list-of-dicts config table to drive detection. New apps = add a dict entry.
+- **Renderer context:** `_build_context(report)` in `renderer/__init__.py` is the single place where
+  display values are derived (disk %, OS warning flag, rename warning flag). Template is logic-free.
+- **Warnings already partly exist:** `os_warning` and `rename_warning` are computed in `_build_context()`
+  and rendered as inline `<div class="rename-warning">` blocks after the quest status section. These are
+  not structured data — they are booleans derived at render time, not fields on AuditReport.
 
-**When to use:** Any non-Python asset (templates, images, bundled data) that must survive PyInstaller one-file packaging.
+---
 
-**Trade-offs:** Requires a one-line spec file addition (`--add-data renderer/templates:renderer/templates`) but avoids the template-not-found bug that plagues naive `open()` calls inside packaged executables. Do not use `sys._MEIPASS` directly — `importlib.resources` abstracts this correctly.
+## v2.0 Integration Architecture
+
+### Feature 1: Company Portal Detection (Windows only)
+
+**Where it lives:** `collectors/windows/apps.py` — add one entry to `APP_SPECS`.
+
+Company Portal is an MSIX app (installed from the Microsoft Store / Intune). Detection follows the
+same `msix_family_prefix` pattern already used for Claude. It also appears in the standard Uninstall
+registry under some Intune enrollment paths, so providing both `msix_family_prefix` and
+`display_name_keywords` gives maximum coverage.
+
+**New dict in APP_SPECS:**
+```python
+{
+    "name": "Company Portal",
+    "display_name_keywords": ["Company Portal", "Microsoft Intune Company Portal"],
+    "msix_family_prefix": "Microsoft.CompanyPortal_",
+},
+```
+
+**Files modified:** `collectors/windows/apps.py` only.
+**Files new:** None.
+**models.py change:** None. `AppStatus` already has all required fields.
+
+---
+
+### Feature 2: Warnings System
+
+#### Data model decision: new `warnings` field on `AuditReport`
+
+The v1.0 approach puts warning flags (`os_warning`, `rename_warning`) in `_build_context()` as
+booleans derived at render time. This works for simple boolean flags but does not scale to a
+structured warnings section with multiple warning types, severity levels, and detail strings.
+
+**Recommendation:** Add a `list[Warning]` field to `AuditReport`. Warnings are evaluated in a
+dedicated `warnings.py` module after collection, before rendering. The renderer reads
+`report.warnings` directly.
+
+**Rationale:**
+- Warnings depend on collected data (os_build, disk_free_gb) — the data is already on AuditReport
+  after `collect_all()`. There is no reason to re-derive it in the renderer.
+- A structured list lets the renderer iterate and display multiple warnings without adding more
+  boolean flags to `_build_context()`.
+- The existing `os_warning` and `rename_warning` booleans in `_build_context()` should be
+  **migrated** to the new system and removed from the context dict. This is a clean break.
+- `collection_errors` already exists for collector failures. `warnings` is conceptually separate —
+  it represents health signals on successfully-collected data, not collection failures.
+
+**New dataclass in `models.py`:**
+```python
+@dataclass
+class Warning:
+    code: str           # e.g. 'OS_VERSION', 'DISK_SPACE', 'RENAME_REQUIRED'
+    severity: str       # 'critical' | 'warning' | 'info'
+    message: str        # Human-readable string for HTML display
+    detail: str | None = None  # Optional sub-detail (e.g. current build number)
+```
+
+**New field on `AuditReport`:**
+```python
+warnings: list[Warning] = field(default_factory=list)
+```
+
+#### Warning evaluation: new `warnings.py` module
+
+Warnings are not collected — they are derived from already-collected data. They belong in a
+dedicated module, not in a collector or in main.py.
+
+**New file:** `warnings.py` (project root, alongside `models.py`)
 
 ```python
-# renderer/html_renderer.py
-import importlib.resources
-from jinja2 import Environment, BaseLoader
+# warnings.py
+from models import AuditReport, Warning
 
-def render(report: AuditReport) -> str:
-    ref = importlib.resources.files("renderer.templates").joinpath("character_sheet.html")
-    template_src = ref.read_text(encoding="utf-8")
-    env = Environment(loader=BaseLoader())
-    tpl = env.from_string(template_src)
-    return tpl.render(report=report)
+_MIN_DISK_FREE_GB = 20.0    # threshold: warn below 20 GB free
+_WIN11_BUILD = 22000         # threshold: warn below build 22000
+
+def evaluate_warnings(report: AuditReport) -> None:
+    """Evaluate health warnings from collected data. Mutates report.warnings in place.
+    Called by main.py after collect_all(), before render_html().
+    Never raises.
+    """
+    _check_os_version(report)
+    _check_disk_space(report)
+    _check_rename_required(report)
+
+def _check_os_version(report: AuditReport) -> None:
+    try:
+        build = int(report.os_build or '0')
+    except ValueError:
+        return
+    if 0 < build < _WIN11_BUILD:
+        report.warnings.append(Warning(
+            code='OS_VERSION',
+            severity='warning',
+            message=f'Device is running {report.os_version} — upgrade to Windows 11 required',
+            detail=f'Build {report.os_build}',
+        ))
+
+def _check_disk_space(report: AuditReport) -> None:
+    if report.disk_free_gb is not None and report.disk_free_gb < _MIN_DISK_FREE_GB:
+        report.warnings.append(Warning(
+            code='DISK_SPACE',
+            severity='critical' if report.disk_free_gb < 5.0 else 'warning',
+            message=f'Low disk space: {report.disk_free_gb:.0f} GB free',
+            detail=f'{report.disk_free_gb:.1f} GB of {report.disk_total_gb:.0f} GB available',
+        ))
+
+def _check_rename_required(report: AuditReport) -> None:
+    if report.parsed_hostname.device_type == 'Unknown':
+        report.warnings.append(Warning(
+            code='RENAME_REQUIRED',
+            severity='warning',
+            message=f'Device needs to be renamed — hostname "{report.hostname}" does not match naming convention',
+        ))
+```
+
+**main.py change:** Add one call between `collect_all()` and `render_html()`:
+```python
+from warnings_module import evaluate_warnings  # named warnings_module to avoid stdlib clash
+evaluate_warnings(report)
+```
+
+**renderer/__init__.py change:** Remove the inline `os_warning` and `rename_warning` derivation
+from `_build_context()`. Add `'warnings': report.warnings` to the context dict.
+
+**Template change:** Replace the current ad-hoc `{% if os_warning %}` and `{% if rename_warning %}`
+blocks with a single loop over `report.warnings`. See Template section below.
+
+#### Warning threshold location
+
+Thresholds (`_MIN_DISK_FREE_GB = 20.0`, `_WIN11_BUILD = 22000`) live as module-level constants
+in `warnings.py`. Do not put them in `models.py` (data contract) or in the template (logic-free).
+
+---
+
+### Feature 3: Mac Collectors
+
+#### Directory structure
+
+Create `collectors/mac/` with `__init__.py`, `hardware.py`, and `apps.py`. The `collectors/__init__.py`
+platform dispatch already imports inside `collect_all()` — add the Darwin branch there.
+
+```
+collectors/
+├── __init__.py          MODIFIED — add Darwin branch
+├── base.py              MODIFIED — define BaseCollector ABC (now needed)
+├── windows/
+│   ├── hardware.py      unchanged
+│   └── apps.py          modified (Company Portal only)
+└── mac/                 NEW
+    ├── __init__.py
+    ├── hardware.py       NEW — implement collect_hardware, collect_profiles
+    └── apps.py           NEW — implement detect_apps, collect_apps
+```
+
+#### Mac hardware collector
+
+Mac hardware uses `subprocess` + `platform` stdlib + `psutil`. No WMI, no winreg.
+
+| Field | Mac API |
+|-------|---------|
+| `os_version` | `platform.mac_ver()[0]` → "15.4.1" → "macOS 15" |
+| `os_build` | `subprocess(['sw_vers', '-buildVersion'])` → e.g. "24E263" |
+| `cpu_model` | `subprocess(['sysctl', '-n', 'machdep.cpu.brand_string'])` |
+| `ram_gb` | `psutil.virtual_memory().total` (already cross-platform) |
+| `disk_total_gb` | `psutil.disk_usage('/')` (use `/` not `C:\`) |
+| `disk_free_gb` | `psutil.disk_usage('/')` |
+| `serial_number` | `subprocess(['system_profiler', 'SPHardwareDataType'])` — parse "Serial Number" line |
+| `current_user` | `os.environ.get('USER')` (macOS sets USER, not USERNAME) |
+| `local_profiles` | `os.listdir('/Users/')` filtered by `os.path.isdir` + skip system names |
+
+The mutation-in-place pattern (`collect_hardware(report)`) and error-envelope pattern are identical
+to the Windows implementation. Use the same function signatures so `collectors/__init__.py` can call
+both platforms identically.
+
+**`current_user` on Mac:** `os.environ.get('USER')` works. `USERNAME` is not set on macOS. The
+existing `hardware.py` already does `os.environ.get("USERNAME") or os.environ.get("USER")` — the
+Mac version should do `os.environ.get("USER")` directly to avoid confusion.
+
+#### Mac app detector
+
+Mac app detection uses filesystem paths, not a registry. The `AppStatus` dataclass is the same
+model — only `detection_method` changes to `'filesystem'`.
+
+| App | Detection Strategy |
+|-----|-------------------|
+| NinjaOne | `/Library/NinjaRMM/` or `/Applications/NinjaRMM Agent.app` |
+| CrowdStrike | `/Applications/Falcon.app` or `/Library/CS/` agent path |
+| MERP | Not applicable on Mac (Windows-only ERP) |
+| Microsoft 365 | `/Applications/Microsoft Word.app` (suite presence via Word) |
+| Zoom | `/Applications/Zoom.us.app` |
+| Google Chrome | `/Applications/Google Chrome.app` |
+| Claude | `/Applications/Claude.app` |
+| Company Portal | `/Applications/Company Portal.app` |
+
+Version reading: open `{app_path}/Contents/Info.plist` using `plistlib.load()` and read
+`CFBundleShortVersionString`. Wrap in try/except — some apps omit it.
+
+The `APP_SPECS` table pattern can be adapted for Mac: add an optional `mac_path` key alongside
+the existing `filesystem_path` (Windows) key. A shared helper `_check_app_bundle(path)` returns
+`(installed, version)`.
+
+**MERP on Mac:** Append an `AppStatus(name='MERP', installed=False, error='Windows only')` so
+the renderer always has a complete app list regardless of platform. This preserves the invariant
+that every configured app produces exactly one AppStatus entry.
+
+#### Platform dispatch in `collectors/__init__.py`
+
+```python
+def collect_all(report: AuditReport) -> None:
+    import platform as _platform
+    os_name = _platform.system()
+    if os_name == 'Windows':
+        from collectors.windows.hardware import collect_hardware, collect_profiles
+        from collectors.windows.apps import collect_apps
+    elif os_name == 'Darwin':
+        from collectors.mac.hardware import collect_hardware, collect_profiles
+        from collectors.mac.apps import collect_apps
+    else:
+        report.collection_errors.append(f'Unsupported platform: {os_name}')
+        return
+    collect_hardware(report)
+    collect_profiles(report)
+    collect_apps(report)
 ```
 
 ---
 
-## Data Flow
+### Feature 4: NinjaOne Compatibility (SYSTEM account)
 
-```
-USB drive: user double-clicks status_report.exe
-    |
-    v
-main.py starts
-    |
-    +--> platform.system() == "Windows"
-    |         |
-    |         v
-    |    WindowsSysInfoCollector.collect()
-    |      -> WMI: OS, CPU, RAM, disk
-    |      -> winreg: current user, profiles
-    |      -> psutil: disk free space (fallback)
-    |      -> Returns dict of CollectionResult values
-    |
-    +--> WindowsAppDetector.collect()
-    |      -> winreg HKLM\...\Uninstall: enumerate installed apps
-    |      -> filesystem: check known install paths as fallback
-    |      -> Returns list[AppStatus]
-    |
-    +--> NameParser.parse(hostname)
-    |      -> Regex splits hostname into segments
-    |      -> Returns ParsedHostname (error field set if no match)
-    |
-    +--> Assemble AuditReport dataclass
-    |
-    +--> HTMLRenderer.render(report)
-    |      -> Load character_sheet.html via importlib.resources
-    |      -> Jinja2 render with report as context
-    |      -> Returns HTML string
-    |
-    +--> JSONLogger.serialize(report)
-    |      -> dataclasses.asdict(report)
-    |      -> Add timestamp
-    |      -> Returns JSON string
-    |
-    +--> PathHelper.get_output_dir()
-    |      -> sys.frozen ? Path(sys.executable).parent : Path(__file__).parent
-    |
-    +--> HTMLWriter.write(html_str, output_dir, hostname, timestamp)
-    +--> JSONWriter.write(json_str, output_dir, hostname, timestamp)
-    |
-    v
-Output on USB:
-  status_report_PHX-SHP-001_20260504T143012.html
-  log_PHX-SHP-001_20260504T143012.json
+NinjaOne executes scripts as `NT AUTHORITY\SYSTEM`. This breaks three things in `main.py`:
+
+| Problem | Root cause | Fix |
+|---------|-----------|-----|
+| `os.startfile()` crashes | SYSTEM has no desktop/shell session; shell is not initialized | Wrap in `if not _is_system_context()` |
+| `input("Press Enter...")` hangs forever | No TTY attached; stdin is a pipe or NUL | Same guard |
+| `os.environ.get("USERNAME")` returns `"SYSTEM"` | Correct but misleading in output | No change needed — "SYSTEM" is informative |
+| `USERPROFILE` absent or points to `C:\Windows\system32\config\systemprofile` | SYSTEM profile is non-standard | No output path issue — output uses `Path(sys.executable).parent`, not USERPROFILE |
+| `Path(sys.executable).parent` still resolves correctly | PyInstaller sets `sys.executable` regardless of session context | Confirmed safe — no change needed |
+
+**Detection of SYSTEM context:**
+```python
+def _is_system_context() -> bool:
+    """Return True when running as NT AUTHORITY\SYSTEM (NinjaOne/service context)."""
+    import os
+    username = os.environ.get('USERNAME', '').upper()
+    return username == 'SYSTEM'
 ```
 
----
+**main.py changes:**
+```python
+_system_mode = _is_system_context()
 
-## Suggested Build Order (Fastest Path to Working Demo)
+# ... after write succeeds:
+print(f"Saved: {output_path}")
+if not _system_mode:
+    try:
+        os.startfile(str(output_path))
+    except OSError:
+        pass
+    input("\nPress Enter to close this window, then eject the USB drive.")
+else:
+    print("[NinjaOne] Audit complete. HTML saved to USB logs/.")
+    # Exit cleanly — NinjaOne reads stdout and exit code
+```
 
-Build in this order — each step produces something runnable or testable:
+**Stdout summary for NinjaOne:** NinjaOne collects script stdout as the activity result. The
+existing `print()` calls in main.py already serve this purpose. Add a final structured summary
+line that NinjaOne can parse or display:
 
-1. **`models.py`** — Define `AuditReport`, `ParsedHostname`, `AppStatus`, `CollectionResult`. No dependencies. Everything else imports from here. Takes 30 minutes, unlocks all other work.
+```
+StatusReport -- Master Electronics IT Audit Tool
+Collecting hardware info...
+Detecting installed apps...
+Rendering character sheet...
+Saved: D:\status_report\logs\status_PHX-SHP-001_2026-05-07.html
+[SUMMARY] host=PHX-SHP-001 os=Windows 11 apps_installed=6/8 warnings=1
+[NinjaOne] Audit complete. HTML saved to USB logs/.
+```
 
-2. **`parsers/name_parser.py`** — Pure Python regex, no Windows APIs, fully unit-testable on any machine. Gets the hostname decode working immediately and proves the naming convention logic is right before touching WMI.
+The `[SUMMARY]` line lets NinjaOne scripts parse key fields without reading the HTML file.
+Emit it unconditionally (not only in system mode) — it is useful for any automated caller.
 
-3. **`collectors/windows/sysinfo.py`** — Minimal version: `platform.node()`, `platform.version()`, `platform.processor()`. No WMI yet. Produces a partial but real `AuditReport`. Ship a console print at this point to confirm end-to-end flow.
+**No network drive concern:** The tool writes to `Path(sys.executable).parent` (the USB drive),
+not to any network path. SYSTEM can write to removable media. The `logs_dir.mkdir(parents=True,
+exist_ok=True)` call already handles missing directory. No change needed here.
 
-4. **`renderer/` + Jinja2 template** — Build the HTML template with hardcoded/mock data first. Get the D&D character sheet looking right before any real data flows through it. This is the highest-visibility deliverable — it's the demo.
-
-5. **`writers/`** — `HTMLWriter` and `JSONLogger` are trivial once the rendered strings exist. Add `PathHelper` to make USB output work.
-
-6. **`collectors/windows/appdetector.py`** — Registry app detection is the most Windows-specific and error-prone piece. Build last, after the scaffold is proven, so failures are isolated.
-
-7. **WMI deep dive** in `sysinfo.py` — Upgrade from `platform` module basics to full WMI queries (RAM, disk, profiles). Can be deferred to a second pass without blocking the demo.
-
-8. **PyInstaller packaging** — Wire up `.spec` file, test `--onefile` build, verify `importlib.resources` works in the frozen binary.
-
----
-
-## Error Handling Strategy
-
-This tool is read-only and must complete under all conditions. The strategy is: **never raise, always annotate**.
-
-| Scenario | Response | User Sees |
-|----------|----------|-----------|
-| Registry key missing | `CollectionResult(value=None, error="Key not found: ...")` | "Not detected" badge on app |
-| WMI service unavailable | Catch `wmi.x_wmi`, return error envelope | "Unavailable" in stats block |
-| Hostname does not match any convention | `ParsedHostname(parse_error="No match")` | "Unknown Adventurer" class label + raw hostname shown |
-| Output directory not writable | Top-level try/except in `main.py`, print error to console, exit code 1 | Console message; no files written |
-| App install detected but version unreadable | `AppStatus(detected=True, version=None)` | App shown as present, version as "unknown" |
-| Running without elevation | Note in `collection_errors` list | Warning section in HTML: "Some checks require elevation" |
-
-Rule: collectors catch all exceptions at method boundaries. `main.py` catches only fatal I/O errors (cannot write output). Everything else degrades gracefully.
-
----
-
-## Mac Extensibility Pattern
-
-The abstraction is `BaseCollector`. Adding Mac support in a future milestone requires:
-
-1. Create `collectors/mac/sysinfo.py` implementing `BaseCollector.collect()`. Use `subprocess` with `system_profiler`, `sysctl`, and `sw_vers` instead of WMI/winreg.
-2. Create `collectors/mac/appdetector.py`. Use filesystem paths (`/Applications/`, `plistlib` for `Info.plist` version reads) instead of registry.
-3. Update `main.py` dispatch block to include `elif os_name == "Darwin"`.
-4. `models.py`, `parsers/name_parser.py`, `renderer/`, and `writers/` require zero changes.
-
-Nothing above the collector layer is Windows-specific. The `ParsedHostname` parser is pure string logic — it works on Mac because hostnames do not change by platform.
+**Display/WMI concern:** WMI is a COM service that runs independently of the user session. SYSTEM
+has full WMI access — typically more than a standard user. No WMI changes required.
 
 ---
 
-## Anti-Patterns
+## Template Changes
 
-### Anti-Pattern 1: WMI Everywhere
+### Current warning rendering (v1.0)
 
-**What people do:** Call `wmi.WMI()` directly from `main.py` or the renderer to fetch individual fields on demand.
+The template has two separate ad-hoc warning blocks after the quest status section:
 
-**Why it's wrong:** WMI service can be unavailable, slow, or require elevation. Calling it from render code makes error handling impossible and produces partial output or crashes at render time.
+```html
+{% if os_warning %}
+<div class="rename-warning"> ... </div>
+{% endif %}
 
-**Do this instead:** All WMI calls live in `collectors/windows/sysinfo.py`. They return `CollectionResult` objects. The renderer only sees `AuditReport` with already-resolved values (or `None` with an error note).
+{% if rename_warning %}
+<div class="rename-warning"> ... </div>
+{% endif %}
+```
 
-### Anti-Pattern 2: Hardcoded Output Path
+### v2.0 approach: single warnings loop
 
-**What people do:** `open("C:/output/report.html", "w")` or `open("./report.html", "w")`.
+Remove both ad-hoc blocks. Add a `{% if warnings %}` section that iterates `report.warnings`:
 
-**Why it's wrong:** PyInstaller one-file executables extract to a temp directory (`sys._MEIPASS`). The working directory at launch is wherever the user double-clicked from — which may not be the USB drive.
+```html
+{% if warnings %}
+<div class="section-card">
+  <div class="section-title">Warnings ({{ warnings|length }})</div>
+  <div class="warnings-list">
+    {% for w in warnings %}
+    <div class="warning-item warning-{{ w.severity }}">
+      &#9888; {{ w.message }}
+      {% if w.detail %}<span class="warning-detail">{{ w.detail }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+```
 
-**Do this instead:** `PathHelper.get_output_dir()` returns `Path(sys.executable).parent` when `sys.frozen` is set, which resolves to the USB drive directory where the .exe lives.
+**Single template file, no partials.** The template is already 460 lines with inline CSS. Adding
+a collapsible warnings section does not warrant splitting into partials — the `{% if warnings %}`
+guard keeps it optional and adding Jinja2 `include` tags with PyInstaller `importlib.resources`
+creates unnecessary bundling complexity.
 
-### Anti-Pattern 3: Template as Python String
-
-**What people do:** Store the entire HTML template as a multi-line Python string in `html_renderer.py`.
-
-**Why it's wrong:** The template is hundreds of lines of HTML/CSS. Mixing it with Python makes both harder to edit. D&D styling requires iteration — designers cannot touch it without running Python.
-
-**Do this instead:** External template file loaded via `importlib.resources`. PyInstaller bundles it cleanly; the file is editable independently of Python code.
-
-### Anti-Pattern 4: Raising Exceptions Across Layer Boundaries
-
-**What people do:** `sysinfo.py` raises `PermissionError` when a registry key is inaccessible; `main.py` crashes with an unhandled exception and produces no output.
-
-**Why it's wrong:** The entire value of this tool is that it always produces output. A partial audit is far more useful than no audit.
-
-**Do this instead:** Catch at every collection method, return `CollectionResult` with an `error` string. Aggregate all errors in `AuditReport.collection_errors`. Display them as a "warnings" section in the HTML.
+**`_build_context()` changes:**
+- Remove `os_warning` and `rename_warning` derivation (moved to `warnings.py`)
+- Add `'warnings': report.warnings` to returned dict
 
 ---
 
-## Integration Points
+## Component Responsibility Map — v2.0
 
-### External Services
+| Component | v1.0 Status | v2.0 Change |
+|-----------|-------------|-------------|
+| `main.py` | SHIPPED | MODIFIED — add `evaluate_warnings()` call; add SYSTEM-mode guard around `os.startfile` and `input()`; add `[SUMMARY]` print |
+| `models.py` | SHIPPED | MODIFIED — add `Warning` dataclass; add `warnings: list[Warning]` field to `AuditReport` |
+| `warnings.py` | DOES NOT EXIST | NEW — evaluate OS version, disk space, rename warnings from collected data |
+| `collectors/__init__.py` | SHIPPED | MODIFIED — add Darwin platform branch |
+| `collectors/windows/apps.py` | SHIPPED | MODIFIED — add Company Portal to `APP_SPECS` table |
+| `collectors/windows/hardware.py` | SHIPPED | UNCHANGED |
+| `collectors/mac/__init__.py` | DOES NOT EXIST | NEW (empty) |
+| `collectors/mac/hardware.py` | DOES NOT EXIST | NEW — subprocess/psutil Mac collectors |
+| `collectors/mac/apps.py` | DOES NOT EXIST | NEW — filesystem + plistlib Mac app detection |
+| `renderer/__init__.py` | SHIPPED | MODIFIED — remove `os_warning`/`rename_warning` from `_build_context()`; add `warnings` to context |
+| `renderer/templates/character_sheet.html` | SHIPPED | MODIFIED — replace two ad-hoc warning divs with structured `{% if warnings %}` loop section |
+| `writers/__init__.py` | SHIPPED | UNCHANGED |
+| `parsers/name_parser.py` | SHIPPED | UNCHANGED |
+| `collectors/base.py` | SHIPPED (empty) | OPTIONAL — define `BaseCollector` ABC if desired; not strictly needed given the direct import dispatch pattern |
 
-None. The tool is intentionally offline and leaves no artifacts on the host PC.
+---
 
-### Internal Boundaries
+## Suggested Phase Build Order (v2.0)
 
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| `collectors/` → `main.py` | `dict` of `CollectionResult` values | Collectors never import from `renderer/` or `writers/` |
-| `parsers/` → `main.py` | `ParsedHostname` dataclass | Pure function — no side effects, fully unit-testable |
-| `main.py` → `renderer/` | `AuditReport` dataclass | Renderer has no knowledge of how data was collected |
-| `renderer/` → `writers/` | `str` (rendered HTML) | Writer only does file I/O — no rendering logic |
-| All layers → `utils/` | `CollectionResult`, `PathHelper` | Utils have no upward dependencies |
+Each phase produces something independently testable. Dependencies are noted.
+
+### Phase 6: Models and Warnings Module
+
+**Why first:** Everything else in v2.0 depends on `Warning` existing on `AuditReport`. Doing this
+first means later phases can immediately write `report.warnings.append(...)` without conflicts.
+
+**Files:**
+- `models.py` — add `Warning` dataclass + `warnings` field on `AuditReport`
+- `warnings.py` — new module with `evaluate_warnings()`, three check functions, thresholds as constants
+
+**Dependencies:** None (pure data model + pure function).
+
+**Testable immediately:** Unit tests for each warning check function with mock `AuditReport` objects.
+No Windows APIs required.
+
+---
+
+### Phase 7: HTML Warnings Section
+
+**Why second:** The warnings data model exists (Phase 6). Rendering and template changes can be
+validated with mock data before any new collector work. This is the highest-visibility deliverable
+of v2.0 — the HTML output changes.
+
+**Files:**
+- `renderer/templates/character_sheet.html` — replace ad-hoc blocks with `{% if warnings %}` loop
+- `renderer/__init__.py` — remove old flags from `_build_context()`, add `warnings` key
+
+**Dependencies:** Phase 6 (Warning dataclass must exist).
+
+**Testable immediately:** Existing renderer tests pass mock `AuditReport` with `warnings=[]`
+(no regressions). New tests pass reports with one or more `Warning` objects.
+
+---
+
+### Phase 8: NinjaOne Compatibility
+
+**Why third:** Independent of Mac and Company Portal. Only touches `main.py`. Can be shipped to
+NinjaOne users before Mac work is complete. The `_is_system_context()` check is a two-line
+function; no new modules.
+
+**Files:**
+- `main.py` — SYSTEM-mode detection, conditional `os.startfile`/`input()`, `[SUMMARY]` line,
+  `evaluate_warnings()` call wired in
+
+**Dependencies:** Phase 6 (evaluate_warnings must exist to wire into main.py).
+
+**Testable immediately:** Run the exe as a standard user — behavior unchanged. Run with USERNAME=SYSTEM
+in environment — no `os.startfile`, no blocking `input()`.
+
+---
+
+### Phase 9: Company Portal Detection (Windows)
+
+**Why fourth:** The simplest collector change — one dict added to `APP_SPECS`. Can be done any time
+after Phase 6 (no dependency on warnings). Ordered here because Mac work is the largest chunk and
+should not be blocked by this one-liner.
+
+**Files:**
+- `collectors/windows/apps.py` — add Company Portal entry to `APP_SPECS`
+
+**Dependencies:** None (APP_SPECS is self-contained; AppStatus model unchanged).
+
+**Testable immediately:** Run on a machine with Company Portal installed; verify AppStatus appears
+in report.apps. Unit test with mocked registry data.
+
+---
+
+### Phase 10: Mac Collectors
+
+**Why last:** Largest chunk of new code. Requires a Mac to validate. Not a dependency for any
+Windows feature. Doing it last means Windows features (Phases 6-9) can be shipped and tested on
+real machines before Mac work begins.
+
+**Build order within Mac work:**
+1. `collectors/mac/__init__.py` (empty, unblocks import)
+2. `collectors/mac/hardware.py` — hardware facts first; validates psutil cross-platform behavior
+3. `collectors/__init__.py` — add Darwin dispatch branch (unblocks end-to-end test on Mac)
+4. `collectors/mac/apps.py` — app detection; requires validating bundle paths on a real Mac
+
+**Files:**
+- `collectors/mac/__init__.py` — NEW (empty)
+- `collectors/mac/hardware.py` — NEW
+- `collectors/mac/apps.py` — NEW
+- `collectors/__init__.py` — MODIFIED (add Darwin branch)
+
+**Dependencies:** Phase 6 (Warning dataclass on AuditReport); Phase 7 (HTML renders mac data correctly).
+
+**Testable:** Run on macOS. The renderer, writers, and parsers require zero changes — cross-platform
+correctness is enforced by the `AuditReport` contract.
+
+---
+
+## Data Model Changes Summary
+
+```
+models.py additions:
+
+@dataclass
+class Warning:                          # NEW
+    code: str
+    severity: str                       # 'critical' | 'warning' | 'info'
+    message: str
+    detail: str | None = None
+
+@dataclass
+class AuditReport:
+    ...existing fields unchanged...
+    warnings: list[Warning] = field(default_factory=list)   # NEW FIELD
+```
+
+No existing fields are removed or renamed. All v1.0 tests continue to pass because `warnings`
+defaults to an empty list — existing test fixtures that construct `AuditReport()` without `warnings`
+are unaffected.
+
+---
+
+## Error Handling Notes for New Features
+
+| Scenario | Response |
+|----------|----------|
+| SYSTEM context, `os.startfile` called | Guard prevents the call; clean exit |
+| SYSTEM context, `input()` called | Guard prevents the call; clean exit |
+| Mac: `sw_vers` subprocess fails | `collect_hardware` catches, appends to `collection_errors`, `os_build` stays None |
+| Mac: `plistlib.load` fails for an app | `detect_apps` catches per-app, appends `AppStatus(installed=False, error=...)` |
+| Mac: `/Users/` unreadable | `collect_profiles` catches, appends to `collection_errors`, `local_profiles` stays `[]` |
+| Company Portal not installed | Standard `AppStatus(installed=False)` — no change to error handling |
+| `evaluate_warnings()` raises | Each check function is its own try/except; one failure does not suppress other warnings |
+
+The core invariant is unchanged: the tool always produces HTML output, even if every collector fails.
+
+---
+
+## Anti-Patterns Added for v2.0
+
+### Anti-Pattern 5: Warning Logic in the Template
+
+**What:** Putting threshold comparisons (`{% if disk_free_gb < 20 %}`) in the Jinja2 template.
+
+**Why bad:** Templates cannot be unit-tested. Thresholds buried in HTML are invisible to code review
+and impossible to adjust without touching template markup.
+
+**Instead:** All threshold evaluation in `warnings.py`. Template only iterates `report.warnings`.
+
+### Anti-Pattern 6: Blocking Calls Without TTY Check
+
+**What:** Leaving `input("Press Enter...")` in the code path that NinjaOne executes.
+
+**Why bad:** NinjaOne script execution hangs indefinitely waiting for stdin input that never comes.
+The activity never completes; the agent eventually times out.
+
+**Instead:** `_is_system_context()` guard in `main.py`. Interactive pause only when a human is at
+a keyboard.
+
+### Anti-Pattern 7: `os.startfile` in Headless Context
+
+**What:** Calling `os.startfile()` when running as SYSTEM.
+
+**Why bad:** SYSTEM has no desktop shell. `os.startfile()` raises `OSError` with "no application
+is associated" or silently fails and may spawn a zombie process in session 0.
+
+**Instead:** Same `_is_system_context()` guard. The file is already saved; NinjaOne reads stdout.
 
 ---
 
 ## Sources
 
-- Python `winreg` documentation: https://docs.python.org/3/library/winreg.html
-- `psutil` cross-platform system info: https://psutil.readthedocs.io/
-- `platform` module docs: https://docs.python.org/3/library/platform.html
-- `importlib.resources` (Python 3.9+): https://docs.python.org/3/library/importlib.resources.html
-- PyInstaller onefile + `--add-data`: https://pyinstaller.org/en/stable/CHANGES.html
-- `jinja2-embedded` package for PyInstaller bundling: https://pypi.org/project/jinja2-embedded/
-- Python ABC pattern for platform abstraction: https://docs.python.org/3/library/abc.html
-- Windows installed software via registry (`HKLM\...\Uninstall`): https://medium.com/@tubelwj/winreg-python-library-to-retrieve-installed-software-information-on-windows-machines-f1f14b39650f
-- Plugin architecture patterns: https://mathieularose.com/plugin-architecture-in-python
+- v1.0 shipped source code (direct inspection): `main.py`, `models.py`, `collectors/windows/hardware.py`,
+  `collectors/windows/apps.py`, `renderer/__init__.py`, `renderer/templates/character_sheet.html`
+- Windows SYSTEM account constraints: https://learn.microsoft.com/en-us/windows/win32/services/localsystem-account
+- Mac `system_profiler` and `sw_vers` APIs: https://developer.apple.com/documentation/
+- `plistlib` (Python stdlib): https://docs.python.org/3/library/plistlib.html
+- `psutil` cross-platform disk/memory: https://psutil.readthedocs.io/en/latest/
+- Intune Company Portal MSIX package name: https://learn.microsoft.com/en-us/mem/intune/apps/apps-company-portal-macos
 
 ---
 
-*Architecture research for: Windows IT audit executable (StatusReport)*
-*Researched: 2026-05-04*
+*Architecture research updated for: StatusReport v2.0 milestone*
+*Researched: 2026-05-07*
