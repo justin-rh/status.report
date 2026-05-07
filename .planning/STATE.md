@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Warnings, Mac Parity, and NinjaOne Compatibility
 status: in_progress
-stopped_at: Phase 7 plan 03 complete — 5 warnings box tests added, 121 tests pass
-last_updated: "2026-05-07T21:12:08Z"
-last_activity: "2026-05-07 — Phase 7 plan 03 complete (WARN-03 renderer tests — 28 renderer tests, 121 total)"
+stopped_at: Phase 7 complete — warnings pipeline verified, 121 tests pass; Phase 8 is next
+last_updated: "2026-05-07T21:30:00Z"
+last_activity: "2026-05-07 — Phase 7 complete — WARN-03 verified, 121 tests, collapsible warnings box shipped"
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 3
   completed_plans: 3
-  percent: 20
+  percent: 40
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-07)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** Milestone v2.0 — Phase 6 is next (Warning Data Model)
+**Current focus:** Milestone v2.0 — Phase 8 is next (NinjaOne Compatibility)
 
 ## Current Position
 
-Phase: 7 — HTML Warnings Section (complete)
-Plan: 03 (complete) — 07-03: 5 warnings box renderer tests added, MOCK_REPORT.warnings wired
-Status: Phase 7 complete (3/3 plans) — WARN-03 fully satisfied, 121 tests pass
-Last activity: 2026-05-07 — Phase 7 plan 03 complete (28 renderer tests, 121 total)
+Phase: 8 — NinjaOne Compatibility (not started)
+Plan: — (phase not yet planned)
+Status: Phase 7 complete — WARN-03 verified, collapsible warnings box shipped, 121 tests pass
+Last activity: 2026-05-07 — Phase 7 complete (3/3 plans, verification passed)
 
-Progress: [██________] 20% (1/5 v2.0 phases complete)
+Progress: [████______] 40% (2/5 v2.0 phases complete)
 
 ## Performance Metrics
 

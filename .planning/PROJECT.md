@@ -18,14 +18,13 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 - Mac collectors with full parity (hardware, profiles, app detection)
 - NinjaOne compatibility: SYSTEM-account execution, stdout summary, no interactive session required
 
-## Current State (v1.0)
+## Current State (v2.0 — in progress)
 
-- **Shipped:** 2026-05-05
-- **Codebase:** ~2,647 lines Python, 35 files
+- **Last shipped:** v1.0 on 2026-05-05; v2.0 Phase 7 complete 2026-05-07
+- **Tests:** 121 passing (name parser, hardware collectors, renderer, app detection, health checks)
+- **Phase 7 complete:** Collapsible warnings box in HTML sheet; `evaluate_warnings()` wired end-to-end; WARN-03 satisfied
+- **Phase 8 next:** NinjaOne compatibility — SYSTEM-account execution, stdout summary line
 - **Stack:** Python 3.12 + psutil + wmi + winreg + Jinja2 + PyInstaller `--onedir`
-- **Distribution:** CrowdStrike Falcon-safe (`--onedir` + `upx=False`); validated on enrolled ME machine
-- **Tests:** 85+ passing (name parser, hardware collectors, renderer, app detection)
-- **Output:** HTML character sheet written to USB `logs/` directory
 
 ## Requirements
 
