@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Warnings, Mac Parity, and NinjaOne Compatibility
 status: in_progress
-stopped_at: Phase 6 plan 01 complete — Warning dataclass + health_checks.py implemented; plan 02 (tests) is next
-last_updated: "2026-05-07T19:47:33Z"
-last_activity: "2026-05-07 — Phase 6 plan 01 complete (Warning dataclass + health_checks.py)"
+stopped_at: Phase 6 complete — Warning dataclass + health_checks.py + 17 tests; ready for Phase 7
+last_updated: "2026-05-07T19:49:30Z"
+last_activity: "2026-05-07 — Phase 6 complete (Warning dataclass, health_checks.py, 111 tests pass)"
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 10
+  completed_plans: 2
+  percent: 20
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 
 ## Current Position
 
-Phase: 6 — Warning Data Model (in progress)
-Plan: 02 (next)
-Status: Plan 01 complete — Warning dataclass + health_checks.py implemented
-Last activity: 2026-05-07 — Plan 06-01 complete (Warning dataclass + health_checks.py, 94 tests pass)
+Phase: 6 — Warning Data Model (complete)
+Plan: — (phase done)
+Status: Phase 6 complete — Warning dataclass, health_checks.py, 17 boundary tests; 111 total tests pass
+Last activity: 2026-05-07 — Phase 6 complete (2/2 plans, WARN-01 + WARN-02 satisfied)
 
-Progress: [▓_________] 10% (0/5 v2.0 phases complete; phase 6 in progress)
+Progress: [██________] 20% (1/5 v2.0 phases complete)
 
 ## Performance Metrics
 

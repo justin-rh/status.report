@@ -22,7 +22,7 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 
 ### v2.0 — Warnings, Mac Parity, and NinjaOne Compatibility
 
-- [ ] **Phase 6: Warning Data Model** — Warning dataclass + evaluate_warnings() module; pure Python, no OS dependency
+- [x] **Phase 6: Warning Data Model** — Warning dataclass + evaluate_warnings() module; pure Python, no OS dependency — completed 2026-05-07
 - [ ] **Phase 7: HTML Warnings Section** — Collapsible warnings box in character sheet template; wired into renderer and main.py
 - [ ] **Phase 8: NinjaOne Compatibility** — SYSTEM-account execution safety; stdout summary line for log capture
 - [ ] **Phase 9: Company Portal Detection** — Company Portal MSIX detection + Intune MDM enrollment registry check
@@ -42,7 +42,7 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 **Plans**: 2 plans
 Plans:
 - [x] 06-01-PLAN.md — Add Warning dataclass to models.py and implement health_checks.py with evaluate_warnings()
-- [ ] 06-02-PLAN.md — Write parametrized test suite for evaluate_warnings() boundary cases
+- [x] 06-02-PLAN.md — Write parametrized test suite for evaluate_warnings() boundary cases
 
 ### Phase 7: HTML Warnings Section
 **Goal**: The character sheet renders a collapsible warnings box that auto-expands on any warning and shows green "All checks passed" when all pass
@@ -99,7 +99,7 @@ Plans:
 | 3. HTML Character Sheet Renderer | v1.0 | 2/2 | Complete | 2026-05-04 |
 | 4. App Detection and Compliance Engine | v1.0 | 2/2 | Complete | 2026-05-05 |
 | 5. Packaging and Distribution | v1.0 | 3/3 | Complete | 2026-05-05 |
-| 6. Warning Data Model | v2.0 | 1/2 | In Progress | - |
+| 6. Warning Data Model | v2.0 | 2/2 | Complete | 2026-05-07 |
 | 7. HTML Warnings Section | v2.0 | 0/? | Not started | - |
 | 8. NinjaOne Compatibility | v2.0 | 0/? | Not started | - |
 | 9. Company Portal Detection | v2.0 | 0/? | Not started | - |
