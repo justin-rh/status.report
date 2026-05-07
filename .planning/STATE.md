@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Warnings, Mac Parity, and NinjaOne Compatibility
 status: in_progress
-stopped_at: Phase 7 complete — warnings pipeline verified, 121 tests pass; Phase 8 is next
+stopped_at: Phase 8 context gathered — NinjaOne compatibility decisions captured; ready for planning
 last_updated: "2026-05-07T21:30:00Z"
 last_activity: "2026-05-07 — Phase 7 complete — WARN-03 verified, 121 tests, collapsible warnings box shipped"
 progress:
