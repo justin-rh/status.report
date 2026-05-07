@@ -45,6 +45,15 @@ class AppStatus:
 
 
 @dataclass
+class Warning:
+    """A single health check result produced by evaluate_warnings()."""
+    code: str           # Short identifier: 'OS_VERSION' | 'DISK_SPACE'
+    severity: str       # 'OK' or 'WARN' — plain str per D-03
+    message: str        # Human-readable one-line summary
+    detail: str | None = None  # Extended info or skip reason; None when not needed
+
+
+@dataclass
 class AuditReport:
     """The single normalized data container passed between all layers."""
     hostname: str
@@ -63,4 +72,6 @@ class AuditReport:
     apps: list[AppStatus] = field(default_factory=list)
     # Error accumulation — never raises; collectors populate this list
     collection_errors: list[str] = field(default_factory=list)
+    # Health checks — populated by Phase 6
+    warnings: list[Warning] = field(default_factory=list)
     timestamp: str = ''
