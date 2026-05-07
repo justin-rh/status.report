@@ -120,6 +120,16 @@ None yet.
 | Platform | Mac support (PLAT-V2-01) | v2 | Init |
 | Distribution | Code-signed .exe (DIST-V2-01) | v2 | Init |
 
+### Acknowledged at Milestone Close (2026-05-07)
+
+Items deferred rather than resolved before milestone close:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gaps | Phase 04: 04-HUMAN-UAT.md — Live NinjaOne/CrowdStrike detection tests + M365 single-suite stakeholder sign-off | partial (4 pending) |
+| verification_gaps | Phase 03: 03-VERIFICATION.md — Visual browser check of HTML character sheet (8/8 automated tests pass) | human_needed |
+| verification_gaps | Phase 04: 04-VERIFICATION.md — Live app detection on real provisioned machines | human_needed |
+
 ## Session Continuity
 
 Last session: 2026-05-05T20:30:00Z

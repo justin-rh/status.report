@@ -2,82 +2,97 @@
 
 ## What This Is
 
-A self-contained Windows executable that runs from a USB flash drive and performs an IT audit of the host PC. It decodes the device name using Master Electronics' naming convention (city + device type + department + station), collects system info and installed software status, and presents everything as a D&D-style HTML character sheet — while writing a structured log back to the flash drive.
+A self-contained Windows .exe that runs from a USB flash drive and audits a Windows PC. It decodes the Master Electronics hostname (city + device type + department + station), collects hardware stats and local user profiles, detects 11 target applications, and renders a D&D/RPG-styled HTML character sheet written back to the flash drive — with no changes to the host PC. Distributed as a PyInstaller `--onedir` bundle; validated on CrowdStrike Falcon-enrolled machines.
 
 ## Core Value
 
 IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
 
+## Current State (v1.0)
+
+- **Shipped:** 2026-05-05
+- **Codebase:** ~2,647 lines Python, 35 files
+- **Stack:** Python 3.12 + psutil + wmi + winreg + Jinja2 + PyInstaller `--onedir`
+- **Distribution:** CrowdStrike Falcon-safe (`--onedir` + `upx=False`); validated on enrolled ME machine
+- **Tests:** 85+ passing (name parser, hardware collectors, renderer, app detection)
+- **Output:** HTML character sheet written to USB `logs/` directory
+
 ## Requirements
 
-### Validated
+### Validated — v1.0
 
-- [x] Parse PC hostname into: city, device type (warehouse workstation, user-assigned laptop, dept laptop, P3), department code, company code, and station number using the Master Electronics naming convention — *Validated in Phase 1: Models and Hostname Parser*
-- [x] Handle unrecognized or non-conforming device names gracefully (display raw hostname with "Unknown" device type, no exception raised) — *Validated in Phase 1: Models and Hostname Parser*
+- [x] **COLL-01**: Parse hostname → city, device type, department, company code, station (Master Electronics naming convention) — *Phase 1*
+- [x] **COLL-02**: Collect CPU model, total RAM, disk capacity/free space, Windows OS version and build — *Phase 2*
+- [x] **COLL-03**: Enumerate all local user profiles (not just current user) — *Phase 2*
+- [x] **APP-01**: Detect NinjaRMM / NinjaOne (registry, all 4 Uninstall paths) — *Phase 4*
+- [x] **APP-02**: Detect CrowdStrike Falcon + service state — *Phase 4*
+- [x] **APP-03**: Detect MERP (Master Electronics ERP) — *Phase 4*
+- [x] **APP-04**: Detect Microsoft 365 (single suite entry per D-05) — *Phase 4*
+- [x] **APP-05**: Detect Zoom — *Phase 4*
+- [x] **APP-06**: Detect Google Chrome — *Phase 4*
+- [x] **APP-07**: Detect Claude desktop app — *Phase 4*
+- [x] **OUT-01**: HTML character sheet with D&D/RPG aesthetic (stat block, equipment table, quest status) — *Phase 3*
+- [x] **OUT-02**: HTML written to flash drive via `Path(sys.executable).parent` — *Phase 3+5*
+- [x] **OUT-03**: Unrecognized hostnames handled gracefully (Unknown type, raw hostname, no exception) — *Phase 1*
+- [x] **PKG-01**: PyInstaller `--onedir` .exe, no install required, Windows 10/11 standard user — *Phase 5*
+- [x] **PKG-02**: No writes to host PC filesystem, registry, or %TEMP% — *Phase 5*
 
-### Validated
+### Active — v2
 
-- [x] Collect system information: hostname, OS version and build, CPU model, RAM amount, disk capacity/free space, currently logged-in user, and local user profiles — *Validated in Phase 2: System Collectors*
-
-### Active
-- [ ] Detect presence and version of: NinjaRMM/NinjaOne, Microsoft 365 apps (Word, Excel, Outlook, Teams, OneDrive), Intune/Company Portal, CrowdStrike Falcon, Zoom, Google Chrome, Claude desktop app, and MERP (Master Electronics ERP)
-- [ ] Generate an HTML character sheet with D&D/RPG styling (stats, "class", equipment slots, etc.) displaying all collected data in a thematic layout
-- [ ] Write a structured log file (JSON) back to the flash drive with full collected data and a timestamp
-- [ ] Package as a self-contained .exe (PyInstaller) that runs on Windows without installation
-
+- [ ] **OUT-V2-01**: JSON structured log file saved to flash drive alongside HTML
+- [ ] **OUT-V2-02**: Auto-open HTML in default browser after generation
+- [ ] **APP-V2-01**: Detect Intune enrollment / Company Portal
+- [ ] **APP-V2-02**: Detect remote access tools (TeamViewer, AnyDesk, RDP enabled)
+- [ ] **PLAT-V2-01**: Mac-compatible collectors (same data models + rendering pipeline)
+- [ ] **DIST-V2-01**: Code-signed .exe to eliminate SmartScreen prompt
 
 ### Out of Scope
 
-- Mac/Linux support — deferred to a future milestone; Python codebase will be structured to make this addition clean
-- Active Directory / domain queries — adds network dependency; tool must work offline or on machines not yet domain-joined
-- Sending data to a remote server or API — security and trust boundary concern; flash drive is the audit trail
-- Remote access tool detection (TeamViewer, AnyDesk) — not in the v1 requirements list
+| Feature | Reason |
+|---------|--------|
+| Active Directory / domain queries | Adds network dependency; tool must work offline and on pre-enrollment machines |
+| Sending data to a remote server or API | Security/trust boundary concern; flash drive is the audit trail |
+| Writing any data to the host PC | Core constraint — no artifacts left behind |
+| Detecting all installed software (full inventory) | Scoped to specific app list; full inventory is slow, noisy, not the goal |
+| Win32_Product for app detection | Triggers MSI consistency checks — side effects on production machines |
+| PyInstaller --onefile packaging | Quarantined by CrowdStrike Falcon behavioral detection |
 
 ## Context
 
-- **Organization:** Master Electronics IT department, used by IT staff auditing PCs across all offices
+- **Organization:** Master Electronics IT department, auditing PCs across all offices
 - **Naming convention:** Created by Edgar (2025-09-10). Encodes: city code (21 locations: PHX, CHI, NYC, MIA, etc.) + device type segment + department or serial + station/identifier
   - `CITY-DEPT-###` → Warehouse Workstation
   - `CITY-SERIAL-COMPANY` → User-assigned Laptop (company codes: ME, ES, EC, AP, OL)
   - `CITY-DEPTLAP-###` → Department Laptop (contains "LAP" in segment 2)
   - `CITY-P3A/B/C-###` → P3 Warehouse device
 - **Departments (warehouse):** AGG, ASI, ASP, DCC, FLX, INV, LTL, PAK, PAR, QCD, REC, RMA, SHP, STK, REV, VAD, RLT, P2P, P3A, P3B, PBT
-- **Key apps:** NinjaOne is the RMM; CrowdStrike is the EDR; MERP is proprietary to Master Electronics
-- **Target runtime environment:** May be run by IT staff on machines that could be pre-enrollment, freshly imaged, or unmanaged — tool should not require admin or elevated privileges to collect basic info (will note where elevation would improve results)
+- **Key apps detected:** NinjaOne (RMM), CrowdStrike Falcon (EDR), MERP (proprietary ERP), M365 suite, Zoom, Chrome, Claude desktop
+- **Target environment:** May run on pre-enrollment, freshly imaged, or unmanaged machines; standard user, no internet required
 
 ## Constraints
 
-- **Platform:** Windows-only for v1; Python codebase should abstract OS-specific calls to enable Mac support in a future milestone
-- **Distribution:** Must run from USB flash drive; no installation, no internet required, no changes made to the host PC (read-only audit)
-- **Output location:** All output (HTML + JSON log) written to the directory the .exe was launched from (i.e., back to the flash drive)
-- **Packaging:** PyInstaller one-file .exe — keep binary under 50MB if possible
-- **Privilege level:** Design for standard user; document which checks require elevation and degrade gracefully if not elevated
+- **Platform:** Windows-only for v1; architecture abstracts OS-specific calls for future Mac support
+- **Distribution:** USB flash drive; no installation, no internet, no changes to host PC
+- **Output location:** All output written to `Path(sys.executable).parent` (back to flash drive)
+- **Packaging:** PyInstaller `--onedir` only — `--onefile` quarantined by CrowdStrike
+- **Privilege level:** Standard user; documents which checks require elevation, degrades gracefully
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Python + PyInstaller for packaging | Native Windows API access via `wmi`/`winreg`/`subprocess`; PyInstaller one-file .exe runs without install; same codebase can target Mac later | — Pending |
-| HTML for character sheet output | Browser-renderable, arbitrary D&D styling, shareable/printable without additional tooling | — Pending |
-| JSON for log format | Structured, parseable by future tooling or dashboards; human-readable enough for spot checks | — Pending |
-| Output written to flash drive only | Keeps audit trail with IT staff; avoids leaving artifacts on the target PC | — Pending |
-
-## Evolution
-
-This document evolves at phase transitions and milestone boundaries.
-
-**After each phase transition** (via `/gsd-transition`):
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
-
-**After each milestone** (via `/gsd-complete-milestone`):
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
+| Python + PyInstaller `--onedir` for packaging | Native Windows API access via wmi/winreg/subprocess; CrowdStrike-safe with `upx=False`; same codebase targets Mac later | ✓ Validated — CrowdStrike test passed 2026-05-05 |
+| HTML for character sheet output | Browser-renderable, arbitrary D&D styling, shareable/printable without tooling | ✓ Delivered — dark navy D&D sheet, 23/23 renderer tests |
+| Output written to flash drive only | Keeps audit trail with IT; no artifacts on target PC | ✓ Validated Phase 5 — confirmed no host writes |
+| `_wmi_module`/`_WMI_AVAILABLE` guard pattern | Enables CI testing without COM server; avoids runtime crash when wmi not installed | ✓ Pattern established — used in all WMI callers |
+| `Win32_Product` prohibited | Triggers MSI reconfiguration on every installed app — production machines affected | ✓ Enforced — Win32_Processor used for CPU model |
+| `station: int \| None` (not str) | ROADMAP SC1 requirement; integer semantics for station number | ✓ Enforced in parser + dataclass |
+| CrowdStrike detection: 'CrowdStrike Windows Sensor'/'CrowdStrike Sensor Platform' | Actual DisplayName on enrolled machines (confirmed from live registry); not 'CrowdStrike Falcon' | ✓ Validated — live registry confirmed |
+| M365 single suite entry (D-05) | IT audit workflow needs one compliance row, not five; reduces noise | ⚠ Stakeholder sign-off deferred to v2 validation |
+| MERP: filesystem-first at PVX Plus path | Registry path unknown; filesystem check most reliable given D-02 CONTEXT | ✓ Implemented |
+| `ir.files('renderer').joinpath(...)` single-string form | Required for PyInstaller `importlib.resources` compatibility | ✓ Enforced — no PackageLoader or FileSystemLoader |
+| Code signing deferred to v2 | CrowdStrike test passed without it; budget decision deferred | — v2 backlog (DIST-V2-01) |
+| JSON output deferred to v2 | v1 scope decision; HTML is sufficient for immediate IT use case | — v2 backlog (OUT-V2-01) |
 
 ---
-*Last updated: 2026-05-04 after Phase 2 completion*
+*Last updated: 2026-05-07 after v1.0 milestone*
