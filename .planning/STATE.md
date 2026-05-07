@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Warnings, Mac Parity, and NinjaOne Compatibility
 status: in_progress
-stopped_at: Phase 8 complete — NINJA-01 and NINJA-02 verified, 135 tests pass, verification passed
-last_updated: "2026-05-07T22:30:00Z"
-last_activity: "2026-05-07 — Phase 8 complete (isatty guard + [SUMMARY] stdout + 4 tests, verification passed)"
+stopped_at: Completed 09-01-PLAN.md — Company Portal MSIX + MDM enrollment; 153 tests pass
+last_updated: "2026-05-07T23:18:00Z"
+last_activity: "2026-05-07 — Phase 9 complete (Company Portal MSIX detection + Intune MDM enrollment, 6 new tests, 153 total pass)"
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 4
-  completed_plans: 4
-  percent: 60
+  completed_phases: 4
+  total_plans: 5
+  completed_plans: 5
+  percent: 80
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 
 ## Current Position
 
-Phase: 8 — NinjaOne Compatibility (complete)
+Phase: 9 — Company Portal Detection (complete)
 Plan: 01 (1/1 complete)
-Status: Phase 8 complete — NINJA-01 and NINJA-02 satisfied; isatty() guard + [SUMMARY] stdout line shipped; 135 tests pass
-Last activity: 2026-05-07 — Phase 8 Plan 01 complete (isatty guard, [SUMMARY] stdout, 4 new tests)
+Status: Phase 9 complete — Company Portal MSIX detection + Intune MDM enrollment; 153 tests pass
+Last activity: 2026-05-07 — Phase 9 executed (09-01-PLAN.md; 6 new CP tests; 153 total pass)
 
-Progress: [██████____] 60% (3/5 v2.0 phases complete)
+Progress: [████████__] 80% (4/5 v2.0 phases complete)
 
 ## Performance Metrics
 
@@ -102,6 +102,10 @@ Recent decisions affecting current work:
 - 08-01: report.ram_gb is the correct AuditReport field (plan interface section listed total_ram_gb incorrectly)
 - 08-01: _detect_msix() HKCU exception handling already present — SC4 satisfied, no code change (D-08)
 - 08-01: Patch target is main.os.startfile (not os.startfile) — main.py uses import os, not from-import
+- 09-01: MDM hook runs unconditionally regardless of installed state (D-01) — enrollment visible even when HKCU absent under SYSTEM
+- 09-01: Empty UPN strings treated as stale GUIDs and skipped (D-06); first non-empty UPN wins (D-05)
+- 09-01: _detect_mdm_enrollment() wraps entire body in try/except Exception — never raises across layer boundary
+- 09-01: No service_key field in Company Portal spec — MDM enrollment hook uses spec name check in _detect_one_app()
 
 ### v2.0 Open Decisions (require stakeholder input before implementation)
 
@@ -147,6 +151,6 @@ Items deferred rather than resolved before milestone close:
 ## Session Continuity
 
 Last session: 2026-05-07
-Stopped at: Completed 08-01-PLAN.md — isatty guard + [SUMMARY] stdout + 4 tests; 135 tests pass
+Stopped at: Completed 09-01-PLAN.md — Company Portal MSIX + MDM enrollment detection + 6 tests; 153 tests pass
 Resume file: None
-Next action: Phase 8 complete — proceed to next v2.0 phase (Phase 9: Company Portal / Intune detection)
+Next action: Phase 9 complete — proceed to next v2.0 phase (Phase 10: Mac Collectors)

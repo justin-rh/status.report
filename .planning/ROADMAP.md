@@ -25,7 +25,7 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 6: Warning Data Model** — Warning dataclass + evaluate_warnings() module; pure Python, no OS dependency — completed 2026-05-07
 - [x] **Phase 7: HTML Warnings Section** — Collapsible warnings box in character sheet template; wired into renderer and main.py — completed 2026-05-07
 - [x] **Phase 8: NinjaOne Compatibility** — SYSTEM-account execution safety; stdout summary line for log capture — completed 2026-05-07
-- [ ] **Phase 9: Company Portal Detection** — Company Portal MSIX detection + Intune MDM enrollment registry check
+- [x] **Phase 9: Company Portal Detection** — Company Portal MSIX detection + Intune MDM enrollment registry check — completed 2026-05-07
 - [ ] **Phase 10: Mac Collectors** — Full macOS hardware, profile, and app collectors; HTML output on Mac
 
 ## Phase Details
@@ -84,7 +84,7 @@ Plans:
   4. "Not Found" is shown cleanly in the equipment table on a machine where Company Portal is not installed
 **Plans**: 1 plan
 Plans:
-- [ ] 09-01-PLAN.md — Add _detect_mdm_enrollment() helper, Company Portal APP_SPECS entry, MDM hook in _detect_one_app(), and 6 new tests in test_app_collector.py
+- [x] 09-01-PLAN.md — Add _detect_mdm_enrollment() helper, Company Portal APP_SPECS entry, MDM hook in _detect_one_app(), and 6 new tests in test_app_collector.py
 
 ### Phase 10: Mac Collectors
 **Goal**: Running the tool on macOS produces the same D&D HTML character sheet as Windows, populated with Mac hardware stats, user profiles, and app detection results
@@ -110,5 +110,5 @@ Plans:
 | 6. Warning Data Model | v2.0 | 2/2 | Complete | 2026-05-07 |
 | 7. HTML Warnings Section | v2.0 | 3/3 | Complete | 2026-05-07 |
 | 8. NinjaOne Compatibility | v2.0 | 1/1 | Complete | 2026-05-07 |
-| 9. Company Portal Detection | v2.0 | 0/1 | Not started | - |
+| 9. Company Portal Detection | v2.0 | 1/1 | Complete | 2026-05-07 |
 | 10. Mac Collectors | v2.0 | 0/? | Not started | - |
