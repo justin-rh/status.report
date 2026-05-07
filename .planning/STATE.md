@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Warnings, Mac Parity, and NinjaOne Compatibility
 status: in_progress
-stopped_at: Phase 6 complete — Warning dataclass + health_checks.py + 17 tests; ready for Phase 7
-last_updated: "2026-05-07T19:49:30Z"
-last_activity: "2026-05-07 — Phase 6 complete (Warning dataclass, health_checks.py, 111 tests pass)"
+stopped_at: Phase 7 context gathered — HTML warnings section decisions captured; ready for planning
+last_updated: "2026-05-07T20:15:00Z"
+last_activity: "2026-05-07 — Phase 7 context captured (rename warning absorbed, details/summary mechanism, badge+message+detail rows)"
 progress:
   total_phases: 5
   completed_phases: 1
