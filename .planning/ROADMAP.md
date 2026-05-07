@@ -55,7 +55,7 @@ Plans:
   4. New renderer tests confirm correct HTML output for reports containing Warning objects
 **Plans**: 3 plans
 Plans:
-- [ ] 07-01-PLAN.md — Add _check_rename helper to health_checks.py; update test_health_checks.py with RENAME_REQUIRED tests and always-three guarantee
+- [x] 07-01-PLAN.md — Add _check_rename helper to health_checks.py; update test_health_checks.py with RENAME_REQUIRED tests and always-three guarantee
 - [ ] 07-02-PLAN.md — Update renderer/_build_context() and character_sheet.html with warnings box; wire evaluate_warnings in main.py
 - [ ] 07-03-PLAN.md — Add warnings box HTML tests to test_renderer.py; populate MOCK_REPORT.warnings
 **UI hint**: yes
@@ -104,7 +104,7 @@ Plans:
 | 4. App Detection and Compliance Engine | v1.0 | 2/2 | Complete | 2026-05-05 |
 | 5. Packaging and Distribution | v1.0 | 3/3 | Complete | 2026-05-05 |
 | 6. Warning Data Model | v2.0 | 2/2 | Complete | 2026-05-07 |
-| 7. HTML Warnings Section | v2.0 | 0/3 | Not started | - |
+| 7. HTML Warnings Section | v2.0 | 1/3 | In progress | - |
 | 8. NinjaOne Compatibility | v2.0 | 0/? | Not started | - |
 | 9. Company Portal Detection | v2.0 | 0/? | Not started | - |
 | 10. Mac Collectors | v2.0 | 0/? | Not started | - |
