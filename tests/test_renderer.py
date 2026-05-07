@@ -11,6 +11,7 @@ import pytest
 
 from models import AuditReport, ParsedHostname, AppStatus
 from parsers.name_parser import parse_hostname
+from health_checks import evaluate_warnings
 
 
 def make_report(**kwargs) -> AuditReport:
@@ -51,6 +52,7 @@ MOCK_REPORT = AuditReport(
     ],
     timestamp='2026-05-04 22:10:00',
 )
+MOCK_REPORT.warnings = evaluate_warnings(MOCK_REPORT)
 
 
 # ---------------------------------------------------------------------------
@@ -303,3 +305,82 @@ def test_render_report_never_raises_on_all_none_report():
             render_report(report, Path(tmp))
     except Exception as exc:
         pytest.fail(f"render_report raised an exception on all-None report: {exc}")
+
+
+# ---------------------------------------------------------------------------
+# Warnings box — HTML output tests (Phase 7, WARN-03)
+# ---------------------------------------------------------------------------
+
+def test_render_report_html_contains_warnings_box():
+    """Rendered HTML contains the warnings box element for any report."""
+    from renderer import render_report
+    with tempfile.TemporaryDirectory() as tmp:
+        out = render_report(MOCK_REPORT, Path(tmp))
+        html = out.read_text(encoding='utf-8')
+        assert 'warnings-box' in html, 'warnings-box class not found in rendered HTML'
+
+
+def test_render_report_warnings_box_open_when_warn():
+    """Warnings box has open attribute when MOCK_REPORT has WARN-severity warnings."""
+    from renderer import render_report
+    with tempfile.TemporaryDirectory() as tmp:
+        out = render_report(MOCK_REPORT, Path(tmp))
+        html = out.read_text(encoding='utf-8')
+        # MOCK_REPORT has OS_VERSION WARN and DISK_SPACE WARN -> has_warnings=True -> open attr
+        assert 'warnings-box' in html
+        # The <details> tag must carry the open attribute
+        assert '<details class="section-card warnings-box" open>' in html or \
+               'warnings-box" open' in html, \
+               'Expected open attribute on details element when warnings present'
+
+
+def test_render_report_warnings_box_closed_when_all_ok():
+    """Warnings box does not carry open attribute when all warnings are OK severity."""
+    from renderer import render_report
+    # Build a report where all three checks are OK:
+    # os_build='22621' (Win11, OS_VERSION OK), disk 60% free (DISK_SPACE OK),
+    # valid hostname parsed as non-Unknown device_type (RENAME_REQUIRED OK)
+    report = make_report(
+        hostname='PHX-INV-005',
+        parsed_hostname=parse_hostname('PHX-INV-005'),
+        os_build='22621',
+        disk_total_gb=100.0,
+        disk_free_gb=60.0,
+    )
+    report.warnings = evaluate_warnings(report)
+    with tempfile.TemporaryDirectory() as tmp:
+        out = render_report(report, Path(tmp))
+        html = out.read_text(encoding='utf-8')
+        assert 'warnings-box' in html, 'warnings-box should always be present'
+        assert '<details class="section-card warnings-box" open>' not in html, \
+               'open attribute must be absent when all warnings are OK'
+        assert 'warnings-box" open' not in html, \
+               'open attribute must be absent when all warnings are OK'
+
+
+def test_render_report_no_old_warning_banners():
+    """_build_context does not contain os_warning or rename_warning keys (D-02)."""
+    from renderer import _build_context
+    report = make_report()
+    ctx = _build_context(report)
+    assert 'os_warning' not in ctx, (
+        "'os_warning' key found in _build_context output — should have been removed in Phase 7"
+    )
+    assert 'rename_warning' not in ctx, (
+        "'rename_warning' key found in _build_context output — should have been removed in Phase 7"
+    )
+
+
+def test_build_context_warnings_keys_present():
+    """_build_context returns 'warnings' list and 'has_warnings' bool (D-08)."""
+    from renderer import _build_context
+    report = make_report()
+    ctx = _build_context(report)
+    assert 'warnings' in ctx, "'warnings' key missing from _build_context output"
+    assert 'has_warnings' in ctx, "'has_warnings' key missing from _build_context output"
+    assert isinstance(ctx['warnings'], list), (
+        f"'warnings' must be a list, got {type(ctx['warnings']).__name__}"
+    )
+    assert isinstance(ctx['has_warnings'], bool), (
+        f"'has_warnings' must be a bool, got {type(ctx['has_warnings']).__name__}"
+    )
