@@ -20,6 +20,7 @@ import sys
 from pathlib import Path
 
 from collectors import collect_all
+from health_checks import evaluate_warnings
 from models import AuditReport
 from parsers.name_parser import parse_hostname
 from renderer import render_html
@@ -46,6 +47,8 @@ def main() -> None:
 
     print("Detecting installed apps...")  # collect_all already called collect_apps
     # (progress label shown after collect_all so it aligns with D-04 console spec)
+
+    report.warnings = evaluate_warnings(report)  # D-09: populates warnings before render
 
     print("Rendering character sheet...")
 
