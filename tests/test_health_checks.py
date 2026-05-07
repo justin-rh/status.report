@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from models import AuditReport, Warning
+from models import AuditReport, Warning, ParsedHostname
 from parsers.name_parser import parse_hostname
 from health_checks import evaluate_warnings
 
@@ -85,16 +85,17 @@ def test_disk_space_skip_has_detail():
 
 
 # ---------------------------------------------------------------------------
-# Always-two guarantee
+# Always-three guarantee
 # ---------------------------------------------------------------------------
 
-def test_evaluate_warnings_always_returns_two():
-    """evaluate_warnings must always return exactly 2 Warning objects (D-06)."""
+def test_evaluate_warnings_always_returns_three():
+    """evaluate_warnings must always return exactly 3 Warning objects (Phase 7 D-01)."""
     report = make_report()
     warnings = evaluate_warnings(report)
-    assert len(warnings) == 2, f'expected 2 warnings, got {len(warnings)}'
+    assert len(warnings) == 3, f'expected 3 warnings, got {len(warnings)}'
     assert warnings[0].code == 'OS_VERSION'
     assert warnings[1].code == 'DISK_SPACE'
+    assert warnings[2].code == 'RENAME_REQUIRED'
 
 
 # ---------------------------------------------------------------------------
@@ -115,6 +116,52 @@ def test_evaluate_warnings_never_raises():
     )
     try:
         result = evaluate_warnings(all_none_report)
-        assert len(result) == 2
+        assert len(result) == 3
     except Exception as exc:
         pytest.fail(f'evaluate_warnings raised an exception with all-None fields: {exc}')
+
+
+# ---------------------------------------------------------------------------
+# Rename check — boundary cases (D-01)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize('device_type,expected_severity', [
+    ('Unknown',               'WARN'),   # unrecognized hostname — rename required
+    ('Warehouse Workstation', 'OK'),     # valid type — no rename needed
+    ('Department Laptop',     'OK'),     # valid type — no rename needed
+])
+def test_rename_check(device_type, expected_severity):
+    ph = ParsedHostname(raw_hostname='TEST-PC', device_type=device_type)
+    report = make_report(parsed_hostname=ph)
+    warnings = evaluate_warnings(report)
+    rename_warning = warnings[2]
+    assert rename_warning.code == 'RENAME_REQUIRED', (
+        f'device_type={device_type!r}: expected code=RENAME_REQUIRED, got {rename_warning.code!r}'
+    )
+    assert rename_warning.severity == expected_severity, (
+        f'device_type={device_type!r}: expected severity={expected_severity!r}, '
+        f'got {rename_warning.severity!r}'
+    )
+
+
+def test_rename_check_warn_has_detail():
+    """RENAME_REQUIRED WARN includes a non-None detail with the raw hostname."""
+    ph = ParsedHostname(raw_hostname='BADNAME', device_type='Unknown')
+    report = make_report(parsed_hostname=ph)
+    warnings = evaluate_warnings(report)
+    rename_warning = warnings[2]
+    assert rename_warning.detail is not None, 'RENAME_REQUIRED WARN must include detail'
+    assert 'BADNAME' in rename_warning.detail, (
+        f'detail should include raw_hostname "BADNAME", got: {rename_warning.detail!r}'
+    )
+
+
+def test_rename_check_ok_has_no_detail():
+    """RENAME_REQUIRED OK has detail=None (no extra info needed when hostname is valid)."""
+    ph = ParsedHostname(raw_hostname='PHX-INV-003', device_type='Warehouse Workstation')
+    report = make_report(parsed_hostname=ph)
+    warnings = evaluate_warnings(report)
+    rename_warning = warnings[2]
+    assert rename_warning.detail is None, (
+        f'RENAME_REQUIRED OK should have detail=None, got: {rename_warning.detail!r}'
+    )
