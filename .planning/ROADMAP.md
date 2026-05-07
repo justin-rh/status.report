@@ -69,7 +69,9 @@ Plans:
   2. os.startfile() and input() are guarded by sys.stdin.isatty() so headless runs never prompt or open a browser
   3. Stdout prints a structured [SUMMARY] line (hostname, OS version, CPU, RAM, disk %, warning count) after every run; line appears in NinjaOne script activity log
   4. HKCU registry reads (MSIX detection for Claude and Company Portal) return "Not Found" without exception when running under the SYSTEM account
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 08-01-PLAN.md — Add [SUMMARY] stdout line and isatty() guard to main.py; create tests/test_main.py
 
 ### Phase 9: Company Portal Detection
 **Goal**: IT staff can see whether Company Portal is installed and whether the device is enrolled in Intune, as distinct signals in the character sheet
@@ -105,6 +107,6 @@ Plans:
 | 5. Packaging and Distribution | v1.0 | 3/3 | Complete | 2026-05-05 |
 | 6. Warning Data Model | v2.0 | 2/2 | Complete | 2026-05-07 |
 | 7. HTML Warnings Section | v2.0 | 3/3 | Complete | 2026-05-07 |
-| 8. NinjaOne Compatibility | v2.0 | 0/? | Not started | - |
+| 8. NinjaOne Compatibility | v2.0 | 0/1 | Not started | - |
 | 9. Company Portal Detection | v2.0 | 0/? | Not started | - |
 | 10. Mac Collectors | v2.0 | 0/? | Not started | - |
