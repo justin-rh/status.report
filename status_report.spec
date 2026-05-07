@@ -1,12 +1,14 @@
 # StatusReport PyInstaller build spec -- D-08 (checked into repo).
 # Build: run build.bat from repo root (activates venv, runs pyinstaller).
-# Output: dist/status_report/ -- IT copies this folder to USB flash drive.
+# Output: dist/status_report_{VERSION}/ -- IT copies this folder to USB flash drive.
 #
 # Constraints:
 #   --onedir only (EXE exclude_binaries=True + COLLECT) -- CLAUDE.md, D-07
 #   NEVER --onefile: quarantined by CrowdStrike Falcon on enrolled machines
 #   upx=False: UPX packer signature increases AV false positive rate (RESEARCH.md)
 #   console=True: D-04 requires verbose progress output via print()
+
+VERSION = "v2.0"   # Update this when cutting a new milestone build.
 
 from PyInstaller.utils.hooks import collect_submodules
 
@@ -73,7 +75,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,   # --onedir: binaries go to COLLECT, not embedded in exe
-    name='status_report',
+    name=f'status_report_{VERSION}',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -93,5 +95,5 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name='status_report',    # dist/status_report/ is the distributable folder
+    name=f'status_report_{VERSION}',    # dist/status_report_{VERSION}/ is the distributable folder
 )

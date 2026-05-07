@@ -25,5 +25,5 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 ECHO.
-ECHO Build complete. Distributable is in: dist\status_report\
-ECHO Copy dist\status_report\ to the USB flash drive.
+ECHO Build complete. Distributable is in: dist\status_report_v2.0\
+ECHO Copy dist\status_report_v2.0\ to the USB flash drive.
