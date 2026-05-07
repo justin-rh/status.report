@@ -1,7 +1,8 @@
 """Health checks — evaluates AuditReport fields and produces typed Warning objects.
 
-Always returns exactly two Warning objects from evaluate_warnings() (D-06):
-one for OS version (WARN-01) and one for disk space (WARN-02).
+Always returns exactly three Warning objects from evaluate_warnings() (D-06):
+one for OS version (WARN-01), one for disk space (WARN-02), and one for
+rename required (WARN-03).
 """
 from models import AuditReport, Warning
 
@@ -19,13 +20,14 @@ DISK_WARN_PCT: float = 0.15
 def evaluate_warnings(report: AuditReport) -> list[Warning]:
     """Pure function: AuditReport -> list[Warning]. Never raises.
 
-    Always returns exactly two Warning objects — one per check — so the
+    Always returns exactly three Warning objects — one per check — so the
     Phase 7 renderer can display a complete status table regardless of
     pass/fail outcome (D-06).
     """
     return [
         _check_os_version(report),
         _check_disk_space(report),
+        _check_rename(report),
     ]
 
 
@@ -99,4 +101,24 @@ def _check_disk_space(report: AuditReport) -> Warning:
         severity='OK',
         message='Disk space is adequate',
         detail=f'{free:.1f} GB free of {total:.1f} GB ({free_pct_display}% free)',
+    )
+
+
+def _check_rename(report: AuditReport) -> Warning:
+    """Return RENAME_REQUIRED Warning. WARN when device_type is 'Unknown' (D-01)."""
+    if report.parsed_hostname.device_type == 'Unknown':
+        return Warning(
+            code='RENAME_REQUIRED',
+            severity='WARN',
+            message='Device needs to be renamed',
+            detail=(
+                f'Hostname "{report.parsed_hostname.raw_hostname}" does not match '
+                'the Master Electronics naming convention'
+            ),
+        )
+    return Warning(
+        code='RENAME_REQUIRED',
+        severity='OK',
+        message='Hostname matches naming convention',
+        detail=None,
     )
