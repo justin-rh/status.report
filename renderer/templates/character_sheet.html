@@ -239,6 +239,11 @@
     .sub-apps-detail { padding: 0 16px 10px 40px; }
     .sub-apps-detail > summary { cursor: pointer; list-style: none; font-size: 12px; color: var(--text-muted); padding: 4px 0 6px; }
     .sub-apps-detail > summary::-webkit-details-marker { display: none; }
+    .enroll-detail > summary { cursor: pointer; list-style: none; font-size: 12px; color: var(--green); }
+    .enroll-detail > summary::-webkit-details-marker { display: none; }
+    .enroll-detail > summary::after { content: ' ▾'; font-size: 10px; }
+    .enroll-detail[open] > summary::after { content: ' ▴'; font-size: 10px; }
+    .enroll-detail .enroll-upn { font-size: 11px; color: var(--text-muted); word-break: break-all; }
     .sub-apps-detail table { width: 100%; border-collapse: collapse; }
     .sub-apps-detail td { padding: 3px 8px; font-size: 13px; color: var(--text-body); }
 
@@ -423,7 +428,7 @@
               </span>
             </td>
             <td>{{ app.version or '' }}</td>
-            <td>{{ app.service_state or '' }}</td>
+            <td>{% if app.service_state and app.service_state.startswith('Enrolled: ') %}<details class="enroll-detail"><summary>Enrolled</summary><span class="enroll-upn">{{ app.service_state[10:] }}</span></details>{% else %}{{ app.service_state or '' }}{% endif %}</td>
           </tr>
           {% if app.sub_apps %}
           <tr class="sub-apps-row">
