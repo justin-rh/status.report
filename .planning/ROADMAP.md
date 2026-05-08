@@ -25,7 +25,7 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 6: Warning Data Model** — Warning dataclass + evaluate_warnings() module; pure Python, no OS dependency — completed 2026-05-07
 - [x] **Phase 7: HTML Warnings Section** — Collapsible warnings box in character sheet template; wired into renderer and main.py — completed 2026-05-07
 - [x] **Phase 8: NinjaOne Compatibility** — SYSTEM-account execution safety; stdout summary line for log capture — completed 2026-05-07
-- [x] **Phase 9: Company Portal Detection** — Company Portal MSIX detection + Intune MDM enrollment registry check — completed 2026-05-07
+- [x] **Phase 9: Company Portal Detection** — Company Portal MSIX detection + Intune MDM enrollment registry check — completed 2026-05-08
 - [ ] **Phase 10: Mac Collectors** — Full macOS hardware, profile, and app collectors; HTML output on Mac
 
 ## Phase Details
