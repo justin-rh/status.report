@@ -206,3 +206,108 @@ def test_collect_profiles_degrades_when_pwd_unavailable():
         hw_mod.collect_profiles(report)
     assert report.local_profiles == []
     assert len(report.collection_errors) >= 1
+
+
+# ---------------------------------------------------------------------------
+# Test 10: RAM collection — ram_gb is a float
+# ---------------------------------------------------------------------------
+
+def test_collect_hardware_ram_is_float():
+    """collect_hardware() populates ram_gb as a positive float via psutil."""
+    with patch.object(hw_mod, "subprocess") as mock_sub, \
+         patch.object(hw_mod, "psutil") as mock_psutil, \
+         patch.object(hw_mod, "platform") as mock_platform:
+        mock_sub.run.return_value = MagicMock(stdout="", returncode=0)
+        mock_sub.TimeoutExpired = __import__("subprocess").TimeoutExpired
+        mock_psutil.virtual_memory.return_value.total = 16 * (1024 ** 3)
+        mock_psutil.disk_usage.return_value = MagicMock(
+            total=500 * (1024 ** 3), free=100 * (1024 ** 3)
+        )
+        mock_platform.machine.return_value = "x86_64"
+
+        report = make_report()
+        hw_mod.collect_hardware(report)
+
+    assert report.ram_gb is not None
+    assert isinstance(report.ram_gb, float)
+    assert report.ram_gb > 0
+
+
+# ---------------------------------------------------------------------------
+# Test 11: Disk collection — disk_total_gb and disk_free_gb are floats
+# ---------------------------------------------------------------------------
+
+def test_collect_hardware_disk_fields_are_floats():
+    """collect_hardware() populates disk_total_gb and disk_free_gb as positive floats."""
+    with patch.object(hw_mod, "subprocess") as mock_sub, \
+         patch.object(hw_mod, "psutil") as mock_psutil, \
+         patch.object(hw_mod, "platform") as mock_platform:
+        mock_sub.run.return_value = MagicMock(stdout="", returncode=0)
+        mock_sub.TimeoutExpired = __import__("subprocess").TimeoutExpired
+        mock_psutil.virtual_memory.return_value.total = 16 * (1024 ** 3)
+        mock_psutil.disk_usage.return_value = MagicMock(
+            total=500 * (1024 ** 3), free=100 * (1024 ** 3)
+        )
+        mock_platform.machine.return_value = "x86_64"
+
+        report = make_report()
+        hw_mod.collect_hardware(report)
+
+    assert report.disk_total_gb is not None
+    assert report.disk_free_gb is not None
+    assert isinstance(report.disk_total_gb, float)
+    assert isinstance(report.disk_free_gb, float)
+    assert report.disk_total_gb > 0
+    assert report.disk_free_gb >= 0
+
+
+# ---------------------------------------------------------------------------
+# Test 12: current_user from USER env var
+# ---------------------------------------------------------------------------
+
+def test_collect_current_user_from_user_env():
+    """collect_hardware() populates current_user from USER env var on macOS."""
+    import os
+    env = {k: v for k, v in os.environ.items() if k not in ("USER", "USERNAME")}
+    env["USER"] = "testuser"
+
+    with patch.object(hw_mod, "subprocess") as mock_sub, \
+         patch.object(hw_mod, "psutil") as mock_psutil, \
+         patch.object(hw_mod, "platform") as mock_platform, \
+         patch.dict("os.environ", env, clear=True):
+        mock_sub.run.return_value = MagicMock(stdout="", returncode=0)
+        mock_sub.TimeoutExpired = __import__("subprocess").TimeoutExpired
+        mock_psutil.virtual_memory.return_value.total = 8 * (1024 ** 3)
+        mock_psutil.disk_usage.return_value = MagicMock(
+            total=200 * (1024 ** 3), free=50 * (1024 ** 3)
+        )
+        mock_platform.machine.return_value = "arm64"
+
+        report = make_report()
+        hw_mod.collect_hardware(report)
+
+    assert report.current_user == "testuser"
+
+
+# ---------------------------------------------------------------------------
+# Test 13: OS version failure degrades gracefully — os_version stays None
+# ---------------------------------------------------------------------------
+
+def test_collect_hardware_os_failure_degrades():
+    """When sw_vers raises, os_version stays None and error is logged in collection_errors."""
+    with patch.object(hw_mod, "subprocess") as mock_sub, \
+         patch.object(hw_mod, "psutil") as mock_psutil, \
+         patch.object(hw_mod, "platform") as mock_platform:
+        mock_sub.run.side_effect = OSError("sw_vers not found")
+        mock_sub.TimeoutExpired = __import__("subprocess").TimeoutExpired
+        mock_psutil.virtual_memory.return_value.total = 8 * (1024 ** 3)
+        mock_psutil.disk_usage.return_value = MagicMock(
+            total=200 * (1024 ** 3), free=50 * (1024 ** 3)
+        )
+        mock_platform.machine.return_value = "x86_64"
+
+        report = make_report()
+        hw_mod.collect_hardware(report)
+
+    assert report.os_version is None
+    assert len(report.collection_errors) >= 1

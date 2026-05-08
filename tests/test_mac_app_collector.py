@@ -354,6 +354,143 @@ def test_plistlib_load_called_with_binary_mode():
 
 
 # ---------------------------------------------------------------------------
+# Test 10a: CrowdStrike detected via Falcon.app bundle → installed=True, version from plist
+# ---------------------------------------------------------------------------
+
+def test_crowdstrike_detected_via_app_bundle():
+    """CrowdStrike Falcon.app bundle exists → installed=True, version from Info.plist."""
+
+    def make_apps_stub(path_str: str) -> MagicMock:
+        stub = MagicMock()
+        stub.__truediv__ = lambda self, other: make_apps_stub(f"{path_str}/{other}")
+        stub.exists.return_value = "Falcon.app" in path_str and "Contents" not in path_str
+        stub.is_dir.return_value = stub.exists.return_value
+        ctx = MagicMock()
+        ctx.__enter__ = MagicMock(return_value=MagicMock())
+        ctx.__exit__ = MagicMock(return_value=False)
+        stub.open = MagicMock(return_value=ctx)
+        return stub
+
+    fake_apps_dir = make_apps_stub("/Applications")
+
+    with patch.object(apps_mod, "APPLICATIONS_DIR", fake_apps_dir), \
+         patch("collectors.mac.apps.plistlib") as mock_plib, \
+         patch.object(apps_mod, "subprocess") as mock_sub:
+        mock_plib.load.return_value = {"CFBundleShortVersionString": "7.10.0"}
+        mock_plib.InvalidFileException = plistlib.InvalidFileException
+        mock_sub.run.return_value = MagicMock(returncode=0)
+        mock_sub.TimeoutExpired = __import__("subprocess").TimeoutExpired
+        report = make_report()
+        apps_mod.collect_apps(report)
+
+    cs = next(a for a in report.apps if a.name == "CrowdStrike Falcon")
+    assert cs.installed is True
+    assert cs.version == "7.10.0"
+
+
+# ---------------------------------------------------------------------------
+# Test 10b: CrowdStrike service_state=Stopped when launchctl returns non-zero
+# ---------------------------------------------------------------------------
+
+def test_crowdstrike_service_state_stopped():
+    """CrowdStrike installed but launchctl returns returncode=1 → service_state='Stopped'."""
+
+    def make_apps_stub(path_str: str) -> MagicMock:
+        stub = MagicMock()
+        stub.__truediv__ = lambda self, other: make_apps_stub(f"{path_str}/{other}")
+        stub.exists.return_value = "Falcon.app" in path_str and "Contents" not in path_str
+        stub.is_dir.return_value = stub.exists.return_value
+        ctx = MagicMock()
+        ctx.__enter__ = MagicMock(return_value=MagicMock())
+        ctx.__exit__ = MagicMock(return_value=False)
+        stub.open = MagicMock(return_value=ctx)
+        return stub
+
+    fake_apps_dir = make_apps_stub("/Applications")
+
+    with patch.object(apps_mod, "APPLICATIONS_DIR", fake_apps_dir), \
+         patch("collectors.mac.apps.plistlib") as mock_plib, \
+         patch.object(apps_mod, "subprocess") as mock_sub:
+        mock_plib.load.return_value = {}
+        mock_plib.InvalidFileException = plistlib.InvalidFileException
+        mock_sub.run.return_value = MagicMock(returncode=1)
+        mock_sub.TimeoutExpired = __import__("subprocess").TimeoutExpired
+        report = make_report()
+        apps_mod.collect_apps(report)
+
+    cs = next(a for a in report.apps if a.name == "CrowdStrike Falcon")
+    assert cs.installed is True
+    assert cs.service_state == "Stopped"
+
+
+# ---------------------------------------------------------------------------
+# Test 10c: Microsoft 365 primary sentinel (Microsoft Word.app) → installed=True
+# ---------------------------------------------------------------------------
+
+def test_m365_primary_sentinel():
+    """Microsoft 365 primary: Microsoft Word.app exists → M365 installed=True."""
+
+    def make_apps_stub(path_str: str) -> MagicMock:
+        stub = MagicMock()
+        stub.__truediv__ = lambda self, other: make_apps_stub(f"{path_str}/{other}")
+        stub.exists.return_value = "Microsoft Word.app" in path_str and "Contents" not in path_str
+        stub.is_dir.return_value = stub.exists.return_value
+        ctx = MagicMock()
+        ctx.__enter__ = MagicMock(return_value=MagicMock())
+        ctx.__exit__ = MagicMock(return_value=False)
+        stub.open = MagicMock(return_value=ctx)
+        return stub
+
+    fake_apps_dir = make_apps_stub("/Applications")
+
+    with patch.object(apps_mod, "APPLICATIONS_DIR", fake_apps_dir), \
+         patch("collectors.mac.apps.plistlib") as mock_plib:
+        mock_plib.load.return_value = {"CFBundleShortVersionString": "16.82.0"}
+        mock_plib.InvalidFileException = plistlib.InvalidFileException
+        report = make_report()
+        apps_mod.collect_apps(report)
+
+    m365 = next(a for a in report.apps if a.name == "Microsoft 365")
+    assert m365.installed is True
+    assert m365.version == "16.82.0"
+
+
+# ---------------------------------------------------------------------------
+# Test 10d: Zoom bundle name — zoom.us.app triggers detection, not Zoom.app
+# ---------------------------------------------------------------------------
+
+def test_zoom_bundle_name_is_zoom_us_app():
+    """Only 'zoom.us.app' triggers Zoom detection — 'Zoom.app' would not match the spec."""
+    # Verify the MAC_APP_SPECS table uses the correct bundle name
+    zoom_spec = next(s for s in apps_mod.MAC_APP_SPECS if s["name"] == "Zoom")
+    assert zoom_spec["app_bundle"] == "zoom.us.app", (
+        f"Zoom bundle name must be 'zoom.us.app', got: {zoom_spec['app_bundle']!r}"
+    )
+
+    # Confirm 'Zoom.app' does NOT trigger detection (wrong bundle name)
+    def make_apps_stub(path_str: str) -> MagicMock:
+        stub = MagicMock()
+        stub.__truediv__ = lambda self, other: make_apps_stub(f"{path_str}/{other}")
+        # Only "Zoom.app" exists (wrong casing/name) — should NOT detect Zoom
+        stub.exists.return_value = path_str.endswith("/Zoom.app")
+        stub.is_dir.return_value = stub.exists.return_value
+        ctx = MagicMock()
+        ctx.__enter__ = MagicMock(return_value=MagicMock())
+        ctx.__exit__ = MagicMock(return_value=False)
+        stub.open = MagicMock(return_value=ctx)
+        return stub
+
+    fake_apps_dir = make_apps_stub("/Applications")
+
+    with patch.object(apps_mod, "APPLICATIONS_DIR", fake_apps_dir):
+        report = make_report()
+        apps_mod.collect_apps(report)
+
+    zoom = next(a for a in report.apps if a.name == "Zoom")
+    assert zoom.installed is False, "Zoom.app (wrong name) should NOT trigger Zoom detection"
+
+
+# ---------------------------------------------------------------------------
 # Test 10: NinjaOne and CrowdStrike get service_state; others get None
 # ---------------------------------------------------------------------------
 
