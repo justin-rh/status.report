@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: — Warnings, Mac Parity, and NinjaOne Compatibility
 status: completed
-stopped_at: Completed 10-02-PLAN.md — collectors/mac/apps.py (MAC_APP_SPECS + detect_apps + collect_apps for 7 target apps); 175 tests pass
-last_updated: "2026-05-08T18:15:30Z"
-last_activity: "2026-05-08 — Phase 10 Plan 02 executed (10-02-PLAN.md; 12 new Mac app collector tests; 175 total pass)"
+stopped_at: Completed 10-03-PLAN.md — collectors/__init__.py darwin dispatch + main.py subprocess/usb_root/open Mac wiring; 182 tests pass
+last_updated: "2026-05-08T18:21:25Z"
+last_activity: "2026-05-08 — Phase 10 Plan 03 executed (10-03-PLAN.md; 7 new platform dispatch tests; 182 total pass)"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 11
-  completed_plans: 10
-  percent: 85
+  completed_plans: 11
+  percent: 91
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 ## Current Position
 
 Phase: 10 — Mac Collectors (in progress)
-Plan: 02 (2/4 complete)
-Status: Plan 10-02 complete — collectors/mac/apps.py (MAC_APP_SPECS + detect_apps for 7 target apps); 175 tests pass
-Last activity: 2026-05-08 — Phase 10 Plan 02 executed (10-02-PLAN.md; 12 new Mac app collector tests; 175 total pass)
+Plan: 03 (3/4 complete)
+Status: Plan 10-03 complete — collectors/__init__.py darwin dispatch + main.py subprocess/usb_root/open Mac wiring; 182 tests pass
+Last activity: 2026-05-08 — Phase 10 Plan 03 executed (10-03-PLAN.md; 7 new platform dispatch tests; 182 total pass)
 
-Progress: [████████__] 85% (4/5 v2.0 phases complete, Phase 10 in progress 2/4 plans)
+Progress: [█████████_] 91% (4/5 v2.0 phases complete, Phase 10 in progress 3/4 plans)
 
 ## Performance Metrics
 
@@ -114,6 +114,9 @@ Recent decisions affecting current work:
 - 10-02: Tests patch APPLICATIONS_DIR/LAUNCH_DAEMONS_DIR module constants (not Path class) — avoids pre-instantiated constant problem
 - 10-02: NinjaOne launchdaemon_label "com.ninjarmm.agent" — LOW confidence; TODO verify on live Mac before Phase 10 closes
 - 10-02: Zoom bundle is "zoom.us.app" (not "Zoom.app") — domain-style naming convention confirmed from official Zoom docs
+- 10-03: sys.platform == 'darwin' dispatch lives inside collect_all() body (lazy import) — module remains importable on any platform (D-05)
+- 10-03: usb_root split inline in main() as two-line if/else — no helper function per D-02 decision
+- 10-03: subprocess.run(['open', str(output_path)]) wrapped in try/except OSError matching Windows startfile pattern (D-03)
 
 ### v2.0 Open Decisions (require stakeholder input before implementation)
 
@@ -159,6 +162,6 @@ Items deferred rather than resolved before milestone close:
 ## Session Continuity
 
 Last session: 2026-05-08
-Stopped at: Completed 10-02-PLAN.md — collectors/mac/apps.py (MAC_APP_SPECS + detect_apps for 7 target apps); 175 tests pass
+Stopped at: Completed 10-03-PLAN.md — collectors/__init__.py darwin dispatch + main.py subprocess/usb_root/open Mac wiring; 182 tests pass
 Resume file: None
-Next action: Phase 10 Plan 03 — update collectors/__init__.py darwin branch + main.py platform-aware output path and open
+Next action: Phase 10 Plan 04 — write test_mac_hardware_collector.py, test_mac_app_collector.py, test_mac_profile_collector.py
