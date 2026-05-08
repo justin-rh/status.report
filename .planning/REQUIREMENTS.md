@@ -16,7 +16,7 @@
 
 - [ ] **PLAT-V2-01**: Tool collects Mac hardware stats — CPU model (Intel and Apple Silicon), total RAM, disk capacity and free space, macOS version
 - [ ] **PLAT-V2-02**: Tool enumerates all local user profiles on macOS (non-system accounts, UID ≥ 501)
-- [ ] **PLAT-V2-03**: Tool detects the following apps on macOS: NinjaOne, CrowdStrike Falcon, Microsoft 365, Zoom, Google Chrome, Claude Desktop, Company Portal
+- [x] **PLAT-V2-03**: Tool detects the following apps on macOS: NinjaOne, CrowdStrike Falcon, Microsoft 365, Zoom, Google Chrome, Claude Desktop, Company Portal
 - [ ] **PLAT-V2-04**: Same D&D HTML character sheet is rendered and saved on macOS runs (output to `logs/` relative to exe)
 
 ### NinjaOne Compatibility
@@ -62,5 +62,5 @@
 | APP-V2-01 | Phase 9 | Pending |
 | PLAT-V2-01 | Phase 10 | Pending |
 | PLAT-V2-02 | Phase 10 | Pending |
-| PLAT-V2-03 | Phase 10 | Pending |
+| PLAT-V2-03 | Phase 10 | Complete |
 | PLAT-V2-04 | Phase 10 | Pending |

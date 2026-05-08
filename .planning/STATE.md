@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.0
-milestone_name: Warnings, Mac Parity, and NinjaOne Compatibility
-status: in_progress
-stopped_at: Completed 09-01-PLAN.md — Company Portal MSIX + MDM enrollment; 153 tests pass
-last_updated: "2026-05-07T23:18:00Z"
-last_activity: "2026-05-07 — Phase 9 complete (Company Portal MSIX detection + Intune MDM enrollment, 6 new tests, 153 total pass)"
+milestone_name: — Warnings, Mac Parity, and NinjaOne Compatibility
+status: completed
+stopped_at: Completed 10-02-PLAN.md — collectors/mac/apps.py (MAC_APP_SPECS + detect_apps + collect_apps for 7 target apps); 175 tests pass
+last_updated: "2026-05-08T18:15:30Z"
+last_activity: "2026-05-08 — Phase 10 Plan 02 executed (10-02-PLAN.md; 12 new Mac app collector tests; 175 total pass)"
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 5
-  completed_plans: 5
-  percent: 80
+  total_plans: 11
+  completed_plans: 10
+  percent: 85
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 ## Current Position
 
 Phase: 10 — Mac Collectors (in progress)
-Plan: 01 (1/4 complete)
-Status: Plan 10-01 complete — collectors/mac package + hardware.py (collect_hardware + collect_profiles); 163 tests pass
-Last activity: 2026-05-08 — Phase 10 Plan 01 executed (10-01-PLAN.md; 10 new Mac hardware tests; 163 total pass)
+Plan: 02 (2/4 complete)
+Status: Plan 10-02 complete — collectors/mac/apps.py (MAC_APP_SPECS + detect_apps for 7 target apps); 175 tests pass
+Last activity: 2026-05-08 — Phase 10 Plan 02 executed (10-02-PLAN.md; 12 new Mac app collector tests; 175 total pass)
 
-Progress: [████████__] 80% (4/5 v2.0 phases complete, Phase 10 in progress 1/4 plans)
+Progress: [████████__] 85% (4/5 v2.0 phases complete, Phase 10 in progress 2/4 plans)
 
 ## Performance Metrics
 
@@ -110,6 +110,10 @@ Recent decisions affecting current work:
 - 10-01: platform.machine() == "x86_64" branches to sysctl; arm64 goes directly to system_profiler (avoids Pitfall 1)
 - 10-01: os.environ.get("USER") is primary current_user source on Mac (not USERNAME)
 - 10-01: psutil.disk_usage("/") used for Mac root partition (not "C:\\")
+- 10-02: plistlib imported at module level (not try/except) — pure stdlib, enables test patching via patch("collectors.mac.apps.plistlib")
+- 10-02: Tests patch APPLICATIONS_DIR/LAUNCH_DAEMONS_DIR module constants (not Path class) — avoids pre-instantiated constant problem
+- 10-02: NinjaOne launchdaemon_label "com.ninjarmm.agent" — LOW confidence; TODO verify on live Mac before Phase 10 closes
+- 10-02: Zoom bundle is "zoom.us.app" (not "Zoom.app") — domain-style naming convention confirmed from official Zoom docs
 
 ### v2.0 Open Decisions (require stakeholder input before implementation)
 
@@ -155,6 +159,6 @@ Items deferred rather than resolved before milestone close:
 ## Session Continuity
 
 Last session: 2026-05-08
-Stopped at: Completed 10-01-PLAN.md — collectors/mac package + hardware.py (collect_hardware, collect_profiles); 163 tests pass
+Stopped at: Completed 10-02-PLAN.md — collectors/mac/apps.py (MAC_APP_SPECS + detect_apps for 7 target apps); 175 tests pass
 Resume file: None
-Next action: Phase 10 Plan 02 — implement collectors/mac/apps.py (MAC_APP_SPECS + detect_apps for 7 target apps)
+Next action: Phase 10 Plan 03 — update collectors/__init__.py darwin branch + main.py platform-aware output path and open
