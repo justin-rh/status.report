@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: — Warnings, Mac Parity, and NinjaOne Compatibility
 status: completed
-stopped_at: Completed 10-03-PLAN.md — collectors/__init__.py darwin dispatch + main.py subprocess/usb_root/open Mac wiring; 182 tests pass
-last_updated: "2026-05-08T18:21:25Z"
-last_activity: "2026-05-08 — Phase 10 Plan 03 executed (10-03-PLAN.md; 7 new platform dispatch tests; 182 total pass)"
+stopped_at: Completed 10-04-PLAN.md — Mac collector tests (hardware=13, apps=16, profiles=5); 195 tests pass
+last_updated: "2026-05-08T18:26:26Z"
+last_activity: 2026-05-08 — Phase 10 Plan 04 executed (10-04-PLAN.md; +13 Mac tests; 195 total pass)
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 11
   completed_plans: 11
-  percent: 91
+  percent: 100
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 
 ## Current Position
 
-Phase: 10 — Mac Collectors (in progress)
-Plan: 03 (3/4 complete)
-Status: Plan 10-03 complete — collectors/__init__.py darwin dispatch + main.py subprocess/usb_root/open Mac wiring; 182 tests pass
-Last activity: 2026-05-08 — Phase 10 Plan 03 executed (10-03-PLAN.md; 7 new platform dispatch tests; 182 total pass)
+Phase: 10 — Mac Collectors (complete)
+Plan: 04 (4/4 complete)
+Status: Plan 10-04 complete — Mac collector tests (hardware=13, apps=16, profiles=5); 195 tests pass
+Last activity: 2026-05-08 — Phase 10 Plan 04 executed (10-04-PLAN.md; +13 Mac tests; 195 total pass)
 
-Progress: [█████████_] 91% (4/5 v2.0 phases complete, Phase 10 in progress 3/4 plans)
+Progress: [██████████] 100% (5/5 v2.0 phases complete, Phase 10 complete 4/4 plans)
 
 ## Performance Metrics
 
@@ -117,6 +117,9 @@ Recent decisions affecting current work:
 - 10-03: sys.platform == 'darwin' dispatch lives inside collect_all() body (lazy import) — module remains importable on any platform (D-05)
 - 10-03: usb_root split inline in main() as two-line if/else — no helper function per D-02 decision
 - 10-03: subprocess.run(['open', str(output_path)]) wrapped in try/except OSError matching Windows startfile pattern (D-03)
+- 10-04: Hardware profile tests kept in test_mac_hardware_collector.py AND test_mac_profile_collector.py — hardware file had them from TDD RED phase; profile file added per plan spec
+- 10-04: test_zoom_bundle_name_is_zoom_us_app verifies MAC_APP_SPECS constant directly + confirms Zoom.app does not trigger detection
+- 10-04: test_crowdstrike_service_state_stopped: launchctl returncode=1 → service_state='Stopped' verified explicitly
 
 ### v2.0 Open Decisions (require stakeholder input before implementation)
 
@@ -162,6 +165,6 @@ Items deferred rather than resolved before milestone close:
 ## Session Continuity
 
 Last session: 2026-05-08
-Stopped at: Completed 10-03-PLAN.md — collectors/__init__.py darwin dispatch + main.py subprocess/usb_root/open Mac wiring; 182 tests pass
+Stopped at: Completed 10-04-PLAN.md — Mac collector tests (hardware=13, apps=16, profiles=5); 195 tests pass
 Resume file: None
-Next action: Phase 10 Plan 04 — write test_mac_hardware_collector.py, test_mac_app_collector.py, test_mac_profile_collector.py
+Next action: Phase 10 complete — milestone v2.0 complete; await next project phase
