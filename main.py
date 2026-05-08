@@ -16,6 +16,7 @@ from __future__ import annotations
 import datetime
 import os
 import socket
+import subprocess
 import sys
 from pathlib import Path
 
@@ -53,8 +54,13 @@ def main() -> None:
     print("Rendering character sheet...")
 
     # Output path -- USB only (D-02, CLAUDE.md constraint)
-    # Path(sys.executable).parent = USB root (e.g., D:\status_report\) when frozen
-    usb_root = Path(sys.executable).parent
+    # Platform-aware output root (D-02, Phase 10):
+    # - darwin: Path(__file__).parent because tool runs as "python3 main.py" (not frozen)
+    # - other:  Path(sys.executable).parent because tool runs as frozen exe (CLAUDE.md)
+    if sys.platform == "darwin":
+        usb_root = Path(__file__).parent
+    else:
+        usb_root = Path(sys.executable).parent
     logs_dir = usb_root / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
     base_name = f"status_{hostname}_{date_str}"
@@ -91,10 +97,16 @@ def main() -> None:
     print(f"[SUMMARY] {hostname} | {report.os_version or 'Unknown OS'} | {cpu} | {ram} | {disk_used_pct}% disk used | {warning_count} warnings")
 
     if sys.stdin.isatty():
-        try:
-            os.startfile(str(output_path))
-        except OSError:
-            pass
+        if sys.platform == "darwin":
+            try:
+                subprocess.run(["open", str(output_path)])  # macOS open command (D-03)
+            except OSError:
+                pass
+        else:
+            try:
+                os.startfile(str(output_path))
+            except OSError:
+                pass
         input("\nPress Enter to close this window, then eject the USB drive.")
 
 
