@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 
 ## Current Position
 
-Phase: 9 — Company Portal Detection (complete)
-Plan: 01 (1/1 complete)
-Status: Phase 9 complete — Company Portal MSIX detection + Intune MDM enrollment; 153 tests pass
-Last activity: 2026-05-07 — Phase 9 executed (09-01-PLAN.md; 6 new CP tests; 153 total pass)
+Phase: 10 — Mac Collectors (in progress)
+Plan: 01 (1/4 complete)
+Status: Plan 10-01 complete — collectors/mac package + hardware.py (collect_hardware + collect_profiles); 163 tests pass
+Last activity: 2026-05-08 — Phase 10 Plan 01 executed (10-01-PLAN.md; 10 new Mac hardware tests; 163 total pass)
 
-Progress: [████████__] 80% (4/5 v2.0 phases complete)
+Progress: [████████__] 80% (4/5 v2.0 phases complete, Phase 10 in progress 1/4 plans)
 
 ## Performance Metrics
 
@@ -106,6 +106,10 @@ Recent decisions affecting current work:
 - 09-01: Empty UPN strings treated as stale GUIDs and skipped (D-06); first non-empty UPN wins (D-05)
 - 09-01: _detect_mdm_enrollment() wraps entire body in try/except Exception — never raises across layer boundary
 - 09-01: No service_key field in Company Portal spec — MDM enrollment hook uses spec name check in _detect_one_app()
+- 10-01: pwd import guarded with try/except ImportError (_pwd_module/_PWD_AVAILABLE pattern) — enables Windows CI import
+- 10-01: platform.machine() == "x86_64" branches to sysctl; arm64 goes directly to system_profiler (avoids Pitfall 1)
+- 10-01: os.environ.get("USER") is primary current_user source on Mac (not USERNAME)
+- 10-01: psutil.disk_usage("/") used for Mac root partition (not "C:\\")
 
 ### v2.0 Open Decisions (require stakeholder input before implementation)
 
@@ -150,7 +154,7 @@ Items deferred rather than resolved before milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-07
-Stopped at: Completed 09-01-PLAN.md — Company Portal MSIX + MDM enrollment detection + 6 tests; 153 tests pass
+Last session: 2026-05-08
+Stopped at: Completed 10-01-PLAN.md — collectors/mac package + hardware.py (collect_hardware, collect_profiles); 163 tests pass
 Resume file: None
-Next action: Phase 9 complete — proceed to next v2.0 phase (Phase 10: Mac Collectors)
+Next action: Phase 10 Plan 02 — implement collectors/mac/apps.py (MAC_APP_SPECS + detect_apps for 7 target apps)

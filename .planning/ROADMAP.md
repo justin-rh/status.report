@@ -97,7 +97,7 @@ Plans:
   4. An HTML character sheet is written to logs/ relative to the exe on macOS, with the same D&D aesthetic and all populated fields
 **Plans**: 4 plans
 Plans:
-- [ ] 10-01-PLAN.md — Create collectors/mac/ package and implement hardware.py (collect_hardware + collect_profiles)
+- [x] 10-01-PLAN.md — Create collectors/mac/ package and implement hardware.py (collect_hardware + collect_profiles)
 - [ ] 10-02-PLAN.md — Implement collectors/mac/apps.py (MAC_APP_SPECS + detect_apps for 7 target apps)
 - [ ] 10-03-PLAN.md — Wire platform dispatch in collectors/__init__.py and Mac output path + open in main.py
 - [ ] 10-04-PLAN.md — Write test_mac_hardware_collector.py, test_mac_app_collector.py, test_mac_profile_collector.py
@@ -116,4 +116,4 @@ Plans:
 | 7. HTML Warnings Section | v2.0 | 3/3 | Complete | 2026-05-07 |
 | 8. NinjaOne Compatibility | v2.0 | 1/1 | Complete | 2026-05-07 |
 | 9. Company Portal Detection | v2.0 | 1/1 | Complete | 2026-05-07 |
-| 10. Mac Collectors | v2.0 | 0/4 | Not started | - |
+| 10. Mac Collectors | v2.0 | 1/4 | In progress | - |
