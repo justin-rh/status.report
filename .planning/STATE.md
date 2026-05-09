@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: — Warnings, Mac Parity, and NinjaOne Compatibility
 status: completed
-stopped_at: Completed 10-04-PLAN.md — Mac collector tests (hardware=13, apps=16, profiles=5); 195 tests pass
-last_updated: "2026-05-08T18:26:26Z"
-last_activity: 2026-05-08 — Phase 10 Plan 04 executed (10-04-PLAN.md; +13 Mac tests; 195 total pass)
+stopped_at: Phase 11 context gathered — 11-CONTEXT.md written
+last_updated: "2026-05-08T19:00:00Z"
+last_activity: 2026-05-08 — Phase 11 context discussion complete (11-CONTEXT.md; CLI flags decisions locked)
 progress:
   total_phases: 5
   completed_phases: 5
@@ -52,6 +52,10 @@ Progress: [██████████] 100% (5/5 v2.0 phases complete, Phase
 *Updated after each plan completion*
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 11 added: Steve — CLI flags for targeted stdout output (`--name`, `--serial`, `--warnings`, `--help`)
 
 ### Decisions
 
