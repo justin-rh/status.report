@@ -18,10 +18,10 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 - Mac collectors with full parity (hardware, profiles, app detection)
 - NinjaOne compatibility: SYSTEM-account execution, stdout summary, no interactive session required
 
-## Current State (v2.0 — complete)
+## Current State (v2.0 + Phase 11 — complete)
 
-- **Last shipped:** v2.0 on 2026-05-08 (all 5 v2.0 phases complete)
-- **Tests:** 195 passing (name parser, hardware collectors, renderer, app detection, health checks, warnings, NinjaOne headless safety, Company Portal/MDM, Mac collectors)
+- **Last shipped:** v2.0 on 2026-05-08 (all 5 v2.0 phases complete); Phase 11 (Steve) complete 2026-05-12
+- **Tests:** 203 passing (name parser, hardware collectors, renderer, app detection, health checks, warnings, NinjaOne headless safety, Company Portal/MDM, Mac collectors, CLI flags)
 - **Phase 10 complete:** Mac collectors — `collectors/mac/hardware.py` (Intel + Apple Silicon CPU, sw_vers, psutil, pwd), `collectors/mac/apps.py` (7-app MAC_APP_SPECS), platform dispatch in `collectors/__init__.py` and `main.py`; PLAT-V2-01 through PLAT-V2-04 satisfied
 - **Pending human testing:** End-to-end macOS run + NinjaOne launchctl label validation (10-HUMAN-UAT.md)
 - **Stack:** Python 3.12 + psutil + wmi + winreg + Jinja2 + PyInstaller `--onedir`
