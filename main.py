@@ -13,6 +13,7 @@ D-05: os.startfile() + input() pause. D-06: collector failures warn + continue; 
 """
 from __future__ import annotations
 
+import argparse
 import datetime
 import os
 import socket
@@ -27,7 +28,80 @@ from parsers.name_parser import parse_hostname
 from renderer import render_html
 
 
+def _run_cli(args: argparse.Namespace) -> None:
+    """Handle targeted CLI flag output. Prints requested fields and exits 0.
+
+    Collection scope (D-08, D-09, D-10, D-11):
+      --name only:           no collection needed (socket.gethostname() is sufficient)
+      --serial only:         hardware collection only (not full collect_all)
+      --warnings only:       full collect_all then evaluate_warnings
+      combined flags:        union of required collection
+    """
+    hostname = socket.gethostname()
+
+    # Determine minimum required collection (D-08, D-09, D-10, D-11)
+    needs_full = args.warnings                      # D-10: --warnings needs collect_all
+    needs_hardware = args.serial and not needs_full  # D-09: --serial needs hardware only (unless full already)
+
+    report: AuditReport | None = None
+
+    if needs_full:
+        # Build minimal report for collect_all
+        report = AuditReport(
+            hostname=hostname,
+            parsed_hostname=parse_hostname(hostname),
+            timestamp=datetime.datetime.now().isoformat(),
+        )
+        collect_all(report)
+        report.warnings = evaluate_warnings(report)
+    elif needs_hardware:
+        # Import hardware collector directly — avoid full collect_all (D-09)
+        if sys.platform == "darwin":
+            from collectors.mac.hardware import collect_hardware
+        else:
+            from collectors.windows.hardware import collect_hardware
+        report = AuditReport(
+            hostname=hostname,
+            parsed_hostname=parse_hostname(hostname),
+            timestamp=datetime.datetime.now().isoformat(),
+        )
+        collect_hardware(report)
+    # else: args.name only — D-08: no collection needed
+
+    # Output in fixed order: name -> serial -> warnings (D-02)
+    if args.name:
+        print(hostname)
+
+    if args.serial:
+        serial = (report.serial_number if report and report.serial_number else None)
+        print(serial if serial is not None else "Unknown")  # D-07
+
+    if args.warnings:
+        warn_messages = [
+            w.message for w in (report.warnings if report else [])
+            if w.severity == "WARN"  # D-04, D-06
+        ]
+        for msg in warn_messages:
+            print(msg)
+        # D-05: print nothing when no WARNs -- loop body simply never executes
+
+    sys.exit(0)
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="StatusReport -- Master Electronics IT Audit Tool",
+        prog="status_report",
+    )
+    parser.add_argument("--name", action="store_true", help="Print PC hostname to stdout and exit")
+    parser.add_argument("--serial", action="store_true", help="Print device serial number to stdout and exit")
+    parser.add_argument("--warnings", action="store_true", help="Print active warnings to stdout and exit")
+    args = parser.parse_args()
+    cli_mode = args.name or args.serial or args.warnings
+    if cli_mode:
+        _run_cli(args)
+        return
+
     hostname = socket.gethostname()
     date_str = datetime.date.today().isoformat()
 

@@ -62,6 +62,7 @@ def _patched_main(isatty_value: bool, report_overrides: dict | None = None):
             setattr(report, field_name, getattr(fixed_report, field_name))
 
     with (
+        patch("sys.argv", ["status_report"]),
         patch("main.socket.gethostname", return_value=hostname),
         patch("main.collect_all", side_effect=fake_collect_all),
         patch("main.evaluate_warnings", return_value=[]),
