@@ -8,7 +8,7 @@
 #   upx=False: UPX packer signature increases AV false positive rate (RESEARCH.md)
 #   console=True: D-04 requires verbose progress output via print()
 
-VERSION = "v2.0"   # Update this when cutting a new milestone build.
+VERSION = "v2.1"   # Update this when cutting a new milestone build.
 
 from PyInstaller.utils.hooks import collect_submodules
 
