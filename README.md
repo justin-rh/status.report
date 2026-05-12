@@ -27,13 +27,37 @@ No installation. No internet. No changes to the host PC.
 
 ## Running the Tool (IT Staff)
 
-1. Copy `dist\status_report\` to a USB flash drive
+1. Copy `dist\status_report_v2.1\` to a USB flash drive
 2. On the target PC, open the USB drive and double-click `status_report.exe`
 3. The tool runs, prints progress to the console, and opens the HTML report in the default browser
 4. Press **Enter** to close the window, then eject the USB drive
 5. The report is saved to `logs\status_{hostname}_{date}.html` on the USB drive
 
 > The tool runs as a standard user. Some hardware fields (e.g., CPU model via WMI) require elevation — the tool degrades gracefully and shows `Unavailable` rather than crashing.
+
+---
+
+## CLI Flags
+
+For scripted use (NinjaOne, terminal) the tool accepts flags that print a single field to stdout and exit — no HTML generated.
+
+| Flag | Output |
+|------|--------|
+| `--name` | PC hostname |
+| `--serial` | Device serial number (or `Unknown`) |
+| `--warnings` | Active warning messages, one per line (empty if all checks pass) |
+| `--help` | Available flags and descriptions |
+
+Flags are combinable. Output order is always: name → serial → warnings.
+
+```bat
+status_report.exe --name
+status_report.exe --serial
+status_report.exe --warnings
+status_report.exe --name --serial
+```
+
+No flags → full pipeline runs and generates the HTML character sheet as normal.
 
 ---
 
@@ -60,7 +84,7 @@ python -m venv .venv
 build.bat
 ```
 
-Output: `dist\status_report\` — copy this folder to the USB flash drive.
+Output: `dist\status_report_v2.1\` — copy this folder to the USB flash drive.
 
 ---
 
@@ -105,7 +129,7 @@ Unrecognized hostnames display as `Unknown` — the tool never crashes on a non-
 .venv\Scripts\pytest
 ```
 
-85+ tests covering the hostname parser, hardware collectors, app detection, renderer, and file writer. All tests run without Windows API calls or a live registry.
+203+ tests covering the hostname parser, hardware collectors, app detection, renderer, file writer, and CLI flags. All tests run without Windows API calls or a live registry.
 
 ### Project Structure
 
