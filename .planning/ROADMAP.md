@@ -27,7 +27,7 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 8: NinjaOne Compatibility** — SYSTEM-account execution safety; stdout summary line for log capture — completed 2026-05-07
 - [x] **Phase 9: Company Portal Detection** — Company Portal MSIX detection + Intune MDM enrollment registry check — completed 2026-05-08
 - [x] **Phase 10: Mac Collectors** — Full macOS hardware, profile, and app collectors; HTML output on Mac
-- [ ] **Phase 11: Steve** — CLI flags for targeted stdout output: `--name`, `--serial`, `--warnings`, `--help`
+- [x] **Phase 11: Steve** — CLI flags for targeted stdout output: `--name`, `--serial`, `--warnings`, `--help` — completed 2026-05-12
 
 ## Phase Details
 
@@ -116,7 +116,7 @@ Plans:
   5. Running with no flags continues to produce the full HTML character sheet with no regression (all existing tests pass)
 **Plans**: 1 plan
 Plans:
-- [ ] 11-01-PLAN.md — Add argparse CLI branch to main.py and CLI flag tests to test_main.py
+- [x] 11-01-PLAN.md — Add argparse CLI branch to main.py and CLI flag tests to test_main.py
 
 ## Progress
 
@@ -132,4 +132,4 @@ Plans:
 | 8. NinjaOne Compatibility | v2.0 | 1/1 | Complete | 2026-05-07 |
 | 9. Company Portal Detection | v2.0 | 1/1 | Complete | 2026-05-07 |
 | 10. Mac Collectors | v2.0 | 4/4 | Complete | 2026-05-08 |
-| 11. Steve | v2.0 | 0/1 | In progress | — |
+| 11. Steve | v2.0 | 1/1 | Complete | 2026-05-12 |

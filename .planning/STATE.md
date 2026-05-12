@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: — Warnings, Mac Parity, and NinjaOne Compatibility
 status: completed
-stopped_at: Phase 11 context gathered — 11-CONTEXT.md written
-last_updated: "2026-05-08T19:00:00Z"
-last_activity: 2026-05-08 — Phase 11 context discussion complete (11-CONTEXT.md; CLI flags decisions locked)
+stopped_at: Completed 11-01-PLAN.md — argparse CLI branch + 8 CLI flag tests; 203 tests pass
+last_updated: "2026-05-12T17:08:08Z"
+last_activity: 2026-05-12 — Phase 11 Plan 01 executed (11-01-PLAN.md; argparse --name/--serial/--warnings; 203 tests pass)
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 11
-  completed_plans: 11
+  total_phases: 6
+  completed_phases: 6
+  total_plans: 12
+  completed_plans: 12
   percent: 100
 ---
 
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 
 ## Current Position
 
-Phase: 10 — Mac Collectors (complete)
-Plan: 04 (4/4 complete)
-Status: Plan 10-04 complete — Mac collector tests (hardware=13, apps=16, profiles=5); 195 tests pass
-Last activity: 2026-05-08 — Phase 10 Plan 04 executed (10-04-PLAN.md; +13 Mac tests; 195 total pass)
+Phase: 11 — Steve (complete)
+Plan: 01 (1/1 complete)
+Status: Plan 11-01 complete — argparse CLI branch + 8 CLI flag tests; 203 tests pass
+Last activity: 2026-05-12 — Phase 11 Plan 01 executed (11-01-PLAN.md; argparse --name/--serial/--warnings; 203 tests pass)
 
-Progress: [██████████] 100% (5/5 v2.0 phases complete, Phase 10 complete 4/4 plans)
+Progress: [██████████] 100% (6/6 phases complete, Phase 11 complete 1/1 plans)
 
 ## Performance Metrics
 
@@ -124,6 +124,10 @@ Recent decisions affecting current work:
 - 10-04: Hardware profile tests kept in test_mac_hardware_collector.py AND test_mac_profile_collector.py — hardware file had them from TDD RED phase; profile file added per plan spec
 - 10-04: test_zoom_bundle_name_is_zoom_us_app verifies MAC_APP_SPECS constant directly + confirms Zoom.app does not trigger detection
 - 10-04: test_crowdstrike_service_state_stopped: launchctl returncode=1 → service_state='Stopped' verified explicitly
+- 11-01: argparse placed at top of main() before hostname line — CLI branch exits before full pipeline via _run_cli() + return
+- 11-01: needs_full = args.warnings; needs_hardware = args.serial and not needs_full — union collection scope rule (D-11)
+- 11-01: patch("sys.argv", ["status_report"]) added to _patched_main helper (not test functions) — prevents argparse consuming pytest argv without touching test_ function bodies
+- 11-01: test_main_mac.py _patched_main_platform also needed sys.argv patch — auto-fixed as Rule 1 bug (argparse consuming pytest argv on full suite run)
 
 ### v2.0 Open Decisions (require stakeholder input before implementation)
 
@@ -168,7 +172,7 @@ Items deferred rather than resolved before milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-08
-Stopped at: Completed 10-04-PLAN.md — Mac collector tests (hardware=13, apps=16, profiles=5); 195 tests pass
+Last session: 2026-05-12
+Stopped at: Completed 11-01-PLAN.md — argparse CLI branch + 8 CLI flag tests; 203 tests pass
 Resume file: None
-Next action: Phase 10 complete — milestone v2.0 complete; await next project phase
+Next action: Phase 11 complete — CLI flags shipped; await next project phase
