@@ -64,6 +64,7 @@ def _patched_main_platform(isatty_value: bool, platform_str: str):
     original_write_text = pathlib.Path.write_text
 
     with (
+        patch("sys.argv", ["status_report"]),
         patch("main.socket.gethostname", return_value=hostname),
         patch("main.collect_all", side_effect=fake_collect_all),
         patch("main.evaluate_warnings", return_value=[]),

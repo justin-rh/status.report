@@ -166,3 +166,156 @@ def test_summary_none_safety(capsys):
     assert "0% disk used" in captured.out, (
         f"Expected '0% disk used' for disk_total_gb=None. Got:\n{captured.out}"
     )
+
+
+# ---------------------------------------------------------------------------
+# CLI flag tests (Phase 11: Steve)
+# ---------------------------------------------------------------------------
+
+def test_name_flag_prints_hostname(capsys):
+    """--name prints the hostname and exits 0 (D-08: no collect_all needed)."""
+    import main
+    with (
+        patch("sys.argv", ["status_report", "--name"]),
+        patch("main.socket.gethostname", return_value="PHX-INV-001"),
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main.main()
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "PHX-INV-001"
+
+
+def test_serial_flag_prints_serial(capsys):
+    """--serial runs hardware collection and prints serial_number (D-09)."""
+    import main
+    def fake_collect_hardware(report):
+        report.serial_number = "SN-ABC-12345"
+    with (
+        patch("sys.argv", ["status_report", "--serial"]),
+        patch("main.socket.gethostname", return_value="PHX-INV-001"),
+        patch("main.sys.platform", "win32"),
+        patch("collectors.windows.hardware.collect_hardware", side_effect=fake_collect_hardware),
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main.main()
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "SN-ABC-12345"
+
+
+def test_serial_flag_unknown_when_none(capsys):
+    """--serial prints 'Unknown' when serial_number is None (D-07)."""
+    import main
+    def fake_collect_hardware(report):
+        report.serial_number = None
+    with (
+        patch("sys.argv", ["status_report", "--serial"]),
+        patch("main.socket.gethostname", return_value="PHX-INV-001"),
+        patch("main.sys.platform", "win32"),
+        patch("collectors.windows.hardware.collect_hardware", side_effect=fake_collect_hardware),
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main.main()
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "Unknown"
+
+
+def test_warnings_flag_prints_warn_messages(capsys):
+    """--warnings prints WARN-severity message strings one per line (D-04)."""
+    from models import Warning
+    import main
+    warn_warnings = [
+        Warning(code="OS_VERSION", severity="WARN", message="Windows 10 or earlier detected"),
+        Warning(code="DISK_SPACE", severity="OK", message="Disk space is adequate"),
+        Warning(code="RENAME_REQUIRED", severity="OK", message="Hostname matches naming convention"),
+    ]
+    with (
+        patch("sys.argv", ["status_report", "--warnings"]),
+        patch("main.socket.gethostname", return_value="PHX-INV-001"),
+        patch("main.collect_all"),
+        patch("main.evaluate_warnings", return_value=warn_warnings),
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main.main()
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    lines = [l for l in captured.out.splitlines() if l]
+    assert lines == ["Windows 10 or earlier detected"], (
+        f"Expected only WARN messages; got: {lines}"
+    )
+
+
+def test_warnings_flag_empty_when_all_ok(capsys):
+    """--warnings prints nothing when all checks pass (D-05)."""
+    from models import Warning
+    import main
+    ok_warnings = [
+        Warning(code="OS_VERSION", severity="OK", message="OS version is current"),
+        Warning(code="DISK_SPACE", severity="OK", message="Disk space is adequate"),
+        Warning(code="RENAME_REQUIRED", severity="OK", message="Hostname matches naming convention"),
+    ]
+    with (
+        patch("sys.argv", ["status_report", "--warnings"]),
+        patch("main.socket.gethostname", return_value="PHX-INV-001"),
+        patch("main.collect_all"),
+        patch("main.evaluate_warnings", return_value=ok_warnings),
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main.main()
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "", (
+        f"Expected empty stdout for all-OK warnings; got: {captured.out!r}"
+    )
+
+
+def test_name_serial_combined_output_order(capsys):
+    """--name --serial prints name then serial in fixed order regardless of CLI order (D-02)."""
+    import main
+    def fake_collect_hardware(report):
+        report.serial_number = "SN-ORDER-TEST"
+    with (
+        patch("sys.argv", ["status_report", "--serial", "--name"]),  # reversed CLI order
+        patch("main.socket.gethostname", return_value="PHX-INV-001"),
+        patch("main.sys.platform", "win32"),
+        patch("collectors.windows.hardware.collect_hardware", side_effect=fake_collect_hardware),
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main.main()
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    lines = [l for l in captured.out.splitlines() if l]
+    assert lines == ["PHX-INV-001", "SN-ORDER-TEST"], (
+        f"Expected name before serial; got: {lines}"
+    )
+
+
+def test_cli_mode_suppresses_summary_line(capsys):
+    """CLI flag mode must not emit [SUMMARY] line (targeted output only)."""
+    import main
+    with (
+        patch("sys.argv", ["status_report", "--name"]),
+        patch("main.socket.gethostname", return_value="PHX-INV-001"),
+    ):
+        with pytest.raises(SystemExit):
+            main.main()
+    captured = capsys.readouterr()
+    assert "[SUMMARY]" not in captured.out, (
+        f"[SUMMARY] must not appear in CLI flag mode output; got:\n{captured.out}"
+    )
+
+
+def test_no_flags_runs_full_pipeline(capsys):
+    """No flags -> full pipeline runs and emits [SUMMARY] (D-03, regression guard)."""
+    import main
+    with (
+        patch("sys.argv", ["status_report"]),
+    ):
+        with _patched_main(isatty_value=False):
+            main.main()
+    captured = capsys.readouterr()
+    assert "[SUMMARY]" in captured.out, (
+        f"No-flags mode must still emit [SUMMARY]; got:\n{captured.out}"
+    )
