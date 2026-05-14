@@ -382,7 +382,7 @@ Collected here for the planner:
 
 ---
 
-## What NOT to Add
+## What NOT to Add (v2.0)
 
 | Do Not Add | Why |
 |---|---|
@@ -395,7 +395,7 @@ Collected here for the planner:
 
 ---
 
-## Sources
+## Sources (v2.0)
 
 - [psutil PyPI — 6.x current](https://pypi.org/project/psutil/) — cross-platform coverage confirmed
 - [psutil GitHub issue #2259](https://github.com/giampaolo/psutil/issues/2259) — `users()` returns logged-in only, not all local accounts (confirmed limitation)
@@ -414,3 +414,428 @@ Collected here for the planner:
 
 *Stack research for: StatusReport v2.0 — Mac collectors, Company Portal, NinjaOne, Warnings*
 *Researched: 2026-05-07*
+
+---
+---
+
+# Stack Research — v3.0 Milestone Additions
+
+**Researched:** 2026-05-14
+**Confidence:** HIGH (psutil uptime, winreg vendor detection, stdlib JSON) / MEDIUM (WUA COM privilege behavior) / LOW (Dell/Lenovo pending-count via CLI — requires live machine verification)
+
+---
+
+## Scope
+
+This section covers ONLY the new stack additions needed for v3.0:
+1. System health collectors (uptime, pending Windows updates)
+2. Vendor update detection (Dell Command Update, Lenovo System Update)
+3. Extended CLI output (JSON serialization, output path override, single-app check)
+
+The existing stack and v2.0 additions are unchanged. Do not re-evaluate them.
+
+---
+
+## Feature 1: System Health Collectors
+
+### 1a. Uptime since last reboot — psutil.boot_time() (no new dependency)
+
+`psutil.boot_time()` returns a Unix timestamp (float) of the last system boot. Uptime in days is `(time.time() - psutil.boot_time()) / 86400`. This call is available to standard users, requires no COM server, and works under SYSTEM account. No new dependency needed.
+
+**Confidence:** HIGH. psutil 6.x is already a project dependency. `boot_time()` is a top-level psutil call documented as cross-platform and privilege-free.
+
+**Known caveat (LOW risk):** psutil issue #2094 documents that on some Windows configurations `boot_time()` can return a timestamp slightly before the actual boot time. The delta is typically seconds, not hours. For a stale-uptime warning at a threshold of N days, this is inconsequential. No mitigation needed.
+
+**Implementation pattern:**
+
+```python
+import psutil, time
+
+def collect_uptime() -> tuple[float, str]:
+    """Returns (uptime_days: float, formatted: str)."""
+    boot_ts = psutil.boot_time()
+    uptime_seconds = time.time() - boot_ts
+    uptime_days = uptime_seconds / 86400
+    days = int(uptime_days)
+    hours = int((uptime_seconds % 86400) / 3600)
+    return uptime_days, f"{days}d {hours}h"
+```
+
+The `UPTIME_STALE` warning threshold (N days) should be a module-level constant, not hardcoded inline, so it can be changed without hunting through logic:
+
+```python
+UPTIME_STALE_THRESHOLD_DAYS = 30  # configurable
+```
+
+### 1b. Pending Windows update count — WUA COM via win32com (new dependency: pywin32)
+
+The Windows Update Agent (WUA) COM API is the correct mechanism for reading the locally-cached count of pending updates without triggering any downloads or network calls.
+
+**Pattern:**
+
+```python
+import win32com.client  # from pywin32
+
+session = win32com.client.Dispatch("Microsoft.Update.Session")
+searcher = session.CreateUpdateSearcher()
+result = searcher.Search("IsInstalled=0 and IsHidden=0 and Type='Software'")
+pending_count = result.Updates.Count
+```
+
+**Privilege level:** MEDIUM confidence based on multiple corroborating sources. Searching for updates (read-only `Search()`) works under standard user accounts in an interactive desktop session. The Paessler documentation and Microsoft Q&A confirm this explicitly: "New-Object -ComObject Microsoft.Update.Session can run successfully in a non-administrator user account when logged on to a desktop session." Installation requires elevation; search does not.
+
+**SYSTEM account caveat:** Under SYSTEM (NinjaOne execution context), WUA COM may behave differently. The WUA service (`wuauserv`) runs as SYSTEM, so COM dispatch to it from a SYSTEM context should succeed. However, this is MEDIUM confidence — it should be tested on a live machine before shipping. The guard pattern handles failure gracefully (see below).
+
+**Network requirement:** `Search()` against the default service uses the Windows Update client's locally-cached update catalog. It does NOT require internet connectivity or a WSUS server to return a count of previously-detected pending updates. The count reflects what Windows Update last detected, not a fresh scan. This satisfies the "no internet required" constraint.
+
+**pywin32 version:** Current is 311 (released July 14, 2025), supporting Python 3.8–3.14 including Python 3.12. Install with `pip install pywin32==311`.
+
+**Guard pattern — required for CI compatibility:**
+
+Follow the existing `_WMI_AVAILABLE` pattern. WUA COM will not be available in CI (no Windows Update Agent COM server). Wrap behind a `_WUA_AVAILABLE` flag:
+
+```python
+try:
+    import win32com.client as _win32com_client
+    _WUA_AVAILABLE = True
+except ImportError:
+    _win32com_client = None
+    _WUA_AVAILABLE = False
+
+def collect_pending_windows_updates() -> int | None:
+    """Returns pending update count, or None if WUA is unavailable."""
+    if not _WUA_AVAILABLE:
+        return None
+    try:
+        session = _win32com_client.Dispatch("Microsoft.Update.Session")
+        searcher = session.CreateUpdateSearcher()
+        result = searcher.Search("IsInstalled=0 and IsHidden=0 and Type='Software'")
+        return result.Updates.Count
+    except Exception:
+        return None  # COM dispatch failed; degrade gracefully
+```
+
+Return `None` (not 0) when unavailable — callers must distinguish "0 pending" from "could not check."
+
+**PyInstaller --onedir packaging implications for pywin32:**
+
+pywin32 has historically had friction with PyInstaller due to `win32com`'s dynamic `__path__` manipulation. As of PyInstaller 6.x (current project version), the DLL bootstrap for pywin32 has been fixed — PyInstaller now preserves the `pywin32_system32` directory layout and adds it to DLL search paths. The win32com runtime hook was removed in recent versions (no longer needed).
+
+Required addition to the `.spec` file or build command:
+
+```
+--hidden-import win32timezone
+```
+
+`win32timezone` is the most commonly missing hidden import when using `win32com.client.Dispatch` in a frozen exe. Without it, `Dispatch()` calls that return objects with time-zone-aware properties will raise `ImportError` at runtime. Add it proactively.
+
+The existing `--onedir` mode is compatible with pywin32 311. No `--onefile` change; no `upx=False` change needed.
+
+**Alternatives evaluated and rejected:**
+
+| Alternative | Why Rejected |
+|---|---|
+| `subprocess` calling PowerShell `Get-WindowsUpdate` | Requires PSWindowsUpdate module (third-party, not present on all machines); `(Get-WUList).Count` also wraps WUA COM — same dependency, more failure surface |
+| `subprocess` + `wmic /namespace:\\root\Microsoft\Windows\WindowsUpdate` | WMI namespace for Windows Update is restricted; not reliably readable by standard users; also violates the spirit of the WMI prohibition pattern |
+| `subprocess` + `usoclient.exe` or `wuauclt.exe` | These trigger detection/download operations — side effects prohibited. They do not return a count. |
+| PowerShell `Get-WindowsUpdateLog` | Parses ETW traces into a text log; does not provide a pending count; file may not exist |
+| Reading `C:\Windows\SoftwareDistribution\DataStore\DataStore.edb` | ESE database; requires elevated access and an ESE parsing library (not stdlib); overkill |
+
+**Verdict: pywin32 311, win32com.client.Dispatch("Microsoft.Update.Session"), guarded behind _WUA_AVAILABLE.**
+
+---
+
+## Feature 2: Vendor Update Detection
+
+### 2a. Dell Command Update pending count
+
+**What Dell Command Update is:** A CLI + background service tool for Dell commercial machines that checks for BIOS, firmware, driver, and application updates. Installed at:
+- 64-bit: `C:\Program Files\Dell\CommandUpdate\dcu-cli.exe`
+- 32-bit: `C:\Program Files (x86)\Dell\CommandUpdate\dcu-cli.exe`
+
+**Detection strategy (two-stage):**
+
+Stage 1 — Detect whether DCU is installed, using existing winreg Uninstall path pattern (no new dependency). Search standard Uninstall keys for `DisplayName` matching `"Dell Command | Update"`:
+
+```
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*
+HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*
+```
+
+If the key is not present, the machine is not Dell or DCU is not installed. Return `None` (not applicable) rather than 0.
+
+Stage 2 — Get pending count by invoking `dcu-cli.exe /scan -silent -report=<temp_path>` and parsing the output XML. The `-report` flag writes an XML file listing applicable updates.
+
+**Critical constraint — admin elevation required for dcu-cli.exe:**
+
+Dell's official documentation states: "To run the CLI, you must launch the command prompt as an Administrator." Exit code 4 from `dcu-cli.exe` explicitly means "The CLI was not launched with administrative privilege."
+
+Under a standard user or SYSTEM account without explicit elevation, `dcu-cli.exe /scan` will return exit code 4 and produce no report. This is a hard constraint.
+
+**Recommended approach for standard user / SYSTEM context:**
+
+Do NOT invoke `dcu-cli.exe` as a subprocess from StatusReport. Doing so will fail silently (exit code 4) and potentially log an error in DCU's own activity log. Instead, read DCU's activity log to detect the last-known scan result:
+
+```
+C:\ProgramData\Dell\UpdateService\Log\activity.log
+```
+
+The activity log contains lines like `found [N] updates`. This is read-only filesystem access — no elevation, no side effects, no COM. Parse the most recent "found [N] updates" line for the count. This is a passive, side-effect-free approach.
+
+**Log parsing pattern:**
+
+```python
+import re
+from pathlib import Path
+
+DCU_LOG_PATH = Path(r"C:\ProgramData\Dell\UpdateService\Log\activity.log")
+
+def collect_dell_pending_updates() -> int | None:
+    """
+    Returns the last-known pending Dell update count from DCU activity log.
+    Returns None if DCU is not installed or log is absent/unreadable.
+    """
+    if not DCU_LOG_PATH.exists():
+        return None
+    try:
+        text = DCU_LOG_PATH.read_text(encoding="utf-8", errors="replace")
+        # Find all "found [N] updates" lines; take the last one
+        matches = re.findall(r"found \[(\d+)\] updates", text, re.IGNORECASE)
+        if matches:
+            return int(matches[-1])
+        return None
+    except Exception:
+        return None
+```
+
+**Confidence:** MEDIUM. The log format "found [N] updates" is confirmed from community documentation (Automox worklets, Dell service log references). The exact regex pattern requires validation against a live DCU log. Flag for live-machine testing before shipping.
+
+**No new dependency.** `re` and `pathlib` are stdlib.
+
+**PyInstaller packaging:** No impact. Filesystem read only.
+
+### 2b. Lenovo System Update pending count
+
+**What Lenovo System Update is:** A background tool for Lenovo commercial machines (ThinkPad, ThinkCentre, ThinkStation) that checks for firmware, driver, and BIOS updates. Installed at:
+- `C:\Program Files (x86)\Lenovo\System Update\tvsu.exe`
+
+As of mid-2024, Lenovo also ships "Commercial Vantage" with a System Update Addin, which uses a different log path.
+
+**Detection strategy (two-stage):**
+
+Stage 1 — Detect whether Lenovo System Update is installed via existing winreg Uninstall pattern:
+
+```
+HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*
+```
+
+Search for `DisplayName` matching `"Lenovo System Update"` or `"System Update"` with publisher `"Lenovo"`.
+
+Stage 2 — Read the log file. Lenovo System Update writes per-session log files to:
+
+```
+C:\ProgramData\Lenovo\SystemUpdate\logs\
+```
+
+Log file naming pattern: `tvsu_YYMMDDHHMMSS.log`
+
+**Important 2024 change:** In Lenovo System Update versions released in 2024 and later, logging is DISABLED by default as a security precaution. Log files may not exist even if System Update has run. The registry key to enable logging is:
+
+```
+HKLM\SOFTWARE\WOW6432Node\Lenovo\System Update\Preferences\UCSettings\Log
+Value: FileName = tvsu.log
+```
+
+This means log-based detection is unreliable on machines with recent Lenovo System Update versions unless logging has been explicitly enabled by IT policy.
+
+**Recommended fallback — WMI-based detection if -exporttowmi was used:**
+
+Lenovo System Update's CLI supports `-exporttowmi` which writes update data to WMI. However, this requires the update to have been run with that flag, and reading WMI data requires the existing `_WMI_AVAILABLE` guard. This is too fragile for a general-purpose tool.
+
+**Recommended approach:** Registry-detect Lenovo System Update presence. Attempt log read. Return `None` if logs are absent (logging disabled by default in 2024+). Do not invoke `tvsu.exe` as a subprocess — it requires admin elevation and creates side effects (temporary admin account creation per Lenovo FAQ).
+
+**Log parsing pattern:**
+
+```python
+from pathlib import Path
+import re
+
+LENOVO_LOG_DIR = Path(r"C:\ProgramData\Lenovo\SystemUpdate\logs")
+
+def collect_lenovo_pending_updates() -> int | None:
+    """
+    Returns pending Lenovo update count from most recent tvsu log.
+    Returns None if not installed, logs absent, or count unreadable.
+    Note: Logging disabled by default in 2024+ Lenovo System Update versions.
+    """
+    if not LENOVO_LOG_DIR.exists():
+        return None
+    try:
+        log_files = sorted(LENOVO_LOG_DIR.glob("tvsu_*.log"), reverse=True)
+        if not log_files:
+            return None
+        text = log_files[0].read_text(encoding="utf-8", errors="replace")
+        # Log format varies by version; search for update count indicators
+        matches = re.findall(r"(\d+)\s+package[s]?\s+(?:found|available|to install)", text, re.IGNORECASE)
+        if matches:
+            return int(matches[-1])
+        return None
+    except Exception:
+        return None
+```
+
+**Confidence:** LOW. The log format for Lenovo System Update is not formally documented. The regex is a best-effort pattern based on community observations. This requires validation against live log files. Flag for live-machine testing.
+
+**Fallback behavior:** If log parsing returns `None`, the character sheet should display "N/A" or "Log unavailable" rather than 0. The distinction matters for IT staff.
+
+**No new dependency.** `re` and `pathlib` are stdlib.
+
+---
+
+## Feature 3: Extended CLI Output
+
+### 3a. JSON serialization of AuditReport — stdlib only (no new dependency)
+
+`AuditReport` and its nested dataclasses (`AppStatus`, `Warning`) are Python dataclasses. Serialization to JSON uses `dataclasses.asdict()` + `json.dumps()` from the stdlib. No third-party library needed.
+
+**Pattern:**
+
+```python
+import json
+import dataclasses
+
+def report_to_json(report: AuditReport) -> str:
+    """Serialize AuditReport to a JSON string."""
+    return json.dumps(
+        dataclasses.asdict(report),
+        indent=2,
+        default=str  # handles datetime, Path, and any non-serializable fields
+    )
+```
+
+`dataclasses.asdict()` is recursive — it handles nested dataclasses, lists of dataclasses, and dicts. The `default=str` fallback in `json.dumps` handles `datetime` objects (uptime boot time) and `Path` objects without a custom encoder class.
+
+**Edge cases to handle before coding:**
+- `uptime_days: float` serializes cleanly as a JSON number.
+- `boot_time: datetime` — use `default=str` which calls `datetime.__str__()`, producing ISO-like strings. Acceptable for IT tool output.
+- `pending_windows_updates: int | None` — `None` serializes as JSON `null`. This is correct semantics (unavailable vs. zero).
+
+**Confidence:** HIGH. `dataclasses.asdict` + `json.dumps` with `default=str` is the stdlib-idiomatic pattern for Python 3.7+. No new imports beyond what Python provides.
+
+**PyInstaller packaging:** No impact. Both `dataclasses` and `json` are stdlib modules bundled with Python itself.
+
+### 3b. Output path override — argparse (already present)
+
+`--output <path>` is a new argparse flag added to the existing argument parser. No new library. The path is passed through to `writers/`, which already accepts a path argument via `Path(sys.executable).parent`. Replace that default with `Path(args.output)` when the flag is present.
+
+**Validation:** Validate that the target directory exists (or create it) and is writable before running the full pipeline. Print a clear error to stderr and `sys.exit(1)` if the path is invalid. Do not silently fall back to the default path — that would cause confusion when `--output` is specified in a NinjaOne script.
+
+### 3c. Single-app detection — argparse + existing app detection logic
+
+`--app <name>` runs only the app detection pipeline for the named app and exits. No new library. Implementation:
+
+1. Parse `--app` from argparse.
+2. Match the value against `APP_SPECS` by name (case-insensitive).
+3. Run only `detect_single_app(name)` — a new thin wrapper around the existing per-app detection logic in `apps.py`.
+4. If `--json` is also present, serialize the single `AppStatus` dataclass to JSON and print to stdout.
+5. If `--json` is absent, print a human-readable one-liner: `NinjaOne: INSTALLED (v8.0.1234)`.
+
+**Exit codes for `--app`:**
+- `0` — app found / installed
+- `1` — app not found / not installed
+- `2` — app name not recognized
+
+These exit codes enable NinjaOne condition checks (`if exit_code == 0 then...`) without parsing stdout.
+
+---
+
+## New pip Dependency Summary
+
+| Package | Version | Purpose | Why This One |
+|---|---|---|---|
+| `pywin32` | `311` | `win32com.client.Dispatch` for WUA COM API (pending Windows updates) | Only Python binding for WUA COM; no lighter alternative exists for COM dispatch |
+
+**All other v3.0 features use stdlib exclusively.**
+
+---
+
+## v3.0 Guard Pattern Requirements
+
+Both `_WMI_AVAILABLE` (existing) and `_WUA_AVAILABLE` (new) guards are required. They follow the same pattern:
+
+```python
+# In collectors/windows/health.py
+
+try:
+    import win32com.client as _win32com
+    _WUA_AVAILABLE = True
+except ImportError:
+    _win32com = None
+    _WUA_AVAILABLE = False
+```
+
+CI environments will have `_WUA_AVAILABLE = False`. Tests that cover WUA behavior must mock `_win32com` at the module level, not patch `win32com.client` directly.
+
+---
+
+## PyInstaller --onedir Packaging Changes for v3.0
+
+| Change | Required | Notes |
+|---|---|---|
+| `pip install pywin32==311` in build environment | Yes | New dependency |
+| `--hidden-import win32timezone` in build spec | Yes | Required for win32com.client.Dispatch in frozen exe; missing it causes runtime ImportError |
+| `--hidden-import win32com.client` | Probably not needed | PyInstaller 6.x detects it via static analysis, but add if runtime errors occur |
+| `--onedir` mode | Unchanged | No change; pywin32 311 is compatible with onedir |
+| `upx=False` | Unchanged | Keep as-is for CrowdStrike compatibility |
+
+---
+
+## Privilege Matrix for v3.0 Collectors
+
+| Collector | Standard User | SYSTEM (NinjaOne) | Notes |
+|---|---|---|---|
+| `psutil.boot_time()` | Yes | Yes | No privilege needed |
+| WUA `Search("IsInstalled=0")` | Yes (interactive session) | MEDIUM confidence — test needed | COM dispatch to `wuauserv` from SYSTEM context; likely works |
+| DCU log read (`activity.log`) | Yes | Yes | Filesystem read; world-readable |
+| Lenovo log read (`tvsu_*.log`) | Yes | Yes | Filesystem read; world-readable |
+| `dataclasses.asdict` + `json.dumps` | N/A | N/A | Pure Python |
+
+---
+
+## What NOT to Add (v3.0)
+
+| Do Not Add | Why |
+|---|---|
+| `pywin32` for anything other than WUA | `wmi 1.5.1` already handles all other COM needs; do not duplicate |
+| `dcu-cli.exe /scan` subprocess call | Requires admin elevation (exit code 4 otherwise); creates side effects; log reading is the correct passive approach |
+| `tvsu.exe` subprocess call | Requires elevation; creates temporary admin account; log reading is the correct passive approach |
+| `PSWindowsUpdate` PowerShell module | Third-party PS module; not present on all machines; wraps WUA COM anyway — use WUA directly |
+| `requests` / `httpx` / any HTTP library | No network access in scope |
+| `dataclasses-json` or `pydantic` | Overkill; `dataclasses.asdict` + `json.dumps(default=str)` covers all requirements |
+| `orjson` | Faster but adds a binary dependency; not needed at audit tool scale |
+| `win32com.client.gencache.EnsureDispatch` | Uses generated COM dispatch cache; known to break in PyInstaller frozen exes (PyInstaller issue #6257); use `Dispatch()` (late-binding) instead |
+
+---
+
+## Sources (v3.0)
+
+- [psutil PyPI — 6.x current](https://pypi.org/project/psutil/) — `boot_time()` documented as cross-platform, standard user
+- [psutil issue #2094](https://github.com/giampaolo/psutil/issues/2094) — Windows `boot_time()` pre-boot timestamp caveat; low-severity for day-level thresholds
+- [Microsoft Learn: WUA Searching, Downloading, and Installing Updates](https://learn.microsoft.com/en-us/windows/win32/wua_sdk/searching--downloading--and-installing-updates) — `Search("IsInstalled=0")` criteria, COM objects documented
+- [Paessler Knowledge Base: Windows Update Sensor](https://helpdesk.paessler.com/en/support/solutions/articles/76000077585-windows-update-sensor-access-denied-creating-an-instance-of-the-com-component) — confirmed: `Microsoft.Update.Session` works in standard user interactive session; fails in remote PS session without admin
+- [pywin32 PyPI — version 311](https://pypi.org/project/pywin32/) — latest release July 14, 2025; Python 3.12 support confirmed
+- [PyInstaller issue #7255: pywin32 import fails](https://github.com/pyinstaller/pyinstaller/issues/7255) — bootstrap DLL fix in recent PyInstaller; `win32timezone` hidden import requirement noted
+- [PyInstaller issue #6257: gencache.EnsureDispatch breaks frozen exe](https://github.com/pyinstaller/pyinstaller/issues/6257) — use `Dispatch()` (late-binding), not `EnsureDispatch()`
+- [Dell Command Update Version 5.x Reference Guide — CLI commands](https://www.dell.com/support/manuals/en-us/command-update/dcu_rg/dell-command-update-cli-commands?guid=guid-92619086-5f7c-4a05-bce2-0d560c15e8ed&lang=en-us) — `/scan -report` XML output documented
+- [Dell Command Update CLI error codes](https://www.dell.com/support/manuals/en-ca/command-update/dcu_rg/command-line-interface-error-codes?guid=guid-fbb96b06-4603-423a-baec-cbf5963d8948) — exit code 4 = not launched with admin privilege
+- [Automox: Basic Dell Command Update Worklet](https://community.automox.com/find-share-worklets-12/basic-dell-command-update-worklet-2278) — "found [N] updates" log line format confirmed from community usage
+- [Lenovo CDRT: System Update FAQ](https://docs.lenovocdrt.com/guides/sus/system_update_faq/) — admin account creation for standard user confirmed; tvsu.exe location at `C:\Program Files (x86)\Lenovo\System Update\`
+- [Lenovo CDRT: System Update Command Line Reference](https://docs.lenovocdrt.com/guides/sus/su_dg/su_dg_ch5/) — CLI parameters, `/CM -search -action LIST` documented
+- [WebSearch: Lenovo 2024 logging default disabled](https://forums.lenovo.com/t5/) — logging disabled by default in 2024+ versions; registry key to re-enable documented
+- [Python docs: dataclasses.asdict](https://docs.python.org/3/library/dataclasses.html#dataclasses.asdict) — recursive conversion of nested dataclasses confirmed
+- [Python docs: json.dumps default parameter](https://docs.python.org/3/library/json.html) — `default=str` pattern for non-serializable types
+
+---
+
+*Stack research for: StatusReport v3.0 — System health, vendor updates, extended CLI*
+*Researched: 2026-05-14*

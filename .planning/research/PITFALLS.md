@@ -738,3 +738,361 @@ The renderer has a guard for the disk HP bar (from the v1.0 pitfall doc — `dis
 *Pitfalls research for: StatusReport v2.0 — Company Portal, Warnings, Mac Parity, NinjaOne*
 *Researched: 2026-05-07*
 *Replaces v1.0 pitfalls doc from 2026-05-04*
+
+---
+---
+
+# Pitfalls — v3.0 Additions
+
+**Scope:** Adding WUA COM pending update count, uptime/UPTIME_STALE, DCU/LSU vendor detection, JSON serialization, and extended CLI flags to the existing codebase.
+**Researched:** 2026-05-14
+
+---
+
+## 1. WUA COM API — Windows Update Pending Count (HEALTH-01)
+
+### Pitfall W1: IUpdateSearcher.Search() Makes a Live Network Call and Can Hang
+
+**What goes wrong:** `IUpdateSearcher.Search("IsInstalled=0")` is synchronous. On WSUS-managed machines pointing at a dead or unreachable WSUS server, the call blocks indefinitely — there is no built-in timeout. On pre-enrollment machines with no update server configured, it contacts Microsoft directly. Either way, if the network or service is slow, the call can freeze the entire audit for minutes.
+
+**Why it matters for this system:** StatusReport plugs into machines of unknown configuration. NinjaOne expects the tool to complete on a time budget. A hang is worse than a missing field — the SYSTEM-account process has no user to cancel it.
+
+**Prevention:**
+- Set `searcher.Online = False` before calling `Search()`. This reads from the local Windows Update cache only — fast, no network, and sufficient for the IT audit use case (approximate count of deferred updates).
+- If `Online=False` is not acceptable (stakeholder insists on live count), wrap `Search()` in a `concurrent.futures.ThreadPoolExecutor` with `future.result(timeout=30)` and catch `TimeoutError`.
+- Any thread calling WUA COM must call `pythoncom.CoInitialize()` first (see W3 below).
+- On any exception or timeout, return `CollectionResult(value=None, error="WUA search unavailable")` — consistent with existing `_WMI_AVAILABLE` discipline.
+
+---
+
+### Pitfall W2: Standard User Can Search; SYSTEM Can Also Search — But Zero Count May Be Silent Failure
+
+**What goes wrong:** `IUpdateSearcher` (search/read) is available to standard users, power users, and SYSTEM. No elevation is needed for a count query. However, on machines where the Windows Update service (wuauserv) is stopped or disabled by policy, `Search()` returns an empty result set with zero updates — not an error. The collector cannot distinguish "genuinely zero pending updates" from "update service disabled." Reporting `pending_updates=0` when the service is off is a false negative that misleads IT.
+
+**Why it matters for this system:** Managed machines that IT has intentionally disabled auto-update on will always show 0, which is accurate but misleading without the service-state context.
+
+**Prevention:**
+- After getting a count of zero, check the wuauserv service state using the existing WMI service detection pattern from `apps.py` (CrowdStrike service check). If wuauserv is stopped or disabled, set `pending_updates` to `None` with error `"Windows Update service not running"`.
+- In the HTML template and JSON output, `None` must render as "N/A" (not "0" or "None") so IT staff can distinguish unavailable from zero.
+
+---
+
+### Pitfall W3: COM Initialization Required in Non-Main Threads
+
+**What goes wrong:** `win32com.client.Dispatch("Microsoft.Update.Session")` requires the calling thread to have an initialized COM apartment. On the main thread, pywin32 initializes COM automatically. In any worker thread (required for the timeout pattern in W1), the thread starts with no COM apartment and throws `pywintypes.com_error: CoInitialize has not been called`.
+
+**Prevention:** The thread function that calls WUA must begin with:
+```python
+import pythoncom
+pythoncom.CoInitialize()
+try:
+    # all WUA calls here
+finally:
+    pythoncom.CoUninitialize()
+```
+This must be the first statement before any `win32com.client.Dispatch()` call.
+
+---
+
+### Pitfall W4: PyInstaller --onedir Does Not Auto-Collect All pywin32 DLLs After Hook Removal
+
+**What goes wrong:** PyInstaller removed the automatic `win32com` runtime hook in version 6.6+ (issue #8309). DLLs from the `pywin32_system32` directory — including `pywintypes.dll` — are no longer collected automatically. A frozen `--onedir` build that uses WUA via `win32com` may fail on a clean machine (no Python installed) with `ImportError: DLL load failed while importing pywintypes`.
+
+**Why it matters for this system:** The existing `wmi` module works in the frozen build (already validated in v2.0). WUA via `win32com.client.Dispatch` is a different code path and may require different DLLs.
+
+**Prevention:**
+- After implementing the WUA collector, test the frozen bundle on a machine with no Python installed.
+- If `pywintypes.dll` is missing, add it to the `.spec` binaries list explicitly, or add `--collect-all pywin32` to the build command.
+- Apply the `_WMI_AVAILABLE` guard pattern: wrap `import win32com.client` and `import pythoncom` in a `try/except ImportError` at module load time, set `_WUA_AVAILABLE = False` on failure. The collector body is gated on this flag and returns `CollectionResult(value=None, error="win32com not available")` when false.
+
+---
+
+### Pitfall W5: Windows Update Disabled / WSUS Policy — Zero Count Is Indistinguishable from "No Updates"
+
+This is covered in W2. The key point: always pair the update count with a service-state check. If the service is not running, the count is unreliable regardless of value.
+
+---
+
+## 2. psutil.boot_time() — Uptime (HEALTH-02, WARN-04)
+
+### Pitfall B1: boot_time() Includes Hibernation Time — Inflated Uptime on Laptop Fleet
+
+**What goes wrong:** `psutil.boot_time()` on Windows returns the system boot timestamp. When a machine hibernates and resumes, the system clock continues from pre-hibernation wall time. The result is that `time.time() - psutil.boot_time()` includes all hibernation periods as "uptime." A laptop that hibernates every night appears to have been running for weeks without a reboot.
+
+**Why it matters for this system:** The `UPTIME_STALE` warning (WARN-04) triggers when uptime exceeds a threshold. Master Electronics laptops hibernate frequently. A 7-day threshold would fire on nearly every laptop in the fleet, creating alert fatigue that destroys IT trust in the warning system.
+
+**There is no reliable workaround** for separating hibernate time from uptime using psutil alone. This is a confirmed psutil limitation (issue #2094).
+
+**Prevention:**
+- Set the `UPTIME_STALE` threshold conservatively (30 days minimum, not 7 days).
+- Word the warning message to acknowledge the limitation: `"No cold boot in 30+ days (includes hibernation time)"` rather than `"Machine has been running for 30 days"`.
+- Do not attempt to subtract hibernate durations — the data is not accessible without additional WMI queries that add failure modes.
+
+---
+
+### Pitfall B2: boot_time() Returns a Value ±1 Second Across Calls — Tests Must Mock Both Values
+
+**What goes wrong:** On Windows, `psutil.boot_time()` can return slightly different values on repeated calls within the same process (psutil issue #1007). The 1-second variance is invisible to users but makes tests that assert exact uptime calculations flaky.
+
+**Prevention:** Every test involving uptime calculation must mock both `psutil.boot_time` and `time.time`. Never call the real `psutil.boot_time()` in unit tests. Pattern:
+```python
+with patch("collectors.windows.health.psutil.boot_time", return_value=1_700_000_000.0), \
+     patch("collectors.windows.health.time.time", return_value=1_700_000_000.0 + 86400 * 35):
+    result = collect_uptime(report)
+```
+
+---
+
+### Pitfall B3: SYSTEM Account Has No Interactive Session — USERNAME Is "SYSTEM"
+
+This is pre-existing behavior covered in v2.0 Pitfall 2. For uptime specifically: `psutil.boot_time()` works correctly under the SYSTEM account. No special privilege handling needed.
+
+---
+
+## 3. Vendor Update Detection — DCU and LSU (VENDOR-01, VENDOR-02)
+
+### Pitfall V1: "Pending Count" Is Not in the Registry — This Requires Running DCU/LSU
+
+**What goes wrong:** Neither Dell Command Update nor Lenovo System Update writes a "pending firmware/driver update count" to the registry. The registry only records installation state and configuration. Obtaining a pending count requires executing the vendor tool in scan mode, which:
+- May take 30–120 seconds.
+- Requires network or local catalog access.
+- May require administrator privileges.
+- Has side effects on some versions (triggering background download queues).
+
+**Why it matters for this system:** If VENDOR-01 means "count of pending Dell driver updates," it cannot be implemented as a registry read. If it means "DCU is installed and what version," that is a registry read. This ambiguity must be resolved before the phase begins, or the implementation will need to be rewritten.
+
+**Prevention:** Resolve the requirement with the product owner before writing any code. The recommended scope for v3.0 is presence and version only: "DCU installed: Yes/No, version X.Y.Z." Pending count should be deferred or marked as out of scope unless the team is prepared to execute DCU's CLI and handle all the timeout and privilege implications that entails.
+
+---
+
+### Pitfall V2: DCU DisplayName Varies Across Versions — Strict String Match Fails
+
+**What goes wrong:** Dell Command Update's `DisplayName` in the Uninstall registry key has varied:
+- `"Dell Command | Update"` (most common, version 4.x)
+- `"Dell Command Update"` (some older builds)
+- `"Dell Command | Update for Windows Universal"` (UWP variant)
+
+A strict `DisplayName == "Dell Command | Update"` equality check misses the UWP variant and older naming.
+
+**Prevention:**
+- Use case-insensitive substring match: `"dell command" in display_name.lower()`.
+- Check all four Uninstall paths (the project already enforces this for app detection in `apps.py`). DCU is always a machine-scope install (HKLM), but checking all four is free and consistent with the existing pattern.
+
+---
+
+### Pitfall V3: LSU Uninstall Key Is in Wow6432Node — Easy to Miss on 64-bit Windows
+
+**What goes wrong:** Lenovo System Update uses an Inno Setup installer and registers under `HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\TVSU_is1` on 64-bit Windows (it is a 32-bit installer). Code that only checks `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\` will miss it on 64-bit machines — which is every target machine in this fleet.
+
+**Prevention:**
+- Always check the Wow6432Node path explicitly, or use the existing `UNINSTALL_PATHS` constant from `apps.py` which already enumerates all four paths.
+- The `DisplayName` is consistently `"Lenovo System Update"` — this string has not varied across recent versions.
+
+---
+
+### Pitfall V4: Neither DCU Nor LSU Is Installed — Return Presence=False, Not an Error
+
+**What goes wrong:** On non-Dell machines (Lenovo) there is no DCU. On non-Lenovo machines (Dell) there is no LSU. On HP or other hardware, neither is present. If the collector treats "not found in registry" as a collection error, the HTML and JSON will show an error indicator for every non-Dell machine, which is noise.
+
+**Prevention:**
+- A missing DCU or LSU is not an error — it is an expected absence. Return `CollectionResult(value={"installed": False, "version": None}, error=None)`.
+- Only set `error` on the `CollectionResult` if the registry could not be read due to an OS-level failure (e.g., `PermissionError`), not for the normal "key not found" case.
+- The HTML template should render "Not installed" (neutral) rather than a warning indicator when `installed=False`.
+
+---
+
+## 4. JSON Serialization of AuditReport (OUT-V3-01, OUT-V3-02)
+
+### Pitfall J1: dataclasses.asdict() Does Not Handle Path Objects — TypeError at json.dumps()
+
+**What goes wrong:** `dataclasses.asdict()` recursively converts nested dataclasses to dicts, but it passes non-dataclass, non-primitive types through unchanged. A `Path` object in any field will survive `asdict()` and then cause `TypeError: Object of type PosixPath is not JSON serializable` when passed to `json.dumps()`.
+
+**Why it matters for this system:** `AuditReport` does not currently have `Path` fields, but v3.0 adds `--output <path>`. If a `Path` is stored on the report (even temporarily), or if any new collector field is typed as `Path`, the JSON serialization will break silently in testing and loudly in production.
+
+**Prevention:**
+- Never store `Path` objects on `AuditReport`. Convert paths to `str` at the boundary where the path is determined.
+- Add a custom JSON encoder as a safety net:
+  ```python
+  import json
+  from pathlib import Path
+
+  class _AuditEncoder(json.JSONEncoder):
+      def default(self, obj):
+          if isinstance(obj, Path):
+              return str(obj)
+          return super().default(obj)
+  ```
+  Use `json.dumps(dataclasses.asdict(report), cls=_AuditEncoder, indent=2)`.
+
+---
+
+### Pitfall J2: Optional[T] Fields Serialize as JSON null — None and 0 Must Be Distinguishable
+
+**What goes wrong:** `Optional[T]` fields set to `None` correctly serialize to JSON `null`. However, `pending_updates=0` and `pending_updates=None` are semantically different (zero pending vs. count unavailable) but both look like falsy values in Python. Code that writes `"pending_updates": report.pending_updates or "N/A"` will incorrectly show "N/A" when there are genuinely zero pending updates.
+
+**Prevention:**
+- Always use `is not None` guards, never truthiness checks, for count fields that can legitimately be zero.
+- In JSON output, `null` is the correct representation for "unavailable." Consumers of the JSON must handle `null`.
+- In the HTML template, use `{% if report.pending_updates is not none %}{{ report.pending_updates }}{% else %}N/A{% endif %}` — not `{{ report.pending_updates or "N/A" }}`.
+
+---
+
+### Pitfall J3: stdout JSON Output Breaks on Windows cp1252 Console Encoding
+
+**What goes wrong:** When `--json` writes to stdout and the console is cp1252-encoded (the Windows default in many environments), `print()` with non-ASCII characters raises `UnicodeEncodeError`. PyInstaller-frozen executables may ignore `PYTHONIOENCODING` (pyinstaller issue #2032), making the environment variable workaround unreliable.
+
+**Why it matters for this system:** NinjaOne captures stdout. If `--json` is used in a NinjaOne script, stdout is a pipe with cp1252 encoding. Hostnames with ASCII characters only are safe, but usernames or error messages with non-ASCII characters (accented names) would break.
+
+**Prevention:**
+- Use `json.dumps(..., ensure_ascii=True)` (the Python default). This escapes all non-ASCII as `\uXXXX` sequences, which are safe on any encoding.
+- Do not set `ensure_ascii=False` for stdout JSON output.
+- For file output via `--output`, always open with `encoding="utf-8"` explicitly (consistent with the existing `write_text(html, encoding="utf-8")` pattern).
+- Do not call `sys.stdout.reconfigure(encoding="utf-8")` globally — it changes behavior for all subsequent stdout writes including the `[SUMMARY]` line, which NinjaOne parses.
+
+---
+
+### Pitfall J4: AppStatus.sub_apps Is a list[AppStatus] — asdict() Handles It Correctly
+
+This is a non-issue. `dataclasses.asdict()` recursively processes lists of dataclasses. `sub_apps` serializes correctly as a JSON array of objects. Empty `sub_apps` becomes `[]`, not absent. This is correct behavior; document it for JSON consumers but no code change needed.
+
+---
+
+## 5. argparse Extension — New Flags (OUT-V3-01, OUT-V3-02, CLI-V3-01)
+
+### Pitfall A1: pytest Consuming sys.argv — Known Phase 11 Burn — Every New Test Must Patch sys.argv
+
+**What goes wrong:** When pytest runs `test_main.py`, `sys.argv` contains pytest's own arguments. Any test that calls `main.main()` without patching `sys.argv` either fails with "unrecognized arguments" or silently exercises the wrong code path.
+
+This already happened in Phase 11. Every existing test in `test_main.py` patches `sys.argv` explicitly. Every new test added for `--json`, `--output`, and `--app` must do the same.
+
+**Why it matters for this system:** The pattern `patch("sys.argv", ["status_report", "--json"])` must appear in every test that exercises `main.main()` or `_run_cli()`. A test that forgets this patch will pass locally if the developer happens to run pytest without `--verbose` (pytest's own `-v` flag will be interpreted as an unrecognized argument by argparse, raising SystemExit(2) and the test will fail with a confusing error).
+
+**Prevention:**
+- Add a `conftest.py` fixture that patches `sys.argv` to `["status_report"]` by default, overridable per-test:
+  ```python
+  # tests/conftest.py
+  import pytest
+  from unittest.mock import patch
+
+  @pytest.fixture(autouse=False)
+  def clean_argv():
+      with patch("sys.argv", ["status_report"]):
+          yield
+  ```
+- All new `--json`, `--output`, `--app` tests must either use this fixture or patch `sys.argv` explicitly with the desired flags.
+
+---
+
+### Pitfall A2: --app + --json Composition — Ambiguous Pipeline Branching
+
+**What goes wrong:** The existing `cli_mode` detection is `cli_mode = args.name or args.serial or args.warnings`. Adding `--json` and `--app` without a clear semantic decision creates branching ambiguity:
+- `--json` alone: full pipeline with JSON output instead of HTML? Or CLI-mode JSON?
+- `--app name --json`: single-app check with JSON output (clearly CLI mode).
+- `--json` without `--app`: could mean "full audit but serialize to JSON" (full pipeline) or "targeted JSON query" (CLI mode).
+
+If `--json` is added to the `cli_mode` guard naively, bare `--json` triggers CLI mode and bypasses HTML rendering, which may or may not be the intent.
+
+**Prevention:**
+- Treat `--json` as an output-format modifier, not a mode-selector. The mode (CLI vs full pipeline) is determined by the presence of targeting flags (`--app`, `--name`, `--serial`, `--warnings`).
+- `--app <name>` is the CLI-mode trigger. `--json` alone does not trigger CLI mode — it changes the output format of whichever mode is active.
+- Update `cli_mode` to: `cli_mode = args.name or args.serial or args.warnings or bool(args.app)`.
+- Document this semantic decision as a comment in `main()` before implementation begins.
+
+---
+
+### Pitfall A3: --output Path Must Respect the "No Host Writes" Constraint
+
+**What goes wrong:** `--output <path>` overrides the default `logs/` destination. If a user passes `--output C:\temp\report.json`, the tool writes to the host PC — a direct violation of PKG-02. Under NinjaOne (SYSTEM account), `--output` could write to any path the SYSTEM account can reach.
+
+**Why it matters for this system:** This is the highest-risk v3.0 change from a constraint perspective. The `Path(sys.executable).parent` discipline is foundational to the tool's trust model with IT.
+
+**Prevention:**
+- Validate the `--output` path at parse time. One approach: check whether the path is under `Path(sys.executable).parent`; if not, print a warning to stderr and exit unless the user explicitly passes `--allow-host-write` (or similar deliberate override flag).
+- Alternatively, document that `--output` is only for NinjaOne / pipeline use cases and update PKG-02 to note this exception explicitly.
+- In all tests for `--output`, verify the default behavior (no `--output` flag) still writes under `Path(sys.executable).parent`.
+
+---
+
+### Pitfall A4: Adding New Flags Breaks cli_mode Boundary Detection in Existing Tests
+
+**What goes wrong:** `test_cli_mode_suppresses_summary_line` and `test_no_flags_runs_full_pipeline` test the boundary between CLI mode and full pipeline. If `--json` is added and a test accidentally passes `--json` in `sys.argv` without also triggering a CLI-mode flag, the full pipeline runs, HTML is written (via the patched `write_text`), and the test assertion about `[SUMMARY]` may pass or fail depending on where `--json` output goes.
+
+**Prevention:**
+- Run the full existing test suite after every single flag addition before writing any more code. Do not batch multiple flag additions then run tests.
+- Add a regression test that specifically asserts `--json` alone (no `--app`, `--name`, `--serial`, `--warnings`) still triggers the full pipeline and still emits `[SUMMARY]`.
+
+---
+
+## 6. AuditReport Model Changes — Impact on Existing Tests
+
+### Pitfall M1: All New AuditReport Fields Must Be Optional with None Default
+
+**What goes wrong:** Every test file in `tests/` that constructs `AuditReport` directly will fail with `TypeError: missing required argument` if any new field is added as a required positional argument (no default value).
+
+Current codebase has these direct `AuditReport` constructions:
+- `test_main.py`: `_patched_main()` builds `AuditReport(hostname=..., parsed_hostname=...)`.
+- `test_renderer.py`, `test_health_checks.py`: construct `AuditReport` for rendering/warning tests.
+
+Adding even one required field breaks all of them simultaneously.
+
+**Why it matters for this system:** v3.0 adds at minimum: `pending_updates: int | None`, `uptime_seconds: float | None`, `dell_dcu_version: str | None`, `lenovo_lsu_version: str | None`. These must all be `Optional[T] = None` to be backward-compatible.
+
+**Prevention:**
+- Enforce the rule: every new field on `AuditReport` must have an `Optional[T]` type annotation and `= None` default. This is already the established pattern for all existing fields (see `models.py`).
+- After adding any field to `AuditReport`, run `pytest` before writing the collector code. This proves backward compatibility before anything else changes.
+
+---
+
+### Pitfall M2: fake_collect_all in test_main.py Has a Hardcoded Field List
+
+**What goes wrong:** `test_main.py`'s `fake_collect_all` copies specific named fields from a pre-built report onto the live report:
+```python
+for field_name in ("os_version", "os_build", "serial_number", "cpu_model", ...):
+    setattr(report, field_name, getattr(fixed_report, field_name))
+```
+
+New health fields (`pending_updates`, `uptime_seconds`, etc.) are not in this list. This means `test_main.py` tests run with `None` for all new health fields, which is the correct isolated behavior. However, if a test needs to verify `[SUMMARY]` output with uptime included, the field list must be updated intentionally.
+
+**Prevention:**
+- Do not make `fake_collect_all` dynamic (e.g., using `dataclasses.fields()`) — this would couple it to unrelated field changes.
+- When a test specifically requires a new health field to be populated, add the field name to the list explicitly with a comment explaining why.
+
+---
+
+### Pitfall M3: Jinja2 Template Renders None as the String "None" — Not Blank
+
+**What goes wrong:** Jinja2 renders `{{ report.pending_updates }}` as the string `"None"` when the field is `None`. IT staff will see `"None"` in the character sheet for any health field that could not be collected, which looks like a code bug.
+
+**Prevention:**
+- Use the `default()` filter for every new field in the template: `{{ report.pending_updates | default("N/A") }}`.
+- Add renderer tests that construct `AuditReport` with all new health fields set to `None` and assert the rendered HTML does not contain the string `"None"`.
+
+---
+
+## Phase-Specific Warnings — v3.0
+
+| Phase Topic | Likely Pitfall | Required Mitigation |
+|-------------|---------------|---------------------|
+| WUA COM collector | Search() hangs on WSUS-managed or slow machines | Use `Online=False` first; if Live is required, wrap in thread with 30s timeout |
+| WUA COM collector | Missing pywin32 DLLs in frozen bundle | Test frozen build on clean machine; add `_WUA_AVAILABLE` guard mirroring `_WMI_AVAILABLE` |
+| WUA COM collector | Zero count when wuauserv is disabled | Check wuauserv state; return `None` not `0` when service is not running |
+| WUA COM in thread | `CoInitialize has not been called` error | Call `pythoncom.CoInitialize()` at start of every worker thread that touches COM |
+| Uptime collector | Inflated uptime from hibernation on laptop fleet | Use 30-day threshold minimum; document limitation in warning message text |
+| Uptime tests | Flaky tests from real psutil.boot_time() ±1s variance | Always mock both `psutil.boot_time` and `time.time` in tests; never call real psutil |
+| DCU/LSU detection | Pending count not in registry — requirement ambiguity | Resolve with product owner before coding: presence/version vs. pending count are different |
+| DCU detection | DisplayName varies across versions | Case-insensitive substring: `"dell command" in display_name.lower()` |
+| LSU detection | 32-bit installer in Wow6432Node — missed on 64-bit | Check Wow6432Node path explicitly; use existing `UNINSTALL_PATHS` pattern |
+| DCU/LSU not installed | "Not found" treated as error | Return `CollectionResult(value={"installed": False}, error=None)` — absence is not failure |
+| JSON serialization | Path objects cause TypeError in json.dumps | Never store Path on AuditReport; add `_AuditEncoder` as safety net |
+| JSON stdout | UnicodeEncodeError on cp1252 console (NinjaOne pipe) | Use `ensure_ascii=True`; never `reconfigure(encoding="utf-8")` globally |
+| JSON null vs 0 | `pending_updates or "N/A"` masks genuine zero | Always use `is not None` guards for count fields; `null` in JSON for unavailable |
+| --output flag | Writes to host PC if path not validated | Validate output path against PKG-02; warn or block non-flash-drive paths |
+| --app + --json | Ambiguous branching: --json alone as mode selector | Treat --json as format modifier; mode determined by --app/--name/--serial/--warnings |
+| argparse pytest isolation | sys.argv contamination (Phase 11 known burn) | Patch sys.argv in every test; consider conftest.py autouse fixture |
+| AuditReport new fields | Required fields break all existing test constructions | All new fields: `Optional[T] = None` — run pytest after model change, before collector code |
+| Jinja2 template | None renders as string "None" | `\| default("N/A")` filter on every new field; add renderer test for None values |
+
+---
+
+*v3.0 pitfalls section researched 2026-05-14*
+*Sources: Microsoft Learn WUA SDK, psutil GitHub issues #658/#1007/#2094, PyInstaller issues #7255/#8543, Simon Willison pytest/argparse TIL, PEP 528, Dell ADMX Registry Guide, Silent Install HQ Lenovo System Update detection*
