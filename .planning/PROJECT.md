@@ -2,29 +2,18 @@
 
 ## What This Is
 
-A self-contained Windows .exe that runs from a USB flash drive and audits a Windows PC. It decodes the Master Electronics hostname (city + device type + department + station), collects hardware stats and local user profiles, detects 11 target applications, and renders a D&D/RPG-styled HTML character sheet written back to the flash drive — with no changes to the host PC. Distributed as a PyInstaller `--onedir` bundle; validated on CrowdStrike Falcon-enrolled machines.
+A self-contained Windows .exe (and macOS compatible) that runs from a USB flash drive and audits a PC. It decodes the Master Electronics hostname, collects hardware stats and local user profiles, detects 11 target applications, evaluates health warnings (OS version, disk space, rename status), and renders a D&D/RPG-styled HTML character sheet written back to the flash drive — with no changes to the host PC. Distributed as a PyInstaller `--onedir` bundle; supports CLI flags for targeted stdout queries without generating a full report.
 
 ## Core Value
 
 IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
 
-## Current Milestone: v2.0 Warnings, Mac Parity, and NinjaOne Compatibility
+## Current State (v2.0 archived — 2026-05-14)
 
-**Goal:** Extend the audit tool with proactive health warnings, full Mac support, Company Portal detection, and NinjaOne-driven remote execution compatibility.
-
-**Target features:**
-- Company Portal / Intune detection (Windows)
-- Warnings system: OS version check, disk space check, collapsible HTML box
-- Mac collectors with full parity (hardware, profiles, app detection)
-- NinjaOne compatibility: SYSTEM-account execution, stdout summary, no interactive session required
-
-## Current State (v2.0 + Phase 11 — complete)
-
-- **Last shipped:** v2.0 on 2026-05-08 (all 5 v2.0 phases complete); Phase 11 (Steve) complete 2026-05-12
-- **Tests:** 203 passing (name parser, hardware collectors, renderer, app detection, health checks, warnings, NinjaOne headless safety, Company Portal/MDM, Mac collectors, CLI flags)
-- **Phase 10 complete:** Mac collectors — `collectors/mac/hardware.py` (Intel + Apple Silicon CPU, sw_vers, psutil, pwd), `collectors/mac/apps.py` (7-app MAC_APP_SPECS), platform dispatch in `collectors/__init__.py` and `main.py`; PLAT-V2-01 through PLAT-V2-04 satisfied
-- **Pending human testing:** End-to-end macOS run + NinjaOne launchctl label validation (10-HUMAN-UAT.md)
-- **Stack:** Python 3.12 + psutil + wmi + winreg + Jinja2 + PyInstaller `--onedir`
+- **Last shipped:** v2.0 archived 2026-05-14; 6 phases (6–11), 12 plans, 203 tests passing
+- **Stack:** Python 3.12 + psutil + wmi + winreg + Jinja2 + PyInstaller `--onedir`; ~5,226 LOC across 11 phases
+- **Pending human testing:** Live NinjaOne/CrowdStrike detection, Mac end-to-end run, Company Portal on real machine, visual HTML check (all hardware-gated; carried as acknowledged debt)
+- **Next milestone:** v3.0 — system health collectors, vendor updates, extended CLI output flags
 
 ## Requirements
 
@@ -46,13 +35,30 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 - [x] **PKG-01**: PyInstaller `--onedir` .exe, no install required, Windows 10/11 standard user — *Phase 5*
 - [x] **PKG-02**: No writes to host PC filesystem, registry, or %TEMP% — *Phase 5*
 
-### Active — v2
+### Validated — v2.0
 
-- [ ] **OUT-V2-01**: JSON structured log file saved to flash drive alongside HTML
-- [ ] **OUT-V2-02**: Auto-open HTML in default browser after generation
-- [ ] **APP-V2-01**: Detect Intune enrollment / Company Portal
+- [x] **APP-V2-01**: Detect Company Portal (UWP) + Intune MDM enrollment status — *Phase 9* (live machine validation deferred)
+- [x] **WARN-01**: Warn when device runs Windows 10 or earlier (OS build < 22000) — *Phase 6*
+- [x] **WARN-02**: Warn when disk free space ≤ 15% of total capacity — *Phase 6*
+- [x] **WARN-03**: Collapsible warnings box; auto-expand on any warning; green "All checks passed" when all pass — *Phase 7* ✓
+- [x] **NINJA-01**: Exe runs under SYSTEM account without hanging or crashing — *Phase 8* (live SYSTEM run deferred)
+- [x] **NINJA-02**: `[SUMMARY]` stdout line on every run for NinjaOne log capture — *Phase 8* (live log capture deferred)
+- [x] **PLAT-V2-01**: Mac hardware collectors — CPU (Intel + Apple Silicon), RAM, disk, macOS version — *Phase 10* (live Mac deferred)
+- [x] **PLAT-V2-02**: Mac profile enumeration — non-system accounts, UID ≥ 501 — *Phase 10* (live Mac deferred)
+- [x] **PLAT-V2-03**: Mac app detection — 7 target apps via plistlib/launchctl — *Phase 10* ✓
+- [x] **PLAT-V2-04**: D&D HTML character sheet rendered and saved on macOS — *Phase 10* (live Mac deferred)
+- [x] **CLI-01**: `--name`, `--serial`, `--warnings`, `--help` flags via argparse; exits before full pipeline — *Phase 11* ✓
+
+### Active — v3
+
+- [ ] **HEALTH-01**: Pending Windows update count surfaced in character sheet
+- [ ] **HEALTH-02**: Uptime since last reboot surfaced in character sheet / warnings
+- [ ] **VENDOR-01**: Pending Dell Command Update count (Windows)
+- [ ] **VENDOR-02**: Pending Lenovo System Update count (Windows)
+- [ ] **OUT-03**: `--json` flag outputs AuditReport as JSON to `logs/` (or stdout)
+- [ ] **OUT-04**: `--output <path>` flag overrides default `logs/` destination
+- [ ] **CLI-02**: `--app <name>` flag checks a single app without full pipeline
 - [ ] **APP-V2-02**: Detect remote access tools (TeamViewer, AnyDesk, RDP enabled)
-- [ ] **PLAT-V2-01**: Mac-compatible collectors (same data models + rendering pipeline)
 - [ ] **DIST-V2-01**: Code-signed .exe to eliminate SmartScreen prompt
 
 ### Out of Scope
@@ -104,4 +110,4 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 | JSON output deferred to v2 | v1 scope decision; HTML is sufficient for immediate IT use case | — v2 backlog (OUT-V2-01) |
 
 ---
-*Last updated: 2026-05-07 after Phase 8 (NinjaOne Compatibility) complete*
+*Last updated: 2026-05-14 after v2.0 milestone archived*

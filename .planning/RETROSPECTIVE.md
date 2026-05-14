@@ -51,6 +51,54 @@
 
 ---
 
+## Milestone: v2.0 — Warnings, Mac Parity, and NinjaOne Compatibility
+
+**Shipped:** 2026-05-12
+**Phases:** 6 | **Plans:** 12 | **Timeline:** 5 days (2026-05-07 → 2026-05-12)
+
+### What Was Built
+
+- **Warning system** — `Warning` dataclass + `evaluate_warnings()` (OS/disk/rename checks); collapsible `<details open>` HTML box; 17 boundary tests
+- **NinjaOne compatibility** — `isatty()` guard on all interactive calls; `[SUMMARY]` stdout line always emitted; SYSTEM-account safe
+- **Company Portal + Intune** — MSIX detection + `HKLM\Enrollments` UPN check; MDM enrollment in Service column
+- **Mac collectors** — `collectors/mac/` package: Intel + Apple Silicon CPU, `sw_vers`, psutil, pwd; 7-app `MAC_APP_SPECS` via plistlib/launchctl; platform dispatch in `collect_all()` and `main.py`
+- **Steve CLI flags** — argparse branch exits before full pipeline; `--name/--serial/--warnings/--help`; union collection scope; 8 new tests (203 total)
+
+### What Worked
+
+- **`_pwd_module`/`_PWD_AVAILABLE` pattern** — reused the `_WMI_AVAILABLE` guard from v1.0 for `pwd` module on Mac; enabled Windows CI import of Mac collectors without platform guards in every test
+- **Patching module constants instead of Path class** — `APPLICATIONS_DIR`/`LAUNCH_DAEMONS_DIR` as patchable constants avoided the pre-instantiated constant problem that would have broken Mac app tests
+- **`argparse` at top of `main()` with early return** — Steve CLI flags were wired with zero changes to the existing full-pipeline path; `_run_cli()` returns before hostname decode
+- **`sys.argv` patch in shared `_patched_main` helper** — one fix location covered the argparse/pytest argv collision in both `test_main.py` and `test_main_mac.py`
+
+### What Was Inefficient
+
+- **REQUIREMENTS.md traceability still not kept current** — same issue as v1.0; 8 of 10 requirements still showed "Pending" at close despite all phases shipping. Pattern not fixed between milestones.
+- **NinjaOne Mac agent launchctl label shipped at LOW confidence** — `com.ninjarmm.agent` was not validated against a real fleet Mac; carried as a TODO. Should have been blocked as a decision gate in Phase 10 PLAN.md.
+- **M365 stakeholder sign-off still pending from v1.0** — carried across two milestones without a scheduled resolution checkpoint.
+
+### Patterns Established
+
+- `_pwd_module`/`_PWD_AVAILABLE` — standard cross-platform guard for any Unix-only stdlib module; mirrors `_WMI_AVAILABLE`
+- Module-level constants for patchable filesystem paths (`APPLICATIONS_DIR`, `LAUNCH_DAEMONS_DIR`) — avoids pre-instantiated constant problem in tests
+- `argparse` branch at top of `main()` with `_run_cli()` + early return — clean CLI extension pattern that doesn't touch the full pipeline
+- `patch("sys.argv", ["status_report"])` in shared `_patched_main` helper — standard fix for argparse + pytest argv conflict
+
+### Key Lessons
+
+1. **Repeat lesson from v1.0: update requirement traceability at each plan, not at close.** Two milestones in a row this became a reconciliation task. Add traceability checkbox update to the PLAN.md success criteria template.
+2. **LOW-confidence paths need a decision gate in the PLAN.md, not a TODO comment.** The NinjaOne Mac launchctl label shipped unvalidated. A `BLOCKED` gate in the plan would have forced a resolution before execution.
+3. **Cross-session issues (M365 sign-off) need an explicit owner and deadline, or they carry forever.** Three milestones in, this is still "pending stakeholder input." Either schedule it or move it to Out of Scope.
+4. **The `_AVAILABLE` guard pattern scales well.** Four modules now use it (wmi, pwd, and two test-time patches). It's the right abstraction for any platform-specific import.
+
+### Cost Observations
+
+- Model mix: balanced profile (Sonnet 4.x primary)
+- Sessions: multiple over 5 days
+- Notable: Phase 10 (Mac collectors) was the most complex — 4 plans, cross-platform dispatch, new test infrastructure; Phase 11 (Steve) was the most token-efficient despite touching main.py and two test files
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -58,14 +106,18 @@
 | Milestone | Phases | Plans | Key Change |
 |-----------|--------|-------|------------|
 | v1.0 | 5 | 14 | First milestone; constraints-first approach established |
+| v2.0 | 6 | 12 | Cross-platform dispatch; `_AVAILABLE` guard pattern extended to Mac; Steve CLI pattern |
 
 ### Cumulative Quality
 
 | Milestone | Python LOC | Tests | Phases |
 |-----------|-----------|-------|--------|
 | v1.0 | 2,647 | 85+ | 5 |
+| v2.0 | ~5,226 | 203 | 11 (cumulative) |
 
 ### Top Lessons (Verified Across Milestones)
 
 1. Document hard constraints (what NOT to use) before writing any code — eliminates entire bug classes
-2. Keep requirement traceability current at each plan completion, not at milestone close
+2. Keep requirement traceability current at each plan completion, not at milestone close (repeated v1.0 → v2.0)
+3. LOW-confidence paths need a BLOCKED gate in the plan, not a TODO comment — otherwise they ship unvalidated
+4. Cross-session open decisions need an owner + deadline or they carry forever

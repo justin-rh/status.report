@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.0
-milestone_name: — Warnings, Mac Parity, and NinjaOne Compatibility
-status: completed
-stopped_at: Completed 11-01-PLAN.md — argparse CLI branch + 8 CLI flag tests; 203 tests pass
-last_updated: "2026-05-12T17:08:08Z"
-last_activity: 2026-05-12 — Phase 11 Plan 01 executed (11-01-PLAN.md; argparse --name/--serial/--warnings; 203 tests pass)
+milestone_name: Warnings, Mac Parity, and NinjaOne Compatibility
+status: archived
+stopped_at: v2.0 archived 2026-05-14 — 6 deferred items acknowledged at close (all hardware-gated)
+last_updated: "2026-05-14T00:00:00Z"
+last_activity: 2026-05-14 — v2.0 milestone archived; ready for /gsd-new-milestone
 progress:
   total_phases: 6
   completed_phases: 6
@@ -18,10 +18,10 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-07)
+See: .planning/PROJECT.md (updated 2026-05-14)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** Milestone v2.0 — Phase 9 is next (Company Portal Detection)
+**Current focus:** Between milestones — v2.0 archived, planning v3.0
 
 ## Current Position
 
@@ -162,17 +162,28 @@ Recent decisions affecting current work:
 
 ### Acknowledged at v1.0 Milestone Close (2026-05-07)
 
-Items deferred rather than resolved before milestone close:
-
 | Category | Item | Status |
 |----------|------|--------|
 | uat_gaps | Phase 04: 04-HUMAN-UAT.md — Live NinjaOne/CrowdStrike detection tests + M365 single-suite stakeholder sign-off | partial (4 pending) |
 | verification_gaps | Phase 03: 03-VERIFICATION.md — Visual browser check of HTML character sheet (8/8 automated tests pass) | human_needed |
 | verification_gaps | Phase 04: 04-VERIFICATION.md — Live app detection on real provisioned machines | human_needed |
 
+### Acknowledged at v2.0 Milestone Close (2026-05-14)
+
+Items deferred rather than resolved before milestone close — all hardware-gated:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gaps | Phase 04: 04-HUMAN-UAT.md — Live NinjaOne/CrowdStrike detection, M365 sign-off | partial (4 pending) |
+| uat_gaps | Phase 10: 10-HUMAN-UAT.md — Mac end-to-end run, NinjaOne launchctl label | partial (2 pending) |
+| verification_gaps | Phase 03: 03-VERIFICATION.md — Visual browser check of HTML character sheet | human_needed |
+| verification_gaps | Phase 04: 04-VERIFICATION.md — Live app detection on real provisioned machines | human_needed |
+| verification_gaps | Phase 09: 09-VERIFICATION.md — Company Portal on real machine | human_needed |
+| verification_gaps | Phase 10: 10-VERIFICATION.md — Mac end-to-end run | human_needed |
+
 ## Session Continuity
 
-Last session: 2026-05-12
-Stopped at: Completed 11-01-PLAN.md — argparse CLI branch + 8 CLI flag tests; 203 tests pass
+Last session: 2026-05-14
+Stopped at: v2.0 milestone archived — ready for /gsd-new-milestone
 Resume file: None
-Next action: Phase 11 complete — CLI flags shipped; await next project phase
+Next action: /gsd-new-milestone to plan v3.0
