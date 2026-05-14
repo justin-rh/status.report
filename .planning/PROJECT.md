@@ -8,12 +8,21 @@ A self-contained Windows .exe (and macOS compatible) that runs from a USB flash 
 
 IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
 
-## Current State (v2.0 archived — 2026-05-14)
+## Current Milestone: v3.0 System Health, Vendor Updates, and Extended CLI
+
+**Goal:** Surface system health signals and extend CLI output options so IT staff can assess machine state and integrate output into NinjaOne workflows.
+
+**Target features:**
+- System health collectors — uptime since last reboot, pending Windows update count, `UPTIME_STALE` warning if uptime > N days
+- Vendor update detection — pending Dell Command Update count, pending Lenovo System Update count
+- Extended CLI flags — `--json` output, `--output <path>` override, `--app <name>` single-app check with JSON support
+
+## Current State (v3.0 in progress — 2026-05-14)
 
 - **Last shipped:** v2.0 archived 2026-05-14; 6 phases (6–11), 12 plans, 203 tests passing
 - **Stack:** Python 3.12 + psutil + wmi + winreg + Jinja2 + PyInstaller `--onedir`; ~5,226 LOC across 11 phases
 - **Pending human testing:** Live NinjaOne/CrowdStrike detection, Mac end-to-end run, Company Portal on real machine, visual HTML check (all hardware-gated; carried as acknowledged debt)
-- **Next milestone:** v3.0 — system health collectors, vendor updates, extended CLI output flags
+- **Current milestone:** v3.0 — system health collectors, vendor updates, extended CLI output flags
 
 ## Requirements
 
@@ -49,15 +58,19 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 - [x] **PLAT-V2-04**: D&D HTML character sheet rendered and saved on macOS — *Phase 10* (live Mac deferred)
 - [x] **CLI-01**: `--name`, `--serial`, `--warnings`, `--help` flags via argparse; exits before full pipeline — *Phase 11* ✓
 
-### Active — v3
+### Active — v3.0
 
 - [ ] **HEALTH-01**: Pending Windows update count surfaced in character sheet
 - [ ] **HEALTH-02**: Uptime since last reboot surfaced in character sheet / warnings
+- [ ] **WARN-04**: UPTIME_STALE warning when uptime exceeds threshold (N days, configurable constant)
 - [ ] **VENDOR-01**: Pending Dell Command Update count (Windows)
 - [ ] **VENDOR-02**: Pending Lenovo System Update count (Windows)
-- [ ] **OUT-03**: `--json` flag outputs AuditReport as JSON to `logs/` (or stdout)
-- [ ] **OUT-04**: `--output <path>` flag overrides default `logs/` destination
-- [ ] **CLI-02**: `--app <name>` flag checks a single app without full pipeline
+- [ ] **OUT-V3-01**: `--json` flag outputs AuditReport as JSON to `logs/` (or stdout)
+- [ ] **OUT-V3-02**: `--output <path>` flag overrides default `logs/` destination
+- [ ] **CLI-V3-01**: `--app <name>` flag checks a single app without full pipeline; `--app + --json` produces single-app JSON blob
+
+### Deferred — Not v3.0 scope
+
 - [ ] **APP-V2-02**: Detect remote access tools (TeamViewer, AnyDesk, RDP enabled)
 - [ ] **DIST-V2-01**: Code-signed .exe to eliminate SmartScreen prompt
 
@@ -109,5 +122,22 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 | Code signing deferred to v2 | CrowdStrike test passed without it; budget decision deferred | — v2 backlog (DIST-V2-01) |
 | JSON output deferred to v2 | v1 scope decision; HTML is sufficient for immediate IT use case | — v2 backlog (OUT-V2-01) |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-05-14 after v2.0 milestone archived*
+*Last updated: 2026-05-14 — v3.0 milestone started*
