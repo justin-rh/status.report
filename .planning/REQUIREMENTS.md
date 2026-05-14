@@ -56,14 +56,14 @@ Surface system health signals and extend CLI output options so IT staff can asse
 
 ## Traceability
 
-| REQ-ID | Phase | Phase Name |
-|--------|-------|------------|
-| HEALTH-01 | 12 | System Health Collectors |
-| HEALTH-02 | 12 | System Health Collectors |
-| WARN-04 | 12 | System Health Collectors |
-| WARN-05 | 12 | System Health Collectors |
-| VENDOR-01 | 13 | Vendor Update Detection |
-| VENDOR-02 | 13 | Vendor Update Detection |
-| OUT-V3-01 | 14 | Extended CLI Flags |
-| OUT-V3-02 | 14 | Extended CLI Flags |
-| CLI-V3-01 | 14 | Extended CLI Flags |
+| REQ-ID | Phase | Phase Name | Status |
+|--------|-------|------------|--------|
+| HEALTH-01 | 12 | System Health Collectors | Pending |
+| HEALTH-02 | 12 | System Health Collectors | Pending |
+| WARN-04 | 12 | System Health Collectors | Pending |
+| WARN-05 | 12 | System Health Collectors | Pending |
+| VENDOR-01 | 13 | Vendor Update Detection | Pending |
+| VENDOR-02 | 13 | Vendor Update Detection | Pending |
+| OUT-V3-01 | 14 | Extended CLI Flags | Pending |
+| OUT-V3-02 | 14 | Extended CLI Flags | Pending |
+| CLI-V3-01 | 14 | Extended CLI Flags | Pending |

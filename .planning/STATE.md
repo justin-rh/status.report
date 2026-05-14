@@ -3,15 +3,16 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: System Health, Vendor Updates, and Extended CLI
 status: planning
-stopped_at: Milestone v3.0 started 2026-05-14 — defining requirements
+stopped_at: Roadmap created — phases 12–14 defined; ready to plan Phase 12
 last_updated: "2026-05-14T00:00:00Z"
-last_activity: 2026-05-14 — Milestone v3.0 started
+last_activity: 2026-05-14 — Roadmap v3.0 created
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
   percent: 0
+current_phase: 12
 ---
 
 # Project State
@@ -25,10 +26,10 @@ See: .planning/PROJECT.md (updated 2026-05-14)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 12 — System Health Collectors
 Plan: —
-Status: Defining requirements
-Last activity: 2026-05-14 — Milestone v3.0 started
+Status: Planning
+Last activity: 2026-05-14 — Roadmap v3.0 created (3 phases, 9 requirements)
 
 ## Accumulated Context
 
@@ -37,6 +38,7 @@ Last activity: 2026-05-14 — Milestone v3.0 started
 - v1.0 Phases 1–5: hostname parser, hardware collectors, D&D character sheet, app detection, PyInstaller packaging
 - v2.0 Phases 6–11: warning system, HTML warnings box, NinjaOne SYSTEM compatibility, Company Portal/Intune, Mac collectors, Steve CLI flags
 - Phase 11 added: Steve — CLI flags for targeted stdout output (`--name`, `--serial`, `--warnings`, `--help`)
+- v3.0 Phases 12–14: system health collectors, vendor update detection, extended CLI flags
 
 ### Decisions
 
@@ -47,7 +49,10 @@ Key constraints for v3.0:
 - Output path from sys.executable, not os.getcwd()
 - No writes to host PC; all output to flash drive
 - WMI callers use _wmi_module/_WMI_AVAILABLE guard pattern for CI compatibility
-- Phase 13 (Vendor Detection) registry paths are uncertain — may require IT confirmation before phase can close
+- Phase 12: `severity` field must be added to `Warning` dataclass before health collectors can be wired
+- Phase 12: `--hidden-import win32timezone` must be added to `status_report.spec` when pywin32 is added
+- Phase 12: WUA COM uses `_WIN32COM_AVAILABLE` guard (mirrors `_WMI_AVAILABLE` pattern); pywin32==311 is the only new pip dep
+- Phase 13: Dell/Lenovo registry paths are uncertain — require IT confirmation before phase can close
 
 ### Pending Todos
 
@@ -82,6 +87,6 @@ Key constraints for v3.0:
 ## Session Continuity
 
 Last session: 2026-05-14
-Stopped at: Milestone v3.0 started — requirements defined, roadmap next
+Stopped at: Roadmap v3.0 created — phases 12–14 defined
 Resume file: None
-Next action: Roadmapper spawning to create ROADMAP.md phases 12–14
+Next action: `/gsd-plan-phase 12`
