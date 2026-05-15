@@ -65,7 +65,7 @@ def render_html(report: AuditReport) -> str:
 
     Phase 5 addition (Option A interface resolution — RESEARCH.md § Interface Conflict).
     main.py calls this to get the HTML string, then writes it directly to the
-    dynamically-named output path (D-02/D-03: status_{hostname}_{date}.html).
+    dynamically-named output path (D-02/D-03: {date}_scry_{hostname}.html).
     render_report() is unchanged — no breakage to existing 94 tests.
     """
     template_source = _load_template_source()
