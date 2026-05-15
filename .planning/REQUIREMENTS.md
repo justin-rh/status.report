@@ -1,4 +1,4 @@
-# Requirements: StatusReport v3.0
+# Requirements: SCRY v3.0
 
 **Milestone:** v3.0 — System Health, Vendor Updates, and Extended CLI
 **Created:** 2026-05-14
@@ -9,6 +9,11 @@
 Surface system health signals and extend CLI output options so IT staff can assess machine state and integrate output into NinjaOne workflows.
 
 ## Requirements
+
+### Rename
+
+- [ ] **RENAME-01**: All source files, build spec, `build.bat`, and planning docs reference SCRY instead of StatusReport; `scry.exe` and `scry.spec` replace `status_report.exe` and `status_report.spec`
+- [ ] **RENAME-02**: Output filename format changed from `status_{hostname}_{date}.html` to `{date}_scry_{hostname}.html` (date-first for alphabetical sort, `scry` replaces `status`)
 
 ### System Health
 
@@ -30,11 +35,11 @@ Surface system health signals and extend CLI output options so IT staff can asse
 
 ## Implementation Notes
 
-- **Warning severity:** Existing `Warning` dataclass needs a `severity` field (`"yellow"` / `"red"`) to support WARN-04 and WARN-05. Both levels must still trigger auto-expand of the warnings box. This is a Phase 12 model change.
-- **WUA privilege:** Works under SYSTEM (NinjaOne execution) and Administrator. Standard-user interactive runs degrade to `pending_updates = None` with a CollectionResult error. Live SYSTEM-context test required before shipping Phase 12.
+- **Warning severity:** Existing `Warning` dataclass needs a `severity` field (`"yellow"` / `"red"`) to support WARN-04 and WARN-05. Both levels must still trigger auto-expand of the warnings box. This is a Phase 13 model change.
+- **WUA privilege:** Works under SYSTEM (NinjaOne execution) and Administrator. Standard-user interactive runs degrade to `pending_updates = None` with a CollectionResult error. Live SYSTEM-context test required before shipping Phase 13.
 - **DCU XML staleness:** If `DCUApplicableUpdates.xml` is absent or older than the DCU scan interval, surface "Unknown (no scan data)" rather than 0. IT must run DCU at least once for the count to appear.
 - **`_WIN32COM_AVAILABLE` guard:** Mirror of `_WMI_AVAILABLE` pattern — enables CI testing without a COM server. Named after the library (not the feature) for future reuse.
-- **PyInstaller:** Add `--hidden-import win32timezone` to `status_report.spec` when pywin32 is added.
+- **PyInstaller:** Add `--hidden-import win32timezone` to `scry.spec` when pywin32 is added (Phase 13).
 
 ## Future Requirements
 
@@ -58,12 +63,14 @@ Surface system health signals and extend CLI output options so IT staff can asse
 
 | REQ-ID | Phase | Phase Name | Status |
 |--------|-------|------------|--------|
-| HEALTH-01 | 12 | System Health Collectors | Pending |
-| HEALTH-02 | 12 | System Health Collectors | Pending |
-| WARN-04 | 12 | System Health Collectors | Pending |
-| WARN-05 | 12 | System Health Collectors | Pending |
-| VENDOR-01 | 13 | Vendor Update Detection | Pending |
-| VENDOR-02 | 13 | Vendor Update Detection | Pending |
-| OUT-V3-01 | 14 | Extended CLI Flags | Pending |
-| OUT-V3-02 | 14 | Extended CLI Flags | Pending |
-| CLI-V3-01 | 14 | Extended CLI Flags | Pending |
+| RENAME-01 | 12 | SCRY Rename | Pending |
+| RENAME-02 | 12 | SCRY Rename | Pending |
+| HEALTH-01 | 13 | System Health Collectors | Pending |
+| HEALTH-02 | 13 | System Health Collectors | Pending |
+| WARN-04 | 13 | System Health Collectors | Pending |
+| WARN-05 | 13 | System Health Collectors | Pending |
+| VENDOR-01 | 14 | Vendor Update Detection | Pending |
+| VENDOR-02 | 14 | Vendor Update Detection | Pending |
+| OUT-V3-01 | 15 | Extended CLI Flags | Pending |
+| OUT-V3-02 | 15 | Extended CLI Flags | Pending |
+| CLI-V3-01 | 15 | Extended CLI Flags | Pending |

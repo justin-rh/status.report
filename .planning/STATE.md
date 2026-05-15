@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: System Health, Vendor Updates, and Extended CLI
 status: planning
-stopped_at: Roadmap created — phases 12–14 defined; ready to plan Phase 12
-last_updated: "2026-05-14T00:00:00Z"
-last_activity: 2026-05-14 — Roadmap v3.0 created
+stopped_at: Phase 12 (SCRY Rename) inserted — phases now 12–15; ready to plan Phase 12
+last_updated: "2026-05-15T00:00:00Z"
+last_activity: 2026-05-15 — SCRY Rename inserted as Phase 12; existing phases shifted to 13–15
 progress:
-  total_phases: 3
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -26,10 +26,10 @@ See: .planning/PROJECT.md (updated 2026-05-14)
 
 ## Current Position
 
-Phase: 12 — System Health Collectors
+Phase: 12 — SCRY Rename
 Plan: —
 Status: Planning
-Last activity: 2026-05-14 — Roadmap v3.0 created (3 phases, 9 requirements)
+Last activity: 2026-05-15 — SCRY Rename inserted as Phase 12; phases 13–15 are System Health, Vendor Updates, Extended CLI
 
 ## Accumulated Context
 
@@ -38,7 +38,7 @@ Last activity: 2026-05-14 — Roadmap v3.0 created (3 phases, 9 requirements)
 - v1.0 Phases 1–5: hostname parser, hardware collectors, D&D character sheet, app detection, PyInstaller packaging
 - v2.0 Phases 6–11: warning system, HTML warnings box, NinjaOne SYSTEM compatibility, Company Portal/Intune, Mac collectors, Steve CLI flags
 - Phase 11 added: Steve — CLI flags for targeted stdout output (`--name`, `--serial`, `--warnings`, `--help`)
-- v3.0 Phases 12–14: system health collectors, vendor update detection, extended CLI flags
+- v3.0 Phases 12–15: SCRY rename, system health collectors, vendor update detection, extended CLI flags
 
 ### Decisions
 
@@ -49,21 +49,21 @@ Key constraints for v3.0:
 - Output path from sys.executable, not os.getcwd()
 - No writes to host PC; all output to flash drive
 - WMI callers use _wmi_module/_WMI_AVAILABLE guard pattern for CI compatibility
-- Phase 12: `severity` field must be added to `Warning` dataclass before health collectors can be wired
-- Phase 12: `--hidden-import win32timezone` must be added to `status_report.spec` when pywin32 is added
-- Phase 12: WUA COM uses `_WIN32COM_AVAILABLE` guard (mirrors `_WMI_AVAILABLE` pattern); pywin32==311 is the only new pip dep
-- Phase 13: Dell/Lenovo registry paths are uncertain — require IT confirmation before phase can close
+- Phase 13: `severity` field must be added to `Warning` dataclass before health collectors can be wired
+- Phase 13: `--hidden-import win32timezone` must be added to `scry.spec` when pywin32 is added
+- Phase 13: WUA COM uses `_WIN32COM_AVAILABLE` guard (mirrors `_WMI_AVAILABLE` pattern); pywin32==311 is the only new pip dep
+- Phase 14: Dell/Lenovo registry paths are uncertain — require IT confirmation before phase can close
 
 ### Pending Todos
 
-- Confirm Dell Command Update registry path with IT before Phase 13
-- Confirm Lenovo System Update registry path with IT before Phase 13
+- Confirm Dell Command Update registry path with IT before Phase 14
+- Confirm Lenovo System Update registry path with IT before Phase 14
 - Validate NinjaOne Mac agent path against a real Mac in the fleet (carried from v2.0)
 - Hardware-gated UAT items from v2.0 carried as acknowledged debt
 
 ### Blockers/Concerns
 
-- Phase 13: Dell/Lenovo registry paths for pending update counts are uncertain — documented as IT confirmation gate
+- Phase 14: Dell/Lenovo registry paths for pending update counts are uncertain — documented as IT confirmation gate
 
 ## Deferred Items
 
@@ -86,7 +86,7 @@ Key constraints for v3.0:
 
 ## Session Continuity
 
-Last session: 2026-05-14
-Stopped at: Roadmap v3.0 created — phases 12–14 defined
+Last session: 2026-05-15
+Stopped at: Phase 12 (SCRY Rename) inserted; roadmap is now phases 12–15
 Resume file: None
 Next action: `/gsd-plan-phase 12`
