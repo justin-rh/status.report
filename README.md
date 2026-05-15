@@ -1,4 +1,4 @@
-# StatusReport
+# SCRY
 
 A self-contained Windows tool that runs from a USB flash drive and audits a PC in seconds. Plug in, double-click, and get a full picture of the device — hardware specs, installed software, and compliance gaps — rendered as a D&D/RPG-styled HTML character sheet saved back to the drive.
 
@@ -27,11 +27,11 @@ No installation. No internet. No changes to the host PC.
 
 ## Running the Tool (IT Staff)
 
-1. Copy `dist\status_report_v2.1\` to a USB flash drive
-2. On the target PC, open the USB drive and double-click `status_report.exe`
+1. Copy `dist\scry_v3.0\` to a USB flash drive
+2. On the target PC, open the USB drive and double-click `scry.exe`
 3. The tool runs, prints progress to the console, and opens the HTML report in the default browser
 4. Press **Enter** to close the window, then eject the USB drive
-5. The report is saved to `logs\status_{hostname}_{date}.html` on the USB drive
+5. The report is saved to `logs\{date}_scry_{hostname}.html` on the USB drive
 
 > The tool runs as a standard user. Some hardware fields (e.g., CPU model via WMI) require elevation — the tool degrades gracefully and shows `Unavailable` rather than crashing.
 
@@ -51,10 +51,10 @@ For scripted use (NinjaOne, terminal) the tool accepts flags that print a single
 Flags are combinable. Output order is always: name → serial → warnings.
 
 ```bat
-status_report.exe --name
-status_report.exe --serial
-status_report.exe --warnings
-status_report.exe --name --serial
+scry.exe --name
+scry.exe --serial
+scry.exe --warnings
+scry.exe --name --serial
 ```
 
 No flags → full pipeline runs and generates the HTML character sheet as normal.
@@ -84,7 +84,7 @@ python -m venv .venv
 build.bat
 ```
 
-Output: `dist\status_report_v2.1\` — copy this folder to the USB flash drive.
+Output: `dist\scry_v3.0\` — copy this folder to the USB flash drive.
 
 ---
 
@@ -150,7 +150,7 @@ writers/
   __init__.py               # File I/O layer (write_html)
 tests/                      # pytest suite
 build.bat                   # One-command PyInstaller build
-status_report.spec          # PyInstaller --onedir build definition
+scry.spec                   # PyInstaller --onedir build definition
 ```
 
 ### Key Constraints
@@ -164,7 +164,7 @@ status_report.spec          # PyInstaller --onedir build definition
 
 ## Output
 
-The tool saves `logs\status_{hostname}_{date}.html` to the USB drive and opens it in the default browser. The character sheet includes:
+The tool saves `logs\{date}_scry_{hostname}.html` to the USB drive and opens it in the default browser. The character sheet includes:
 
 - **Header** — hostname as character name, device class, realm (city), guild (department), station
 - **Stat Block** — CPU (STR), RAM (CON), disk HP bar, OS version, current user

@@ -1,8 +1,8 @@
-# StatusReport — Project Guide
+# SCRY — Project Guide
 
 ## What This Is
 
-A self-contained Windows .exe (PyInstaller --onedir) that runs from a USB flash drive and audits a Windows PC. It decodes the hostname using the Master Electronics naming convention, collects hardware stats and user profiles, detects a specific list of installed apps, and generates a D&D/RPG-styled HTML character sheet saved back to the flash drive.
+A self-contained Windows .exe (PyInstaller --onedir) that runs from a USB flash drive and audits a Windows PC. (Project name: SCRY — formerly StatusReport.) It decodes the hostname using the Master Electronics naming convention, collects hardware stats and user profiles, detects a specific list of installed apps, and generates a D&D/RPG-styled HTML character sheet saved back to the flash drive.
 
 ## GSD Workflow
 
