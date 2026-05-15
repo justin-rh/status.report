@@ -1,9 +1,9 @@
-"""StatusReport entry point. Phase 5.
+"""SCRY entry point. Phase 5.
 
 Orchestrates the full audit pipeline:
   collect_all(report) -> render_html(report) -> write to logs/ -> open in browser
 
-Output path: Path(sys.executable).parent / "logs" / "status_{hostname}_{date}.html"
+Output path: Path(sys.executable).parent / "logs" / "{date}_scry_{hostname}.html"
   - sys.executable resolves to USB root when running as frozen exe (CLAUDE.md constraint)
   - NEVER getcwd() -- the cwd points to host PC when double-clicked, not the flash drive
   - NEVER write to host PC (PKG-02, CLAUDE.md)
@@ -90,8 +90,8 @@ def _run_cli(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="StatusReport -- Master Electronics IT Audit Tool",
-        prog="status_report",
+        description="SCRY -- Master Electronics IT Audit Tool",
+        prog="scry",
     )
     parser.add_argument("--name", action="store_true", help="Print PC hostname to stdout and exit")
     parser.add_argument("--serial", action="store_true", help="Print device serial number to stdout and exit")
@@ -105,7 +105,7 @@ def main() -> None:
     hostname = socket.gethostname()
     date_str = datetime.date.today().isoformat()
 
-    print("StatusReport -- Master Electronics IT Audit Tool")
+    print("SCRY -- Master Electronics IT Audit Tool")
 
     report = AuditReport(
         hostname=hostname,
@@ -137,7 +137,7 @@ def main() -> None:
         usb_root = Path(sys.executable).parent
     logs_dir = usb_root / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
-    base_name = f"status_{hostname}_{date_str}"
+    base_name = f"{date_str}_scry_{hostname}"
     output_path = logs_dir / f"{base_name}.html"
     counter = 2
     while output_path.exists():

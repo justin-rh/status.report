@@ -1,7 +1,7 @@
 @ECHO OFF
-REM StatusReport -- One-command build script
+REM SCRY -- One-command build script
 REM Run from the repo root. Requires Python 3.12 venv at .venv\
-REM After build: copy dist\status_report\ to the USB flash drive.
+REM After build: copy dist\scry_v3.0\ to the USB flash drive.
 REM
 REM CALL is required before both activate.bat and pyinstaller.
 REM Without CALL, the batch file exits after the first command returns.
@@ -16,8 +16,8 @@ IF %ERRORLEVEL% NEQ 0 (
     EXIT /B 1
 )
 
-ECHO Building status_report with PyInstaller...
-CALL pyinstaller status_report.spec --noconfirm
+ECHO Building SCRY with PyInstaller...
+CALL pyinstaller scry.spec --noconfirm
 
 IF %ERRORLEVEL% NEQ 0 (
     ECHO [ERROR] PyInstaller build failed. Check output above.
@@ -25,5 +25,5 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 ECHO.
-ECHO Build complete. Distributable is in: dist\status_report_v2.1\
-ECHO Copy dist\status_report_v2.1\ to the USB flash drive.
+ECHO Build complete. Distributable is in: dist\scry_v3.0\
+ECHO Copy dist\scry_v3.0\ to the USB flash drive.

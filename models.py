@@ -1,4 +1,4 @@
-"""StatusReport data contract. All layers import from this module.
+"""SCRY data contract. All layers import from this module.
 ROADMAP SC5: AuditReport, ParsedHostname, AppStatus, CollectionResult importable here.
 """
 from __future__ import annotations

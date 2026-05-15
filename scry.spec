@@ -1,6 +1,6 @@
-# StatusReport PyInstaller build spec -- D-08 (checked into repo).
+# SCRY PyInstaller build spec -- D-08 (checked into repo).
 # Build: run build.bat from repo root (activates venv, runs pyinstaller).
-# Output: dist/status_report_{VERSION}/ -- IT copies this folder to USB flash drive.
+# Output: dist/scry_{VERSION}/ -- IT copies this folder to USB flash drive.
 #
 # Constraints:
 #   --onedir only (EXE exclude_binaries=True + COLLECT) -- CLAUDE.md, D-07
@@ -8,7 +8,7 @@
 #   upx=False: UPX packer signature increases AV false positive rate (RESEARCH.md)
 #   console=True: D-04 requires verbose progress output via print()
 
-VERSION = "v2.1"   # Update this when cutting a new milestone build.
+VERSION = "v3.0"   # Update this when cutting a new milestone build.
 
 from PyInstaller.utils.hooks import collect_submodules
 
@@ -75,7 +75,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,   # --onedir: binaries go to COLLECT, not embedded in exe
-    name=f'status_report_{VERSION}',
+    name=f'scry_{VERSION}',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -95,5 +95,5 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name=f'status_report_{VERSION}',    # dist/status_report_{VERSION}/ is the distributable folder
+    name=f'scry_{VERSION}',    # dist/scry_{VERSION}/ is the distributable folder
 )
