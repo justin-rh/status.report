@@ -14,21 +14,21 @@ import pytest
 # ---------------------------------------------------------------------------
 
 def test_write_html_creates_file():
-    """write_html creates status_report.html in the given directory."""
+    """write_html creates scry.html in the given directory."""
     from writers import write_html
 
     with tempfile.TemporaryDirectory() as tmp:
         write_html('<html>test</html>', Path(tmp))
-        assert (Path(tmp) / 'status_report.html').exists()
+        assert (Path(tmp) / 'scry.html').exists()
 
 
 def test_write_html_returns_full_path():
-    """write_html returns a Path equal to output_path / 'status_report.html'."""
+    """write_html returns a Path equal to output_path / 'scry.html'."""
     from writers import write_html
 
     with tempfile.TemporaryDirectory() as tmp:
         result = write_html('<html>test</html>', Path(tmp))
-        expected = Path(tmp) / 'status_report.html'
+        expected = Path(tmp) / 'scry.html'
         assert result == expected
 
 
@@ -42,12 +42,12 @@ def test_write_html_returned_path_exists():
 
 
 def test_write_html_returned_path_name():
-    """Returned Path has name 'status_report.html'."""
+    """Returned Path has name 'scry.html'."""
     from writers import write_html
 
     with tempfile.TemporaryDirectory() as tmp:
         result = write_html('<html>test</html>', Path(tmp))
-        assert result.name == 'status_report.html'
+        assert result.name == 'scry.html'
 
 
 # ---------------------------------------------------------------------------

@@ -191,12 +191,12 @@ def test_build_context_quest_incomplete_mock_report():
 # ---------------------------------------------------------------------------
 
 def test_render_report_writes_file():
-    """render_report writes status_report.html to output_path."""
+    """render_report writes scry.html to output_path."""
     from renderer import render_report
     with tempfile.TemporaryDirectory() as tmp:
         out = render_report(MOCK_REPORT, Path(tmp))
         assert out.exists()
-        assert out.name == 'status_report.html'
+        assert out.name == 'scry.html'
 
 
 def test_render_report_returns_existing_path():
@@ -264,11 +264,11 @@ def test_render_report_none_cpu_model_renders_emdash():
 # ---------------------------------------------------------------------------
 
 def test_write_html_creates_file():
-    """write_html creates status_report.html in the given directory."""
+    """write_html creates scry.html in the given directory."""
     from writers import write_html
     with tempfile.TemporaryDirectory() as tmp:
         write_html('<html>x</html>', Path(tmp))
-        assert (Path(tmp) / 'status_report.html').exists()
+        assert (Path(tmp) / 'scry.html').exists()
 
 
 def test_write_html_contents_match():

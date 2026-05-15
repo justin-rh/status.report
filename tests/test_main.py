@@ -62,7 +62,7 @@ def _patched_main(isatty_value: bool, report_overrides: dict | None = None):
             setattr(report, field_name, getattr(fixed_report, field_name))
 
     with (
-        patch("sys.argv", ["status_report"]),
+        patch("sys.argv", ["scry"]),
         patch("main.socket.gethostname", return_value=hostname),
         patch("main.collect_all", side_effect=fake_collect_all),
         patch("main.evaluate_warnings", return_value=[]),
@@ -176,7 +176,7 @@ def test_name_flag_prints_hostname(capsys):
     """--name prints the hostname and exits 0 (D-08: no collect_all needed)."""
     import main
     with (
-        patch("sys.argv", ["status_report", "--name"]),
+        patch("sys.argv", ["scry", "--name"]),
         patch("main.socket.gethostname", return_value="PHX-INV-001"),
     ):
         with pytest.raises(SystemExit) as exc_info:
@@ -192,7 +192,7 @@ def test_serial_flag_prints_serial(capsys):
     def fake_collect_hardware(report):
         report.serial_number = "SN-ABC-12345"
     with (
-        patch("sys.argv", ["status_report", "--serial"]),
+        patch("sys.argv", ["scry", "--serial"]),
         patch("main.socket.gethostname", return_value="PHX-INV-001"),
         patch("main.sys.platform", "win32"),
         patch("collectors.windows.hardware.collect_hardware", side_effect=fake_collect_hardware),
@@ -210,7 +210,7 @@ def test_serial_flag_unknown_when_none(capsys):
     def fake_collect_hardware(report):
         report.serial_number = None
     with (
-        patch("sys.argv", ["status_report", "--serial"]),
+        patch("sys.argv", ["scry", "--serial"]),
         patch("main.socket.gethostname", return_value="PHX-INV-001"),
         patch("main.sys.platform", "win32"),
         patch("collectors.windows.hardware.collect_hardware", side_effect=fake_collect_hardware),
@@ -232,7 +232,7 @@ def test_warnings_flag_prints_warn_messages(capsys):
         Warning(code="RENAME_REQUIRED", severity="OK", message="Hostname matches naming convention"),
     ]
     with (
-        patch("sys.argv", ["status_report", "--warnings"]),
+        patch("sys.argv", ["scry", "--warnings"]),
         patch("main.socket.gethostname", return_value="PHX-INV-001"),
         patch("main.collect_all"),
         patch("main.evaluate_warnings", return_value=warn_warnings),
@@ -257,7 +257,7 @@ def test_warnings_flag_empty_when_all_ok(capsys):
         Warning(code="RENAME_REQUIRED", severity="OK", message="Hostname matches naming convention"),
     ]
     with (
-        patch("sys.argv", ["status_report", "--warnings"]),
+        patch("sys.argv", ["scry", "--warnings"]),
         patch("main.socket.gethostname", return_value="PHX-INV-001"),
         patch("main.collect_all"),
         patch("main.evaluate_warnings", return_value=ok_warnings),
@@ -277,7 +277,7 @@ def test_name_serial_combined_output_order(capsys):
     def fake_collect_hardware(report):
         report.serial_number = "SN-ORDER-TEST"
     with (
-        patch("sys.argv", ["status_report", "--serial", "--name"]),  # reversed CLI order
+        patch("sys.argv", ["scry", "--serial", "--name"]),  # reversed CLI order
         patch("main.socket.gethostname", return_value="PHX-INV-001"),
         patch("main.sys.platform", "win32"),
         patch("collectors.windows.hardware.collect_hardware", side_effect=fake_collect_hardware),
@@ -296,7 +296,7 @@ def test_cli_mode_suppresses_summary_line(capsys):
     """CLI flag mode must not emit [SUMMARY] line (targeted output only)."""
     import main
     with (
-        patch("sys.argv", ["status_report", "--name"]),
+        patch("sys.argv", ["scry", "--name"]),
         patch("main.socket.gethostname", return_value="PHX-INV-001"),
     ):
         with pytest.raises(SystemExit):
@@ -311,7 +311,7 @@ def test_no_flags_runs_full_pipeline(capsys):
     """No flags -> full pipeline runs and emits [SUMMARY] (D-03, regression guard)."""
     import main
     with (
-        patch("sys.argv", ["status_report"]),
+        patch("sys.argv", ["scry"]),
     ):
         with _patched_main(isatty_value=False):
             main.main()

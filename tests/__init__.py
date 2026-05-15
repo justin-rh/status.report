@@ -1,1 +1,1 @@
-# tests package — unit tests for StatusReport (no Windows API calls)
+# tests package — unit tests for SCRY (no Windows API calls)
