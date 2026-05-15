@@ -1,4 +1,4 @@
-# Roadmap: StatusReport
+# Roadmap: SCRY
 
 ## Milestones
 
@@ -38,7 +38,7 @@ Full phase details: `.planning/milestones/v2.0-ROADMAP.md`
 <details open>
 <summary>🔄 v3.0 System Health, Vendor Updates, and Extended CLI (Phases 12–15) — IN PROGRESS</summary>
 
-- [ ] **Phase 12: SCRY Rename** — Rename project from StatusReport to SCRY; update output filename to `{date}_scry_{hostname}.html`
+- [x] **Phase 12: SCRY Rename** — Rename project from StatusReport to SCRY; update output filename to `{date}_scry_{hostname}.html`
 - [ ] **Phase 13: System Health Collectors** — Add `severity` field to `Warning`, collect uptime and pending Windows update count, emit UPTIME_WARN and UPTIME_STALE warnings
 - [ ] **Phase 14: Vendor Update Detection** — Surface Dell Command Update and Lenovo System Update status in the character sheet
 - [ ] **Phase 15: Extended CLI Flags** — `--json`, `--output <path>`, and `--app <name>` flags with JSON support
@@ -61,7 +61,7 @@ Full phase details: `.planning/milestones/v2.0-ROADMAP.md`
 Plans:
 - [x] 12-01-PLAN.md — Source code renames (main.py, scry.spec, build.bat, models.py, writers/)
 - [x] 12-02-PLAN.md — Test file updates and full test suite verification (203 tests)
-- [ ] 12-03-PLAN.md — Documentation updates (CLAUDE.md, README.md, planning docs)
+- [x] 12-03-PLAN.md — Documentation updates (CLAUDE.md, README.md, planning docs)
 
 ### Phase 13: System Health Collectors
 **Goal**: IT staff can see machine health signals — uptime and pending Windows update count — directly in the character sheet, with automatic warnings when uptime exceeds safe thresholds
@@ -115,7 +115,7 @@ Plans:
 | 9. Company Portal Detection | v2.0 | 1/1 | Complete | 2026-05-08 |
 | 10. Mac Collectors | v2.0 | 4/4 | Complete | 2026-05-08 |
 | 11. Steve | v2.0 | 1/1 | Complete | 2026-05-12 |
-| 12. SCRY Rename | v3.0 | 2/3 | In Progress | - |
+| 12. SCRY Rename | v3.0 | 3/3 | Complete | 2026-05-15 |
 | 13. System Health Collectors | v3.0 | 0/? | Not started | - |
 | 14. Vendor Update Detection | v3.0 | 0/? | Not started | - |
 | 15. Extended CLI Flags | v3.0 | 0/? | Not started | - |
