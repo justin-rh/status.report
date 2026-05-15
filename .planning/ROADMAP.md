@@ -60,7 +60,7 @@ Full phase details: `.planning/milestones/v2.0-ROADMAP.md`
 **Plans**: 3 plans
 Plans:
 - [x] 12-01-PLAN.md — Source code renames (main.py, scry.spec, build.bat, models.py, writers/)
-- [ ] 12-02-PLAN.md — Test file updates and full test suite verification (203 tests)
+- [x] 12-02-PLAN.md — Test file updates and full test suite verification (203 tests)
 - [ ] 12-03-PLAN.md — Documentation updates (CLAUDE.md, README.md, planning docs)
 
 ### Phase 13: System Health Collectors
@@ -115,7 +115,7 @@ Plans:
 | 9. Company Portal Detection | v2.0 | 1/1 | Complete | 2026-05-08 |
 | 10. Mac Collectors | v2.0 | 4/4 | Complete | 2026-05-08 |
 | 11. Steve | v2.0 | 1/1 | Complete | 2026-05-12 |
-| 12. SCRY Rename | v3.0 | 1/3 | In Progress | - |
+| 12. SCRY Rename | v3.0 | 2/3 | In Progress | - |
 | 13. System Health Collectors | v3.0 | 0/? | Not started | - |
 | 14. Vendor Update Detection | v3.0 | 0/? | Not started | - |
 | 15. Extended CLI Flags | v3.0 | 0/? | Not started | - |
