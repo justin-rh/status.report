@@ -57,7 +57,11 @@ Full phase details: `.planning/milestones/v2.0-ROADMAP.md`
   3. All 203 existing tests pass with no changes to test logic — only name references updated
   4. `build.bat` produces `scry.exe` and all references to `StatusReport` are replaced with `SCRY`
   5. `.planning/` docs, `CLAUDE.md`, and source file headers reference SCRY, not StatusReport
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 12-01-PLAN.md — Source code renames (main.py, scry.spec, build.bat, models.py, writers/)
+- [ ] 12-02-PLAN.md — Test file updates and full test suite verification (203 tests)
+- [ ] 12-03-PLAN.md — Documentation updates (CLAUDE.md, README.md, planning docs)
 
 ### Phase 13: System Health Collectors
 **Goal**: IT staff can see machine health signals — uptime and pending Windows update count — directly in the character sheet, with automatic warnings when uptime exceeds safe thresholds
@@ -111,7 +115,7 @@ Full phase details: `.planning/milestones/v2.0-ROADMAP.md`
 | 9. Company Portal Detection | v2.0 | 1/1 | Complete | 2026-05-08 |
 | 10. Mac Collectors | v2.0 | 4/4 | Complete | 2026-05-08 |
 | 11. Steve | v2.0 | 1/1 | Complete | 2026-05-12 |
-| 12. SCRY Rename | v3.0 | 0/? | Not started | - |
+| 12. SCRY Rename | v3.0 | 0/3 | Not started | - |
 | 13. System Health Collectors | v3.0 | 0/? | Not started | - |
 | 14. Vendor Update Detection | v3.0 | 0/? | Not started | - |
 | 15. Extended CLI Flags | v3.0 | 0/? | Not started | - |
