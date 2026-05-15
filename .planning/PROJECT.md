@@ -17,10 +17,11 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 - Vendor update detection — pending Dell Command Update count, pending Lenovo System Update count
 - Extended CLI flags — `--json` output, `--output <path>` override, `--app <name>` single-app check with JSON support
 
-## Current State (v3.0 in progress — 2026-05-14)
+## Current State (v3.0 in progress — 2026-05-15)
 
 - **Last shipped:** v2.0 archived 2026-05-14; 6 phases (6–11), 12 plans, 203 tests passing
 - **Stack:** Python 3.12 + psutil + wmi + winreg + Jinja2 + PyInstaller `--onedir`; ~5,226 LOC across 11 phases
+- **Phase 12 complete:** SCRY rename — project renamed from StatusReport to SCRY throughout; output filename is now `{date}_scry_{hostname}.html`; build produces `dist\scry_v3.0\`; 203 tests passing
 - **Pending human testing:** Live NinjaOne/CrowdStrike detection, Mac end-to-end run, Company Portal on real machine, visual HTML check (all hardware-gated; carried as acknowledged debt)
 - **Current milestone:** v3.0 — system health collectors, vendor updates, extended CLI output flags
 
@@ -140,4 +141,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-14 — v3.0 milestone started*
+*Last updated: 2026-05-15 — Phase 12 complete (SCRY rename)*
