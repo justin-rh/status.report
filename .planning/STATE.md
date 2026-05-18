@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: System Health, Vendor Updates, and Extended CLI
-status: ready_to_execute
-stopped_at: Phase 14 Plan 02 complete (14-02-PLAN.md)
-last_updated: "2026-05-18T21:00:00Z"
-last_activity: 2026-05-18 — Phase 14 Plan 02 complete; renderer vendor display strings + character_sheet.html vendor rows + 10 renderer tests; human checkpoint approved; 284 tests passing
+status: complete
+stopped_at: Phase 15 complete (1/1 plans)
+last_updated: "2026-05-18T23:00:00Z"
+last_activity: 2026-05-18 — Phase 15 executed; --json/--output/--app flags + 7 CLI tests; 291 tests pass; v3.0 milestone complete
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 4
+  total_plans: 9
+  completed_plans: 9
   percent: 100
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-14)
 
 ## Current Position
 
-Phase: 14 — Vendor Update Detection
-Plan: 02 complete; Phase 14 DONE
-Status: Phase 14 complete — vendor renderer + template rows; human checkpoint approved; Phase 15 is next
-Last activity: 2026-05-18 — Phase 14 Plan 02 complete; renderer dell_dcu_display/lenovo_lsu_display, character_sheet.html vendor rows, 10 renderer tests; checkpoint approved; 284 tests passing (10 new)
+Phase: 15 — Extended CLI Flags
+Plan: 1/1 (complete)
+Status: Phase 15 complete — v3.0 milestone complete
+Last activity: 2026-05-18 — Phase 15 executed; --json/--output/--app flags added to main.py; 7 CLI tests written; 291 tests pass; v3.0 milestone complete
 
 ## Accumulated Context
 
@@ -86,7 +86,7 @@ Key constraints for v3.0:
 
 ## Session Continuity
 
-Last session: 2026-05-18T21:00:00Z
-Stopped at: Completed Phase 14 Plan 02 (14-02-PLAN.md)
+Last session: 2026-05-18T23:00:00Z
+Stopped at: Completed 15-01-PLAN.md (Phase 15 complete; v3.0 milestone complete)
 Resume file: None
-Next action: Execute Phase 15 (Extended CLI Flags — --json, --output, --app)
+Next action: None — v3.0 milestone complete

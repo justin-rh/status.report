@@ -41,7 +41,7 @@ Full phase details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 12: SCRY Rename** — Rename project from StatusReport to SCRY; update output filename to `{date}_scry_{hostname}.html`
 - [x] **Phase 13: System Health Collectors** — Add `level` field to `Warning`, collect uptime and pending Windows update count, emit UPTIME_WARN and UPTIME_STALE warnings (3/3 plans complete)
 - [x] **Phase 14: Vendor Update Detection** — Surface Dell Command Update and Lenovo System Update status in the character sheet
-- [ ] **Phase 15: Extended CLI Flags** — `--json`, `--output <path>`, and `--app <name>` flags with JSON support
+- [x] **Phase 15: Extended CLI Flags** — `--json`, `--output <path>`, and `--app <name>` flags with JSON support
 
 </details>
 
@@ -105,7 +105,7 @@ Plans:
   4. Running `scry.exe --app ninjaone --json` prints a JSON blob for that one app to stdout; app name matching is case-insensitive ("NinjaOne", "ninjaone", "NINJAONE" all resolve)
 **Plans**: 1 plan
 Plans:
-- [ ] 15-01-PLAN.md — --json, --output, --app flags + tests
+- [x] 15-01-PLAN.md — --json, --output, --app flags + tests
 
 ## Progress
 
@@ -125,4 +125,4 @@ Plans:
 | 12. SCRY Rename | v3.0 | 3/3 | Complete | 2026-05-15 |
 | 13. System Health Collectors | v3.0 | 3/3 | Complete | 2026-05-18 |
 | 14. Vendor Update Detection | v3.0 | 2/2 | Complete | 2026-05-18 |
-| 15. Extended CLI Flags | v3.0 | 0/1 | Not started | - |
+| 15. Extended CLI Flags | v3.0 | 1/1 | Complete | 2026-05-18 |
