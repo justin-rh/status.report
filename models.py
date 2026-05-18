@@ -1,6 +1,7 @@
 """SCRY data contract. All layers import from this module.
 ROADMAP SC5: AuditReport, ParsedHostname, AppStatus, CollectionResult importable here.
 Phase 13: Warning.level field added (D-01); AuditReport.uptime_seconds and .pending_updates added (D-04).
+Phase 14: VendorUpdateStatus dataclass added; AuditReport.dell_dcu and .lenovo_lsu added (D-01, D-02).
 """
 from __future__ import annotations
 
@@ -59,6 +60,17 @@ class Warning:
 
 
 @dataclass
+class VendorUpdateStatus:
+    """Detection result for a vendor update tool.
+    No error field — errors set installed/pending_count to None
+    and append to report.collection_errors (D-03, Phase 14).
+    """
+    installed: bool | None       # True=found in registry; False=not found; None=collection error
+    pending_count: int | None    # int from XML parse; None when not installed, XML absent, or parse error
+    scan_data_present: bool      # True only when XML file exists and was readable
+
+
+@dataclass
 class AuditReport:
     """The single normalized data container passed between all layers."""
     hostname: str
@@ -75,6 +87,8 @@ class AuditReport:
     # System health — populated by Phase 13 collectors
     uptime_seconds: int | None = None    # seconds since last reboot; None if collection fails (D-04/D-05)
     pending_updates: int | None = None   # Windows update count from WUA COM; None when inaccessible (D-04/D-08)
+    dell_dcu: VendorUpdateStatus | None = None    # D-02 (Phase 14)
+    lenovo_lsu: VendorUpdateStatus | None = None  # D-02 (Phase 14)
     local_profiles: list[str] = field(default_factory=list)
     # Apps — populated by Phase 4
     apps: list[AppStatus] = field(default_factory=list)
