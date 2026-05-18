@@ -9,8 +9,9 @@ Built for the Master Electronics IT department.
 ## What It Does
 
 - **Decodes the hostname** using the Master Electronics naming convention → city, device type, department, station
-- **Collects hardware info** — CPU model, RAM, disk capacity/free space, Windows version, local user profiles
+- **Collects hardware info** — CPU model, RAM, disk capacity/free space, Windows version, local user profiles, uptime
 - **Detects 11 target apps** — NinjaOne, CrowdStrike Falcon, Microsoft 365, Zoom, Google Chrome, Claude desktop, MERP
+- **Surfaces health warnings** — flags machines with uptime over 7 days (caution) or 30 days (reboot required)
 - **Renders an HTML character sheet** with color-coded pass/fail badges and a quest status banner
 - **Writes output to the USB drive** — no files left on the host PC
 
@@ -41,23 +42,27 @@ No installation. No internet. No changes to the host PC.
 
 For scripted use (NinjaOne, terminal) the tool accepts flags that print a single field to stdout and exit — no HTML generated.
 
-| Flag | Output |
-|------|--------|
-| `--name` | PC hostname |
-| `--serial` | Device serial number (or `Unknown`) |
-| `--warnings` | Active warning messages, one per line (empty if all checks pass) |
-| `--help` | Available flags and descriptions |
+| Flag | Behaviour |
+|------|-----------|
+| `--name` | Print PC hostname to stdout and exit |
+| `--serial` | Print device serial number (or `Unknown`) to stdout and exit |
+| `--warnings` | Print active warning messages, one per line, to stdout and exit (empty if all checks pass) |
+| `--updates` | Query Windows Update Agent for pending update count and include it in the character sheet |
+| `--help` | Show available flags and descriptions |
 
-Flags are combinable. Output order is always: name → serial → warnings.
+`--name`, `--serial`, and `--warnings` are targeted output flags — they print a single field and exit with no HTML generated. They are combinable; output order is always: name → serial → warnings.
+
+`--updates` is a run modifier: the full pipeline still executes and generates the HTML report, but the pending Windows update count is added to the System Health stat block. This flag is opt-in because the Windows Update Agent query can take 5–30 seconds.
 
 ```bat
 scry.exe --name
 scry.exe --serial
 scry.exe --warnings
 scry.exe --name --serial
+scry.exe --updates
 ```
 
-No flags → full pipeline runs and generates the HTML character sheet as normal.
+No flags → full pipeline runs, pending updates shown as N/A in the stat block.
 
 ---
 
@@ -129,7 +134,7 @@ Unrecognized hostnames display as `Unknown` — the tool never crashes on a non-
 .venv\Scripts\pytest
 ```
 
-203+ tests covering the hostname parser, hardware collectors, app detection, renderer, file writer, and CLI flags. All tests run without Windows API calls or a live registry.
+256+ tests covering the hostname parser, hardware collectors, app detection, health checks, renderer, file writer, and CLI flags. All tests run without Windows API calls or a live registry.
 
 ### Project Structure
 
@@ -167,8 +172,9 @@ scry.spec                   # PyInstaller --onedir build definition
 The tool saves `logs\{date}_scry_{hostname}.html` to the USB drive and opens it in the default browser. The character sheet includes:
 
 - **Header** — hostname as character name, device class, realm (city), guild (department), station
-- **Stat Block** — CPU (STR), RAM (CON), disk HP bar, OS version, current user
+- **Stat Block** — CPU (STR), RAM (CON), disk HP bar, OS version, current user, uptime, pending updates (with `--updates`)
 - **Equipment** — one row per app with a green `✓ Installed` or red `✗ Missing` badge
+- **Warnings** — amber badge for uptime over 7 days, red badge for uptime over 30 days
 - **Quest Status** — `QUEST COMPLETE` or `MISSING SOFTWARE — N app(s)` banner
 
 ---
