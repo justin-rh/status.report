@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: System Health, Vendor Updates, and Extended CLI
-status: executing
-stopped_at: Completed Phase 13 Plan 03 (13-03-PLAN.md)
-last_updated: "2026-05-18T19:11:20Z"
-last_activity: 2026-05-18 — Phase 13 Plan 03 complete; _format_uptime(), uptime_display/pending_updates_display in _build_context(), System Health stat rows, badge-critical CSS, level-aware warning badges; 256 tests passing
+status: ready_to_execute
+stopped_at: Phase 14 Plan 01 complete (14-01-PLAN.md)
+last_updated: "2026-05-18T20:29:00Z"
+last_activity: 2026-05-18 — Phase 14 Plan 01 complete; VendorUpdateStatus dataclass, AuditReport.dell_dcu/.lenovo_lsu, collectors/windows/vendor.py, main.py wired; 274 tests passing
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_plans: 8
+  completed_plans: 7
+  percent: 87
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-14)
 
 ## Current Position
 
-Phase: 13 — System Health Collectors
-Plan: 03 complete; Phase 13 DONE
-Status: Phase 13 complete — all 3 plans executed
-Last activity: 2026-05-18 — Phase 13 Plan 03 complete; _format_uptime(), uptime_display/pending_updates_display in _build_context(), System Health stat rows in character sheet, badge-critical CSS, level-aware warning badges (level='red' -> badge-critical), 5 hardware collector tests; 256 tests passing
+Phase: 14 — Vendor Update Detection
+Plan: 01 complete; Phase 14 Plan 01 DONE
+Status: Phase 14 Plan 01 executed — VendorUpdateStatus model + vendor collector; Plan 02 (renderer) is next
+Last activity: 2026-05-18 — Phase 14 Plan 01 complete; VendorUpdateStatus dataclass, AuditReport.dell_dcu/.lenovo_lsu, collectors/windows/vendor.py (DCU registry + XML parse, LSU registry), main.py wired at both --updates gates; 274 tests passing (18 new)
 
 ## Accumulated Context
 
@@ -86,7 +86,7 @@ Key constraints for v3.0:
 
 ## Session Continuity
 
-Last session: 2026-05-18T19:11:20Z
-Stopped at: Completed Phase 13 Plan 03 (13-03-PLAN.md)
+Last session: 2026-05-18T20:29:00Z
+Stopped at: Completed Phase 14 Plan 01 (14-01-PLAN.md)
 Resume file: None
-Next action: Execute Phase 14 (vendor update detection — Dell/Lenovo registry paths pending IT confirmation)
+Next action: Execute Phase 14 Plan 02 (renderer — vendor rows in character sheet)
