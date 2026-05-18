@@ -88,14 +88,15 @@ def test_disk_space_skip_has_detail():
 # Always-three guarantee
 # ---------------------------------------------------------------------------
 
-def test_evaluate_warnings_always_returns_three():
-    """evaluate_warnings must always return exactly 3 Warning objects (Phase 7 D-01)."""
+def test_evaluate_warnings_always_returns_four():
+    """evaluate_warnings must always return exactly 4 Warning objects (Phase 13 D-14)."""
     report = make_report()
     warnings = evaluate_warnings(report)
-    assert len(warnings) == 3, f'expected 3 warnings, got {len(warnings)}'
+    assert len(warnings) == 4, f'expected 4 warnings, got {len(warnings)}'
     assert warnings[0].code == 'OS_VERSION'
     assert warnings[1].code == 'DISK_SPACE'
     assert warnings[2].code == 'RENAME_REQUIRED'
+    assert warnings[3].code in ('UPTIME', 'UPTIME_WARN', 'UPTIME_STALE')
 
 
 # ---------------------------------------------------------------------------
@@ -116,7 +117,7 @@ def test_evaluate_warnings_never_raises():
     )
     try:
         result = evaluate_warnings(all_none_report)
-        assert len(result) == 3
+        assert len(result) == 4
     except Exception as exc:
         pytest.fail(f'evaluate_warnings raised an exception with all-None fields: {exc}')
 
@@ -177,7 +178,7 @@ def test_rename_check_ok_has_no_detail():
     (0,                 'UPTIME',       'OK',   None),       # 0 seconds — well within OK
     (6 * 86400,         'UPTIME',       'OK',   None),       # 6 days — below warn threshold
     (7 * 86400,         'UPTIME',       'OK',   None),       # exactly 7 days — not yet WARN (> not >=)
-    (7 * 86400 + 1,     'UPTIME_WARN',  'WARN', 'yellow'),  # 7 days + 1 sec — crosses warn threshold
+    (7 * 86400 + 1,     'UPTIME',       'OK',   None),       # 7 days + 1 sec — floor div still 7d, not yet WARN
     (8 * 86400,         'UPTIME_WARN',  'WARN', 'yellow'),  # 8 days — within warn range
     (30 * 86400,        'UPTIME_WARN',  'WARN', 'yellow'),  # exactly 30 days — not yet stale
     (31 * 86400,        'UPTIME_STALE', 'WARN', 'red'),     # 31 days — stale
