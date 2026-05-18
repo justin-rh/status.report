@@ -143,6 +143,26 @@ def _build_context(report: AuditReport) -> dict:
 
     dept_codes = sorted(_DEPT_NAMES.items())
 
+    # Uptime display — D-07 (Phase 13)
+    def _format_uptime(seconds: int) -> str:
+        days = seconds // 86400
+        hours = (seconds % 86400) // 3600
+        minutes = (seconds % 3600) // 60
+        if days >= 1:
+            return f"{days} day{'s' if days != 1 else ''} {hours} hour{'s' if hours != 1 else ''}"
+        if hours >= 1:
+            return f"{hours} hour{'s' if hours != 1 else ''}"
+        return f"{minutes} minute{'s' if minutes != 1 else ''}"
+
+    uptime_display = _format_uptime(report.uptime_seconds) if report.uptime_seconds is not None else None
+
+    # Pending updates display — D-16 (Phase 13)
+    pending_updates_display = (
+        f"{report.pending_updates} pending"
+        if report.pending_updates is not None
+        else "N/A"
+    )
+
     return {
         'hostname': report.hostname,
         'device_type': ph.device_type,
@@ -166,4 +186,6 @@ def _build_context(report: AuditReport) -> dict:
         'warnings': report.warnings,
         'has_warnings': any(w.severity == 'WARN' for w in report.warnings),
         'timestamp': report.timestamp,
+        'uptime_display': uptime_display,
+        'pending_updates_display': pending_updates_display,
     }
