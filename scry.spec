@@ -51,7 +51,6 @@ a = Analysis(
         'tkinter',
         'unittest',
         'email',
-        'xml',
         'xmlrpc',
         'http',
         # urllib removed: zipfile._path (stdlib) requires urllib; excluding it crashes pyi_rth_inspect
