@@ -230,3 +230,102 @@ def test_collect_hardware_never_raises():
             collect_hardware(report)
         except Exception as exc:
             pytest.fail(f"collect_hardware raised an exception: {exc}")
+
+
+# ---------------------------------------------------------------------------
+# Phase 13 — Uptime collection tests
+# ---------------------------------------------------------------------------
+
+def test_collect_uptime_populates_uptime_seconds():
+    """uptime_seconds is a positive integer after collect_hardware() runs."""
+    import collectors.windows.hardware as hw_mod
+    from collectors.windows.hardware import collect_hardware
+
+    report = make_report()
+    collect_hardware(report)
+    assert report.uptime_seconds is not None, "uptime_seconds should not be None after collect_hardware"
+    assert isinstance(report.uptime_seconds, int)
+    assert report.uptime_seconds > 0
+
+
+def test_collect_uptime_degrades_on_psutil_error():
+    """uptime_seconds stays None and error is logged when psutil.boot_time raises."""
+    import collectors.windows.hardware as hw_mod
+    from collectors.windows.hardware import collect_hardware
+
+    with patch.object(hw_mod, "psutil") as mock_psutil:
+        # Preserve psutil behaviour for RAM and disk so collect_hardware completes
+        mock_psutil.virtual_memory.return_value.total = 16 * (1024 ** 3)
+        mock_psutil.disk_usage.return_value.total = 512 * (1024 ** 3)
+        mock_psutil.disk_usage.return_value.free = 100 * (1024 ** 3)
+        mock_psutil.boot_time.side_effect = Exception("boot_time unavailable")
+
+        report = make_report()
+        collect_hardware(report)
+
+    assert report.uptime_seconds is None
+    assert any("uptime" in e.lower() for e in report.collection_errors), (
+        f"Expected uptime error in collection_errors; got: {report.collection_errors}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 13 — Pending updates (WUA COM) collection tests
+# ---------------------------------------------------------------------------
+
+def test_collect_pending_updates_skipped_when_win32com_unavailable():
+    """pending_updates stays None when _WIN32COM_AVAILABLE is False (CI path)."""
+    import collectors.windows.hardware as hw_mod
+    from collectors.windows.hardware import collect_pending_updates
+
+    with patch.object(hw_mod, "_WIN32COM_AVAILABLE", False):
+        report = make_report()
+        collect_pending_updates(report)
+
+    assert report.pending_updates is None
+    assert report.collection_errors == [], (
+        f"No errors expected on guarded skip; got: {report.collection_errors}"
+    )
+
+
+def test_collect_pending_updates_populates_count_when_com_available():
+    """pending_updates is set to integer count from WUA COM mock."""
+    import collectors.windows.hardware as hw_mod
+    from collectors.windows.hardware import collect_pending_updates
+
+    mock_client = MagicMock()
+    mock_session = MagicMock()
+    mock_searcher = MagicMock()
+    mock_result = MagicMock()
+    mock_result.Updates.Count = 3
+    mock_searcher.Search.return_value = mock_result
+    mock_session.CreateUpdateSearcher.return_value = mock_searcher
+    mock_client.Dispatch.return_value = mock_session
+
+    with patch.object(hw_mod, "_WIN32COM_AVAILABLE", True), \
+         patch.object(hw_mod, "_win32com_client", mock_client):
+        report = make_report()
+        collect_pending_updates(report)
+
+    assert report.pending_updates == 3
+    mock_client.Dispatch.assert_called_once_with("Microsoft.Update.Session")
+    mock_searcher.Search.assert_called_once_with("IsInstalled=0 and Type='Software'")
+
+
+def test_collect_pending_updates_degrades_on_com_error():
+    """pending_updates stays None and error is logged when COM raises (standard user)."""
+    import collectors.windows.hardware as hw_mod
+    from collectors.windows.hardware import collect_pending_updates
+
+    mock_client = MagicMock()
+    mock_client.Dispatch.side_effect = Exception("Access denied (standard user)")
+
+    with patch.object(hw_mod, "_WIN32COM_AVAILABLE", True), \
+         patch.object(hw_mod, "_win32com_client", mock_client):
+        report = make_report()
+        collect_pending_updates(report)
+
+    assert report.pending_updates is None
+    assert any("pending updates" in e.lower() for e in report.collection_errors), (
+        f"Expected pending updates error in collection_errors; got: {report.collection_errors}"
+    )
