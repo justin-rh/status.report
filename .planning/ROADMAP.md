@@ -39,7 +39,7 @@ Full phase details: `.planning/milestones/v2.0-ROADMAP.md`
 <summary>🔄 v3.0 System Health, Vendor Updates, and Extended CLI (Phases 12–15) — IN PROGRESS</summary>
 
 - [x] **Phase 12: SCRY Rename** — Rename project from StatusReport to SCRY; update output filename to `{date}_scry_{hostname}.html`
-- [ ] **Phase 13: System Health Collectors** — Add `severity` field to `Warning`, collect uptime and pending Windows update count, emit UPTIME_WARN and UPTIME_STALE warnings
+- [ ] **Phase 13: System Health Collectors** — Add `level` field to `Warning`, collect uptime and pending Windows update count, emit UPTIME_WARN and UPTIME_STALE warnings
 - [ ] **Phase 14: Vendor Update Detection** — Surface Dell Command Update and Lenovo System Update status in the character sheet
 - [ ] **Phase 15: Extended CLI Flags** — `--json`, `--output <path>`, and `--app <name>` flags with JSON support
 
@@ -72,9 +72,12 @@ Plans:
   2. IT staff sees pending Windows update count (e.g. "3 pending") in the stat block; a machine where WUA is inaccessible as standard user shows "N/A" — no crash
   3. A machine with uptime > 7 days shows a yellow (caution) warning in the collapsible warnings box; the box auto-expands
   4. A machine with uptime > 30 days shows a red (critical) warning noting that hibernation time is counted; the box auto-expands
-  5. All existing tests pass after the `severity` field is added to the `Warning` dataclass (no regression)
-**Plans**: TBD
-**UI hint**: yes
+  5. All existing tests pass after the `level` field is added to the `Warning` dataclass (no regression)
+**Plans**: 3 plans
+Plans:
+- [ ] 13-01-PLAN.md — Data model + collectors (models.py, both hardware collectors, collect_all wiring, requirements.txt, scry.spec)
+- [ ] 13-02-PLAN.md — Health check logic + tests (health_checks.py, test_health_checks.py)
+- [ ] 13-03-PLAN.md — Renderer + template + collector tests (renderer/__init__.py, character_sheet.html, test_hardware_collector.py)
 
 ### Phase 14: Vendor Update Detection
 **Goal**: IT staff can see whether Dell Command Update or Lenovo System Update is installed and how many vendor updates are pending, without the tool invoking any vendor CLI
@@ -116,6 +119,6 @@ Plans:
 | 10. Mac Collectors | v2.0 | 4/4 | Complete | 2026-05-08 |
 | 11. Steve | v2.0 | 1/1 | Complete | 2026-05-12 |
 | 12. SCRY Rename | v3.0 | 3/3 | Complete | 2026-05-15 |
-| 13. System Health Collectors | v3.0 | 0/? | Not started | - |
+| 13. System Health Collectors | v3.0 | 0/3 | Not started | - |
 | 14. Vendor Update Detection | v3.0 | 0/? | Not started | - |
 | 15. Extended CLI Flags | v3.0 | 0/? | Not started | - |
