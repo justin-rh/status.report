@@ -163,6 +163,29 @@ def _build_context(report: AuditReport) -> dict:
         else "N/A"
     )
 
+    # Dell DCU display — Phase 14 (D-07)
+    if report.dell_dcu is not None:
+        dcu = report.dell_dcu
+        if not dcu.installed:
+            # installed=False (not found) or installed=None (error) → "Not installed"
+            dell_dcu_display: str | None = "Not installed"
+        elif not dcu.scan_data_present:
+            dell_dcu_display = "Unknown (no scan data)"
+        elif dcu.pending_count is None:
+            # scan_data_present=True but parse failed — still show as unknown
+            dell_dcu_display = "Unknown (no scan data)"
+        else:
+            dell_dcu_display = f"{dcu.pending_count} pending"
+    else:
+        dell_dcu_display = None  # --updates absent; omit row entirely (D-05)
+
+    # Lenovo LSU display — Phase 14 (D-08)
+    if report.lenovo_lsu is not None:
+        lsu = report.lenovo_lsu
+        lenovo_lsu_display: str | None = "Not installed" if not lsu.installed else "N/A"
+    else:
+        lenovo_lsu_display = None  # --updates absent; omit row entirely (D-05)
+
     return {
         'hostname': report.hostname,
         'device_type': ph.device_type,
@@ -188,4 +211,6 @@ def _build_context(report: AuditReport) -> dict:
         'timestamp': report.timestamp,
         'uptime_display': uptime_display,
         'pending_updates_display': pending_updates_display,
+        'dell_dcu_display': dell_dcu_display,
+        'lenovo_lsu_display': lenovo_lsu_display,
     }
