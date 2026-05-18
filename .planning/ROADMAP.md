@@ -100,11 +100,12 @@ Plans:
 **Requirements**: OUT-V3-01, OUT-V3-02, CLI-V3-01
 **Success Criteria** (what must be TRUE):
   1. Running `scry.exe --json` produces a valid JSON file in `logs/` alongside the HTML report; the JSON deserializes back to the same field values present in the HTML
-  2. Running `scry.exe --output D:\audit_results` writes both HTML and JSON to that path; running with a host-PC path (e.g. `C:\Users\...`) is rejected with a clear error and no files written
+  2. Running `scry.exe --output D:\audit_results` writes both HTML and JSON (when `--json` is also passed) to that path; any writable path is accepted
   3. Running `scry.exe --app ninjaone` prints a single-line result to stdout and exits without generating an HTML or JSON report
   4. Running `scry.exe --app ninjaone --json` prints a JSON blob for that one app to stdout; app name matching is case-insensitive ("NinjaOne", "ninjaone", "NINJAONE" all resolve)
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 1 plan
+Plans:
+- [ ] 15-01-PLAN.md — --json, --output, --app flags + tests
 
 ## Progress
 
@@ -124,4 +125,4 @@ Plans:
 | 12. SCRY Rename | v3.0 | 3/3 | Complete | 2026-05-15 |
 | 13. System Health Collectors | v3.0 | 3/3 | Complete | 2026-05-18 |
 | 14. Vendor Update Detection | v3.0 | 2/2 | Complete | 2026-05-18 |
-| 15. Extended CLI Flags | v3.0 | 0/? | Not started | - |
+| 15. Extended CLI Flags | v3.0 | 0/1 | Not started | - |
