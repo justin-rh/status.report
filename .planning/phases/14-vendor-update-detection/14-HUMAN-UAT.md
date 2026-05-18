@@ -3,7 +3,7 @@ status: partial
 phase: 14-vendor-update-detection
 source: [14-VERIFICATION.md]
 started: 2026-05-18T20:49:31.066Z
-updated: 2026-05-18T20:49:31.066Z
+updated: 2026-05-18T21:30:00.000Z
 ---
 
 ## Current Test
@@ -26,18 +26,22 @@ result: approved (developer confirmed during Plan 02 checkpoint)
 
 ### 4. Live Dell machine validation
 expected: scry.exe --updates on a real Dell machine with DCU installed shows pending count in System Health
-result: [pending — requires real Dell hardware with DCUApplicableUpdates.xml present]
+result: [pending — no Dell hardware available yet]
 
-### 5. Live non-Dell/non-Lenovo machine
-expected: Both vendor rows show "Not installed"; no crashes or errors
-result: [pending — requires real Windows hardware]
+### 5. Live Lenovo machine (Vantage detected)
+expected: "Lenovo Sys Update" shows "Installed - Open Lenovo Vantage to see pending updates"; no crashes
+result: passed — Lenovo Vantage Service detected correctly after adding Vantage keyword variants
+
+### 6. Live Dell machine validation
+expected: scry.exe --updates on a real Dell machine with DCU installed shows pending count in System Health
+result: [pending — requires real Dell hardware with DCUApplicableUpdates.xml present]
 
 ## Summary
 
-total: 5
-passed: 3
+total: 6
+passed: 4
 issues: 0
-pending: 2
+pending: 1
 skipped: 0
 blocked: 0
 
