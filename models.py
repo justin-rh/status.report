@@ -1,5 +1,6 @@
 """SCRY data contract. All layers import from this module.
 ROADMAP SC5: AuditReport, ParsedHostname, AppStatus, CollectionResult importable here.
+Phase 13: Warning.level field added (D-01); AuditReport.uptime_seconds and .pending_updates added (D-04).
 """
 from __future__ import annotations
 
@@ -54,6 +55,7 @@ class Warning:
     severity: str       # 'OK' or 'WARN' — plain str per D-03
     message: str        # Human-readable one-line summary
     detail: str | None = None  # Extended info or skip reason; None when not needed
+    level: str | None = None   # 'yellow' | 'red' | None — D-01 (Phase 13)
 
 
 @dataclass
@@ -70,6 +72,9 @@ class AuditReport:
     disk_total_gb: float | None = None
     disk_free_gb: float | None = None
     current_user: str | None = None
+    # System health — populated by Phase 13 collectors
+    uptime_seconds: int | None = None    # seconds since last reboot; None if collection fails (D-04/D-05)
+    pending_updates: int | None = None   # Windows update count from WUA COM; None when inaccessible (D-04/D-08)
     local_profiles: list[str] = field(default_factory=list)
     # Apps — populated by Phase 4
     apps: list[AppStatus] = field(default_factory=list)
