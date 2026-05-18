@@ -254,10 +254,10 @@ class TestMacCollectUptime:
 # ---------------------------------------------------------------------------
 
 class TestCollectAllPhase13Wiring:
-    """collect_all() in collectors/__init__.py calls collect_pending_updates on Windows only."""
+    """collect_all() does NOT call collect_pending_updates — that is main.py's job via --updates."""
 
-    def test_collect_all_calls_collect_pending_updates_on_windows(self):
-        """On Windows, collect_all calls collect_pending_updates after collect_apps."""
+    def test_collect_all_does_not_call_collect_pending_updates_on_windows(self):
+        """collect_all never calls collect_pending_updates; main.py calls it via --updates flag."""
         import collectors
 
         mock_win_hw = MagicMock()
@@ -270,7 +270,7 @@ class TestCollectAllPhase13Wiring:
             report = make_report()
             collectors.collect_all(report)
 
-        mock_win_hw.collect_pending_updates.assert_called_once_with(report)
+        mock_win_hw.collect_pending_updates.assert_not_called()
 
     def test_collect_all_does_not_call_collect_pending_updates_on_mac(self):
         """On darwin, collect_all does NOT call collect_pending_updates."""
@@ -286,11 +286,10 @@ class TestCollectAllPhase13Wiring:
             report = make_report()
             collectors.collect_all(report)
 
-        # Mac hardware mock should NOT have collect_pending_updates called
         mock_mac_hw.collect_pending_updates.assert_not_called()
 
     def test_collect_all_windows_call_order(self):
-        """On Windows: collect_hardware, collect_profiles, collect_apps, then collect_pending_updates."""
+        """On Windows: collect_hardware, collect_profiles, collect_apps (no collect_pending_updates)."""
         import collectors
 
         call_order = []
@@ -298,7 +297,6 @@ class TestCollectAllPhase13Wiring:
         mock_win_hw = MagicMock()
         mock_win_hw.collect_hardware.side_effect = lambda r: call_order.append("collect_hardware")
         mock_win_hw.collect_profiles.side_effect = lambda r: call_order.append("collect_profiles")
-        mock_win_hw.collect_pending_updates.side_effect = lambda r: call_order.append("collect_pending_updates")
 
         mock_win_apps = MagicMock()
         mock_win_apps.collect_apps.side_effect = lambda r: call_order.append("collect_apps")
@@ -310,7 +308,5 @@ class TestCollectAllPhase13Wiring:
             report = make_report()
             collectors.collect_all(report)
 
-        assert "collect_pending_updates" in call_order
-        apps_idx = call_order.index("collect_apps")
-        updates_idx = call_order.index("collect_pending_updates")
-        assert updates_idx > apps_idx, "collect_pending_updates must come after collect_apps"
+        assert call_order == ["collect_hardware", "collect_profiles", "collect_apps"]
+        assert "collect_pending_updates" not in call_order

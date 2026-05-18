@@ -53,6 +53,9 @@ def _run_cli(args: argparse.Namespace) -> None:
             timestamp=datetime.datetime.now().isoformat(),
         )
         collect_all(report)
+        if args.updates and sys.platform != "darwin":
+            from collectors.windows.hardware import collect_pending_updates
+            collect_pending_updates(report)
         report.warnings = evaluate_warnings(report)
     elif needs_hardware:
         # Import hardware collector directly — avoid full collect_all (D-09)
@@ -96,6 +99,7 @@ def main() -> None:
     parser.add_argument("--name", action="store_true", help="Print PC hostname to stdout and exit")
     parser.add_argument("--serial", action="store_true", help="Print device serial number to stdout and exit")
     parser.add_argument("--warnings", action="store_true", help="Print active warnings to stdout and exit")
+    parser.add_argument("--updates", action="store_true", help="Query Windows Update Agent for pending update count (slow; omitted by default)")
     args = parser.parse_args()
     cli_mode = args.name or args.serial or args.warnings
     if cli_mode:
@@ -115,6 +119,10 @@ def main() -> None:
 
     print("Collecting hardware info...")
     collect_all(report)  # mutates report in place -- D-06: never raises
+
+    if args.updates and sys.platform != "darwin":
+        from collectors.windows.hardware import collect_pending_updates
+        collect_pending_updates(report)
 
     # Surface collector warnings -- never exit on collection failure (D-06)
     for err in report.collection_errors:

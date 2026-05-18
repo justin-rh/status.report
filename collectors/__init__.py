@@ -12,8 +12,9 @@ def collect_all(report: AuditReport) -> None:
     Platform dispatch: darwin → collectors.mac; anything else → collectors.windows.
     Imports are lazy inside the function body so this module is importable on
     non-native platforms (e.g. mac module importable on Windows CI).
-    Phase 13: collect_pending_updates is called on Windows path only (WUA is Windows-only).
     All functions degrade gracefully — collection_errors accumulates failures.
+    Note: collect_pending_updates (WUA COM) is NOT called here — invoke it explicitly
+    via main.py when the --updates flag is passed (slow blocking call).
     """
     import sys
     if sys.platform == "darwin":
@@ -23,9 +24,8 @@ def collect_all(report: AuditReport) -> None:
         collect_profiles(report)
         collect_apps(report)
     else:
-        from collectors.windows.hardware import collect_hardware, collect_profiles, collect_pending_updates
+        from collectors.windows.hardware import collect_hardware, collect_profiles
         from collectors.windows.apps import collect_apps
         collect_hardware(report)
         collect_profiles(report)
         collect_apps(report)
-        collect_pending_updates(report)
