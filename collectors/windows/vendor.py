@@ -63,7 +63,12 @@ def _detect_dcu(report: AuditReport) -> None:
 def _detect_lsu(report: AuditReport) -> None:
     """Detect Lenovo System Update via registry. No passive count source in v3.0 (D-14)."""
     try:
-        installed, _version = _search_uninstall_keys(["Lenovo System Update"])
+        installed, _version = _search_uninstall_keys([
+            "Lenovo System Update",
+            "Lenovo Vantage Service",
+            "Lenovo Vantage",
+            "Lenovo Commercial Vantage",
+        ])
         report.lenovo_lsu = VendorUpdateStatus(
             installed=installed,
             pending_count=None,        # D-14: no passive source
