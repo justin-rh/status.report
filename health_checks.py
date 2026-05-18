@@ -1,8 +1,9 @@
 """Health checks — evaluates AuditReport fields and produces typed Warning objects.
 
-Always returns exactly three Warning objects from evaluate_warnings() (D-06):
-one for OS version (WARN-01), one for disk space (WARN-02), and one for
-rename required (WARN-03).
+Always returns exactly four Warning objects from evaluate_warnings() (D-06,
+extended to 4 in Phase 13 D-14): one for OS version (WARN-01), one for disk
+space (WARN-02), one for rename required (WARN-03), and one for uptime
+(WARN-04/WARN-05).
 """
 from models import AuditReport, Warning
 
@@ -11,6 +12,8 @@ from models import AuditReport, Warning
 # ---------------------------------------------------------------------------
 OS_WARN_BUILD: int = 22000
 DISK_WARN_PCT: float = 0.15
+UPTIME_WARN_DAYS: int = 7   # WARN-04: caution threshold (yellow)
+UPTIME_STALE_DAYS: int = 30  # WARN-05: critical threshold (red); hibernation time counted
 
 
 # ---------------------------------------------------------------------------
@@ -20,14 +23,15 @@ DISK_WARN_PCT: float = 0.15
 def evaluate_warnings(report: AuditReport) -> list[Warning]:
     """Pure function: AuditReport -> list[Warning]. Never raises.
 
-    Always returns exactly three Warning objects — one per check — so the
+    Always returns exactly four Warning objects — one per check — so the
     Phase 7 renderer can display a complete status table regardless of
-    pass/fail outcome (D-06).
+    pass/fail outcome (D-06, extended to 4 in Phase 13 D-14).
     """
     return [
         _check_os_version(report),
         _check_disk_space(report),
         _check_rename(report),
+        _check_uptime(report),
     ]
 
 
@@ -120,5 +124,46 @@ def _check_rename(report: AuditReport) -> Warning:
         code='RENAME_REQUIRED',
         severity='OK',
         message='Hostname matches naming convention',
+        detail=None,
+    )
+
+
+def _check_uptime(report: AuditReport) -> Warning:
+    """Return UPTIME Warning. Escalates: OK -> UPTIME_WARN (yellow) -> UPTIME_STALE (red).
+
+    Boundary rules (D-11):
+      uptime_seconds is None -> OK / level=None (collection skipped)
+      days <= UPTIME_WARN_DAYS  -> OK / level=None
+      days > UPTIME_WARN_DAYS and <= UPTIME_STALE_DAYS -> WARN / level='yellow' (WARN-04)
+      days > UPTIME_STALE_DAYS  -> WARN / level='red'   (WARN-05)
+    """
+    if report.uptime_seconds is None:
+        return Warning(
+            code='UPTIME',
+            severity='OK',
+            message='Uptime check skipped',
+            detail='uptime_seconds not collected',
+        )
+    days = report.uptime_seconds // 86400
+    if days > UPTIME_STALE_DAYS:
+        return Warning(
+            code='UPTIME_STALE',
+            severity='WARN',
+            message=f'Uptime is {days} days — reboot required',
+            detail='Hibernation time is counted on Windows',
+            level='red',
+        )
+    if days > UPTIME_WARN_DAYS:
+        return Warning(
+            code='UPTIME_WARN',
+            severity='WARN',
+            message=f'Uptime is {days} days',
+            detail=f'Uptime exceeds {UPTIME_WARN_DAYS}-day caution threshold',
+            level='yellow',
+        )
+    return Warning(
+        code='UPTIME',
+        severity='OK',
+        message='Uptime is within normal range',
         detail=None,
     )
