@@ -65,8 +65,8 @@ Surface system health signals and extend CLI output options so IT staff can asse
 |--------|-------|------------|--------|
 | RENAME-01 | 12 | SCRY Rename | Pending |
 | RENAME-02 | 12 | SCRY Rename | Pending |
-| HEALTH-01 | 13 | System Health Collectors | Pending |
-| HEALTH-02 | 13 | System Health Collectors | Pending |
+| HEALTH-01 | 13 | System Health Collectors | In Progress (data contract + collector — Plan 01; display — Plan 03) |
+| HEALTH-02 | 13 | System Health Collectors | In Progress (data contract + collector — Plan 01; display — Plan 03) |
 | WARN-04 | 13 | System Health Collectors | Pending |
 | WARN-05 | 13 | System Health Collectors | Pending |
 | VENDOR-01 | 14 | Vendor Update Detection | Pending |

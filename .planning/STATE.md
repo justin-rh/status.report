@@ -2,17 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: System Health, Vendor Updates, and Extended CLI
-status: ready_to_execute
-stopped_at: Phase 12 complete — Phase 13 (System Health Collectors) is next
-last_updated: "2026-05-15T23:10:00Z"
-last_activity: 2026-05-15 — Phase 12 (SCRY Rename) complete; verified 5/5; 203 tests pass; advancing to Phase 13
+status: executing
+stopped_at: Completed Phase 13 Plan 01 (13-01-PLAN.md)
+last_updated: "2026-05-18T18:47:02Z"
+last_activity: 2026-05-18 — Phase 13 Plan 01 complete; data contract and collection layer landed
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 25
-current_phase: 13
+  total_plans: 6
+  completed_plans: 4
+  percent: 67
 ---
 
 # Project State
@@ -27,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-14)
 ## Current Position
 
 Phase: 13 — System Health Collectors
-Plan: —
-Status: Ready to plan
-Last activity: 2026-05-15 — Phase 12 (SCRY Rename) complete; verified 5/5; all 203 tests pass; code review clean
+Plan: 01 complete; 02 next
+Status: Executing (Plan 01 of 3 complete)
+Last activity: 2026-05-18 — Phase 13 Plan 01 complete; Warning.level, AuditReport.uptime_seconds/pending_updates, _collect_uptime (Windows+Mac), collect_pending_updates (Windows), pywin32==311, win32timezone; 229 tests passing
 
 ## Accumulated Context
 
@@ -44,6 +43,7 @@ Last activity: 2026-05-15 — Phase 12 (SCRY Rename) complete; verified 5/5; all
 
 Decisions are logged in PROJECT.md Key Decisions table.
 Key constraints for v3.0:
+
 - PyInstaller --onedir only (--onefile quarantined by CrowdStrike Falcon)
 - Win32_Product prohibited (MSI reconfiguration side effect)
 - Output path from sys.executable, not os.getcwd()
@@ -86,7 +86,7 @@ Key constraints for v3.0:
 
 ## Session Continuity
 
-Last session: 2026-05-15T23:03:00Z
-Stopped at: Completed Phase 12 Plan 03 (12-03-PLAN.md)
+Last session: 2026-05-18T18:47:02Z
+Stopped at: Completed Phase 13 Plan 01 (13-01-PLAN.md)
 Resume file: None
-Next action: Plan Phase 13 (System Health Collectors)
+Next action: Execute Phase 13 Plan 02 (health checks — evaluate_warnings, UPTIME_WARN/UPTIME_STALE)
