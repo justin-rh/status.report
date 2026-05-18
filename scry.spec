@@ -40,6 +40,7 @@ a = Analysis(
         'pythoncom',
         'win32transaction',
         'win32security',
+        'win32timezone',
     ] + win32com_hidden,
     hookspath=[],
     hooksconfig={},

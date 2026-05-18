@@ -8,6 +8,7 @@ import json
 import os
 import platform
 import subprocess
+import time
 
 import psutil
 
@@ -33,13 +34,14 @@ except ImportError:
 def collect_hardware(report: AuditReport) -> None:
     """Populate hardware fields on *report* in place.
 
-    Calls four private helpers in order. No exception propagates out of this
+    Calls five private helpers in order. No exception propagates out of this
     function under any circumstances (D-01, D-02).
     """
     _collect_os(report)
     _collect_cpu_model(report)
     _collect_memory_and_disk(report)
     _collect_current_user(report)
+    _collect_uptime(report)   # Phase 13 — D-05/D-06
 
 
 def collect_profiles(report: AuditReport) -> None:
@@ -149,6 +151,14 @@ def _collect_current_user(report: AuditReport) -> None:
     Falls back to None if both env vars absent.
     """
     report.current_user = os.environ.get("USER") or os.environ.get("USERNAME") or None
+
+
+def _collect_uptime(report: AuditReport) -> None:
+    """Populate uptime_seconds via psutil.boot_time(). Never raises (D-05)."""
+    try:
+        report.uptime_seconds = int(time.time() - psutil.boot_time())
+    except Exception as exc:
+        report.collection_errors.append(f"Uptime collection failed: {exc}")
 
 
 # ---------------------------------------------------------------------------

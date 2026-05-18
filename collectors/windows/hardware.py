@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import os
 import platform
+import time
 import winreg
 
 import psutil
@@ -22,6 +23,13 @@ try:
 except ImportError:
     _wmi_module = None  # type: ignore[assignment]
     _WMI_AVAILABLE = False
+
+try:
+    import win32com.client as _win32com_client  # type: ignore[import-untyped]
+    _WIN32COM_AVAILABLE = True
+except ImportError:
+    _win32com_client = None  # type: ignore[assignment]
+    _WIN32COM_AVAILABLE = False
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -42,7 +50,7 @@ _BIOS_PLACEHOLDER_VALUES = frozenset({
 def collect_hardware(report: AuditReport) -> None:
     """Populate hardware fields on *report* in place.
 
-    Calls five private helpers in order. No exception propagates out of this
+    Calls six private helpers in order. No exception propagates out of this
     function under any circumstances (D-01, D-02).
     """
     _collect_os(report)
@@ -50,6 +58,7 @@ def collect_hardware(report: AuditReport) -> None:
     _collect_memory_and_disk(report)
     _collect_current_user(report)
     _collect_serial_number(report)
+    _collect_uptime(report)   # Phase 13 — D-05/D-06
 
 
 def collect_profiles(report: AuditReport) -> None:
@@ -62,6 +71,23 @@ def collect_profiles(report: AuditReport) -> None:
         report.local_profiles = _enumerate_profiles()
     except Exception as exc:
         report.collection_errors.append(f"Profile enumeration failed: {exc}")
+
+
+def collect_pending_updates(report: AuditReport) -> None:
+    """Populate pending_updates via WUA COM. Windows-only. Never raises.
+
+    Degrades to pending_updates=None when _WIN32COM_AVAILABLE is False (CI)
+    or when the caller lacks SYSTEM/Administrator privilege (D-09, D-10).
+    """
+    if not _WIN32COM_AVAILABLE:
+        return
+    try:
+        session = _win32com_client.Dispatch("Microsoft.Update.Session")
+        searcher = session.CreateUpdateSearcher()
+        result = searcher.Search("IsInstalled=0 and Type='Software'")
+        report.pending_updates = result.Updates.Count
+    except Exception as exc:
+        report.collection_errors.append(f"Pending updates collection failed: {exc}")
 
 
 # ---------------------------------------------------------------------------
@@ -165,6 +191,14 @@ def _collect_memory_and_disk(report: AuditReport) -> None:
         report.disk_free_gb = round(disk.free / (1024 ** 3), 1)
     except Exception as exc:
         report.collection_errors.append(f"Disk usage collection failed: {exc}")
+
+
+def _collect_uptime(report: AuditReport) -> None:
+    """Populate uptime_seconds via psutil.boot_time(). Never raises (D-05)."""
+    try:
+        report.uptime_seconds = int(time.time() - psutil.boot_time())
+    except Exception as exc:
+        report.collection_errors.append(f"Uptime collection failed: {exc}")
 
 
 def _collect_current_user(report: AuditReport) -> None:
