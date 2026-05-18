@@ -40,7 +40,7 @@ Full phase details: `.planning/milestones/v2.0-ROADMAP.md`
 
 - [x] **Phase 12: SCRY Rename** — Rename project from StatusReport to SCRY; update output filename to `{date}_scry_{hostname}.html`
 - [x] **Phase 13: System Health Collectors** — Add `level` field to `Warning`, collect uptime and pending Windows update count, emit UPTIME_WARN and UPTIME_STALE warnings (3/3 plans complete)
-- [ ] **Phase 14: Vendor Update Detection** — Surface Dell Command Update and Lenovo System Update status in the character sheet
+- [x] **Phase 14: Vendor Update Detection** — Surface Dell Command Update and Lenovo System Update status in the character sheet
 - [ ] **Phase 15: Extended CLI Flags** — `--json`, `--output <path>`, and `--app <name>` flags with JSON support
 
 </details>
@@ -92,7 +92,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 14-01-PLAN.md — Data model + collector + main.py wiring + tests (models.py, collectors/windows/vendor.py, main.py, tests/test_vendor_collector.py)
-- [ ] 14-02-PLAN.md — Renderer + template + renderer tests (renderer/__init__.py, character_sheet.html, tests/test_renderer_phase14.py)
+- [x] 14-02-PLAN.md — Renderer + template + renderer tests (renderer/__init__.py, character_sheet.html, tests/test_renderer_phase14.py)
 
 ### Phase 15: Extended CLI Flags
 **Goal**: IT staff and NinjaOne scripts can retrieve audit output as JSON, override the output path, and query a single app — without generating a full HTML report when not needed
@@ -123,5 +123,5 @@ Plans:
 | 11. Steve | v2.0 | 1/1 | Complete | 2026-05-12 |
 | 12. SCRY Rename | v3.0 | 3/3 | Complete | 2026-05-15 |
 | 13. System Health Collectors | v3.0 | 3/3 | Complete | 2026-05-18 |
-| 14. Vendor Update Detection | v3.0 | 1/2 | In progress | - |
+| 14. Vendor Update Detection | v3.0 | 2/2 | Complete | 2026-05-18 |
 | 15. Extended CLI Flags | v3.0 | 0/? | Not started | - |
