@@ -56,6 +56,8 @@ def _run_cli(args: argparse.Namespace) -> None:
         if args.updates and sys.platform != "darwin":
             from collectors.windows.hardware import collect_pending_updates
             collect_pending_updates(report)
+            from collectors.windows.vendor import collect_vendor_updates
+            collect_vendor_updates(report)
         report.warnings = evaluate_warnings(report)
     elif needs_hardware:
         # Import hardware collector directly — avoid full collect_all (D-09)
@@ -123,6 +125,8 @@ def main() -> None:
     if args.updates and sys.platform != "darwin":
         from collectors.windows.hardware import collect_pending_updates
         collect_pending_updates(report)
+        from collectors.windows.vendor import collect_vendor_updates
+        collect_vendor_updates(report)
 
     # Surface collector warnings -- never exit on collection failure (D-06)
     for err in report.collection_errors:
