@@ -165,3 +165,41 @@ def test_rename_check_ok_has_no_detail():
     assert rename_warning.detail is None, (
         f'RENAME_REQUIRED OK should have detail=None, got: {rename_warning.detail!r}'
     )
+
+
+# ---------------------------------------------------------------------------
+# Uptime check — boundary cases (WARN-04, WARN-05, D-11)
+# RED: these tests fail until _check_uptime() is implemented in health_checks.py
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize('uptime_seconds,expected_code,expected_severity,expected_level', [
+    (None,              'UPTIME',       'OK',   None),       # collection failed
+    (0,                 'UPTIME',       'OK',   None),       # 0 seconds — well within OK
+    (6 * 86400,         'UPTIME',       'OK',   None),       # 6 days — below warn threshold
+    (7 * 86400,         'UPTIME',       'OK',   None),       # exactly 7 days — not yet WARN (> not >=)
+    (7 * 86400 + 1,     'UPTIME_WARN',  'WARN', 'yellow'),  # 7 days + 1 sec — crosses warn threshold
+    (8 * 86400,         'UPTIME_WARN',  'WARN', 'yellow'),  # 8 days — within warn range
+    (30 * 86400,        'UPTIME_WARN',  'WARN', 'yellow'),  # exactly 30 days — not yet stale
+    (31 * 86400,        'UPTIME_STALE', 'WARN', 'red'),     # 31 days — stale
+])
+def test_uptime_check(uptime_seconds, expected_code, expected_severity, expected_level):
+    """_check_uptime boundary cases: None, < 7d, = 7d, just over 7d, 8d, = 30d, 31d."""
+    report = make_report(uptime_seconds=uptime_seconds)
+    warnings = evaluate_warnings(report)
+    uptime_warning = warnings[3]
+    assert uptime_warning.code == expected_code, (
+        f'uptime_seconds={uptime_seconds}: expected code {expected_code!r}, got {uptime_warning.code!r}'
+    )
+    assert uptime_warning.severity == expected_severity
+    assert uptime_warning.level == expected_level
+
+
+def test_uptime_stale_detail_mentions_hibernation():
+    """UPTIME_STALE detail must mention hibernation time counting (REQUIREMENTS.md WARN-05)."""
+    report = make_report(uptime_seconds=31 * 86400)
+    warnings = evaluate_warnings(report)
+    assert warnings[3].code == 'UPTIME_STALE'
+    assert warnings[3].detail is not None
+    assert 'hibernation' in warnings[3].detail.lower(), (
+        f"UPTIME_STALE detail must mention 'hibernation'; got: {warnings[3].detail!r}"
+    )
