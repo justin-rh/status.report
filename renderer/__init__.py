@@ -182,7 +182,7 @@ def _build_context(report: AuditReport) -> dict:
     # Lenovo LSU display — Phase 14 (D-08)
     if report.lenovo_lsu is not None:
         lsu = report.lenovo_lsu
-        lenovo_lsu_display: str | None = "Not installed" if not lsu.installed else "Installed"
+        lenovo_lsu_display: str | None = "Not installed" if not lsu.installed else "Installed - Open Lenovo Vantage to see pending updates"
     else:
         lenovo_lsu_display = None  # --updates absent; omit row entirely (D-05)
 

@@ -92,4 +92,4 @@ class TestVendorDisplayValues:
             lenovo_lsu=VendorUpdateStatus(installed=True, pending_count=None, scan_data_present=False)
         )
         ctx = _build_context(report)
-        assert ctx["lenovo_lsu_display"] == "Installed"
+        assert ctx["lenovo_lsu_display"] == "Installed - Open Lenovo Vantage to see pending updates"
