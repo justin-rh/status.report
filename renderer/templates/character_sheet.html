@@ -433,7 +433,7 @@
 
         {% if lenovo_lsu_display is not none %}
         <div class="stat-label">Lenovo Sys Update</div>
-        <div class="stat-value{% if lenovo_lsu_display == 'Not installed' or lenovo_lsu_display == 'N/A' %} muted{% endif %}">{{ lenovo_lsu_display }}</div>
+        <div class="stat-value{% if lenovo_lsu_display == 'Not installed' %} muted{% endif %}">{{ lenovo_lsu_display }}</div>
         {% endif %}
 
       </div>

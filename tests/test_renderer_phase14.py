@@ -87,9 +87,9 @@ class TestVendorDisplayValues:
         ctx = _build_context(report)
         assert ctx["lenovo_lsu_display"] == "Not installed"
 
-    def test_lenovo_lsu_installed_shows_na(self):
+    def test_lenovo_lsu_installed_shows_installed(self):
         report = _make_report(
             lenovo_lsu=VendorUpdateStatus(installed=True, pending_count=None, scan_data_present=False)
         )
         ctx = _build_context(report)
-        assert ctx["lenovo_lsu_display"] == "N/A"
+        assert ctx["lenovo_lsu_display"] == "Installed"
