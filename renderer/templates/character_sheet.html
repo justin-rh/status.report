@@ -426,6 +426,16 @@
         <div class="stat-label">Pending Updates</div>
         <div class="stat-value{% if pending_updates_display == 'N/A' %} muted{% endif %}">{{ pending_updates_display }}</div>
 
+        {% if dell_dcu_display is not none %}
+        <div class="stat-label">Dell Cmd Update</div>
+        <div class="stat-value{% if dell_dcu_display == 'Not installed' or dell_dcu_display == 'Unknown (no scan data)' %} muted{% endif %}">{{ dell_dcu_display }}</div>
+        {% endif %}
+
+        {% if lenovo_lsu_display is not none %}
+        <div class="stat-label">Lenovo Sys Update</div>
+        <div class="stat-value{% if lenovo_lsu_display == 'Not installed' or lenovo_lsu_display == 'N/A' %} muted{% endif %}">{{ lenovo_lsu_display }}</div>
+        {% endif %}
+
       </div>
     </div>
 
