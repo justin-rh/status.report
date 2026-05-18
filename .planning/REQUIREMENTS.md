@@ -29,9 +29,9 @@ Surface system health signals and extend CLI output options so IT staff can asse
 
 ### Extended CLI Output
 
-- [ ] **OUT-V3-01**: `--json` flag serializes full `AuditReport` to a JSON file in `logs/` alongside the HTML report; uses `dataclasses.asdict()` + `json.dumps()`
-- [ ] **OUT-V3-02**: `--output <path>` flag overrides the default `logs/` destination for HTML and JSON output; validates resolved path does not write to the host PC (`C:\`, `%TEMP%`, etc.) to preserve PKG-02 compliance
-- [ ] **CLI-V3-01**: `--app <name>` runs only the app-detection pipeline for one named app and prints result to stdout; `--app + --json` produces a single-app JSON blob to stdout; app name matching is case-insensitive
+- [x] **OUT-V3-01**: `--json` flag serializes full `AuditReport` to a JSON file in `logs/` alongside the HTML report; uses `dataclasses.asdict()` + `json.dumps()`
+- [x] **OUT-V3-02**: `--output <path>` flag overrides the default `logs/` destination for HTML and JSON output; any writable path is accepted (D-02/D-03 — host-path validation removed per user decision)
+- [x] **CLI-V3-01**: `--app <name>` runs only the app-detection pipeline for one named app and prints result to stdout; `--app + --json` produces a single-app JSON blob to stdout; app name matching is case-insensitive
 
 ## Implementation Notes
 
@@ -71,6 +71,6 @@ Surface system health signals and extend CLI output options so IT staff can asse
 | WARN-05 | 13 | System Health Collectors | Complete (Plan 02 — _check_uptime red threshold, hibernation note) |
 | VENDOR-01 | 14 | Vendor Update Detection | Pending |
 | VENDOR-02 | 14 | Vendor Update Detection | Pending |
-| OUT-V3-01 | 15 | Extended CLI Flags | Pending |
-| OUT-V3-02 | 15 | Extended CLI Flags | Pending |
-| CLI-V3-01 | 15 | Extended CLI Flags | Pending |
+| OUT-V3-01 | 15 | Extended CLI Flags | Complete (Plan 01 — --json flag writes AuditReport JSON alongside HTML) |
+| OUT-V3-02 | 15 | Extended CLI Flags | Complete (Plan 01 — --output flag overrides logs_dir; no host-path validation per D-02/D-03) |
+| CLI-V3-01 | 15 | Extended CLI Flags | Complete (Plan 01 — --app flag with _run_cli_app(), case-insensitive match, --app --json stdout) |
