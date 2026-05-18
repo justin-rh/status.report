@@ -89,7 +89,10 @@ Plans:
   3. On a non-Dell machine, the character sheet shows "Not installed" for Dell Command Update with no error
   4. On a Lenovo machine, the character sheet shows Lenovo System Update installation status; pending count displays as "N/A" (passive source unavailable in v3.0)
   5. On a non-Lenovo machine, the character sheet shows "Not installed" for Lenovo System Update with no error
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 14-01-PLAN.md — Data model + collector + main.py wiring + tests (models.py, collectors/windows/vendor.py, main.py, tests/test_vendor_collector.py)
+- [ ] 14-02-PLAN.md — Renderer + template + renderer tests (renderer/__init__.py, character_sheet.html, tests/test_renderer_phase14.py)
 
 ### Phase 15: Extended CLI Flags
 **Goal**: IT staff and NinjaOne scripts can retrieve audit output as JSON, override the output path, and query a single app — without generating a full HTML report when not needed
@@ -120,5 +123,5 @@ Plans:
 | 11. Steve | v2.0 | 1/1 | Complete | 2026-05-12 |
 | 12. SCRY Rename | v3.0 | 3/3 | Complete | 2026-05-15 |
 | 13. System Health Collectors | v3.0 | 3/3 | Complete | 2026-05-18 |
-| 14. Vendor Update Detection | v3.0 | 0/? | Not started | - |
+| 14. Vendor Update Detection | v3.0 | 0/2 | Not started | - |
 | 15. Extended CLI Flags | v3.0 | 0/? | Not started | - |
