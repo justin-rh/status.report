@@ -17,8 +17,8 @@ Surface system health signals and extend CLI output options so IT staff can asse
 
 ### System Health
 
-- [ ] **HEALTH-01**: User can see pending Windows update count in the character sheet stat block; degrades gracefully to N/A when running as standard user (WUA COM requires SYSTEM or Administrator)
-- [ ] **HEALTH-02**: User can see uptime since last reboot in the character sheet stat block (days + hours display format)
+- [x] **HEALTH-01**: User can see pending Windows update count in the character sheet stat block; degrades gracefully to N/A when running as standard user (WUA COM requires SYSTEM or Administrator)
+- [x] **HEALTH-02**: User can see uptime since last reboot in the character sheet stat block (days + hours display format)
 - [x] **WARN-04**: Tool emits a **yellow** (caution) warning when uptime > 7 days; `UPTIME_WARN_DAYS = 7` configurable constant in `health_checks.py`
 - [x] **WARN-05**: Tool emits a **red** (critical) warning when uptime > 30 days; `UPTIME_STALE_DAYS = 30` configurable constant in `health_checks.py`; warning text notes that hibernation time is counted on Windows
 
@@ -65,8 +65,8 @@ Surface system health signals and extend CLI output options so IT staff can asse
 |--------|-------|------------|--------|
 | RENAME-01 | 12 | SCRY Rename | Pending |
 | RENAME-02 | 12 | SCRY Rename | Pending |
-| HEALTH-01 | 13 | System Health Collectors | In Progress (data contract + collector — Plan 01; display — Plan 03) |
-| HEALTH-02 | 13 | System Health Collectors | In Progress (data contract + collector — Plan 01; display — Plan 03) |
+| HEALTH-01 | 13 | System Health Collectors | Complete (Plan 01 — data contract + collector; Plan 03 — display in stat block) |
+| HEALTH-02 | 13 | System Health Collectors | Complete (Plan 01 — data contract + collector; Plan 03 — display in stat block) |
 | WARN-04 | 13 | System Health Collectors | Complete (Plan 02 — _check_uptime yellow threshold) |
 | WARN-05 | 13 | System Health Collectors | Complete (Plan 02 — _check_uptime red threshold, hibernation note) |
 | VENDOR-01 | 14 | Vendor Update Detection | Pending |

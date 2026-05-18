@@ -39,7 +39,7 @@ Full phase details: `.planning/milestones/v2.0-ROADMAP.md`
 <summary>🔄 v3.0 System Health, Vendor Updates, and Extended CLI (Phases 12–15) — IN PROGRESS</summary>
 
 - [x] **Phase 12: SCRY Rename** — Rename project from StatusReport to SCRY; update output filename to `{date}_scry_{hostname}.html`
-- [ ] **Phase 13: System Health Collectors** — Add `level` field to `Warning`, collect uptime and pending Windows update count, emit UPTIME_WARN and UPTIME_STALE warnings (2/3 plans complete)
+- [x] **Phase 13: System Health Collectors** — Add `level` field to `Warning`, collect uptime and pending Windows update count, emit UPTIME_WARN and UPTIME_STALE warnings (3/3 plans complete)
 - [ ] **Phase 14: Vendor Update Detection** — Surface Dell Command Update and Lenovo System Update status in the character sheet
 - [ ] **Phase 15: Extended CLI Flags** — `--json`, `--output <path>`, and `--app <name>` flags with JSON support
 
@@ -77,7 +77,7 @@ Plans:
 Plans:
 - [x] 13-01-PLAN.md — Data model + collectors (models.py, both hardware collectors, collect_all wiring, requirements.txt, scry.spec)
 - [x] 13-02-PLAN.md — Health check logic + tests (health_checks.py, test_health_checks.py)
-- [ ] 13-03-PLAN.md — Renderer + template + collector tests (renderer/__init__.py, character_sheet.html, test_hardware_collector.py)
+- [x] 13-03-PLAN.md — Renderer + template + collector tests (renderer/__init__.py, character_sheet.html, test_hardware_collector.py)
 
 ### Phase 14: Vendor Update Detection
 **Goal**: IT staff can see whether Dell Command Update or Lenovo System Update is installed and how many vendor updates are pending, without the tool invoking any vendor CLI
@@ -119,6 +119,6 @@ Plans:
 | 10. Mac Collectors | v2.0 | 4/4 | Complete | 2026-05-08 |
 | 11. Steve | v2.0 | 1/1 | Complete | 2026-05-12 |
 | 12. SCRY Rename | v3.0 | 3/3 | Complete | 2026-05-15 |
-| 13. System Health Collectors | v3.0 | 2/3 | In progress | - |
+| 13. System Health Collectors | v3.0 | 3/3 | Complete | 2026-05-18 |
 | 14. Vendor Update Detection | v3.0 | 0/? | Not started | - |
 | 15. Extended CLI Flags | v3.0 | 0/? | Not started | - |
