@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(gsd-progress)",
+      "PowerShell(gsd-sdk *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(Test-Path *)",
+      "Bash(python -m pytest tests/ -q --tb=short)",
+      "Bash(git commit --no-verify -m ' *)",
+      "Bash(git commit *)",
+      "Bash(git worktree *)",
+      "Bash(git branch *)",
+      "Skill(gsd-code-review)"
+    ]
+  }
+}
