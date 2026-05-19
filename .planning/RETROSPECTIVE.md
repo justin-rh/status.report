@@ -99,6 +99,62 @@
 
 ---
 
+## Milestone: v3.0 — System Health, Vendor Updates, and Extended CLI
+
+**Shipped:** 2026-05-18
+**Phases:** 4 | **Plans:** 9 | **Timeline:** 4 days (2026-05-14 → 2026-05-18)
+
+### What Was Built
+
+- **SCRY rename** — Full project rebrand (StatusReport → SCRY); `scry.spec` → `dist/scry_v3.0/scry.exe`; output filename `{date}_scry_{hostname}.html`; 203 tests preserved
+- **System health collectors** — `psutil.boot_time()` uptime on both Win and Mac; WUA COM pending update count via `pywin32==311` with `_WIN32COM_AVAILABLE` guard; `Warning.level` field positional-LAST for backward-compat; `UPTIME_WARN` yellow (>7d), `UPTIME_STALE` red (>30d) with hibernation note; `badge-critical` CSS
+- **Vendor update detection** — Dell DCU via passive `DCUApplicableUpdates.xml` parse; Lenovo LSU via registry only; **never** invokes vendor CLIs; `VendorUpdateStatus` dataclass; `--updates` flag gates collection; Mac silent no-op via `sys.platform` check
+- **Extended CLI flags** — `--json` (`dataclasses.asdict()` + `json.dumps(..., default=str)` recurses through nested dataclasses); `--output PATH` (no host-path validation per D-02/D-03); `--app NAME` case-insensitive single-app stdout; `--app --json` JSON blob variant; unknown app → stderr exit 1
+- **Test growth** — 88 new tests (203 → 291, +43%); zero regressions across the rename or refactors
+
+### What Worked
+
+- **3-source requirement cross-reference at audit time** — checking VERIFICATION.md SATISFIED state + SUMMARY frontmatter `provides:` + REQUIREMENTS.md checkboxes caught the stale-checkbox issue cleanly and surfaced it as a single, atomic fix rather than scattered confusion
+- **`_WIN32COM_AVAILABLE` guard pattern extended** — third instance of the `_AVAILABLE` guard (after `_WMI_AVAILABLE` v1.0, `_PWD_AVAILABLE` v2.0). The pattern keeps scaling — Phase 13's new pywin32 dep dropped in cleanly with no test infrastructure changes
+- **`Warning.level: str | None` field positional-LAST** — preserved backward-compat with `Warning(code, severity, message, detail)` positional callers; full v2.0 test suite passed unmodified after the new field landed
+- **Vendor detection chose registry+file-only over CLI invocation** — the constraints-first habit (CLAUDE.md: "no admin elevation, no side effects, no host PC writes") drove the design before any code was written; `grep dcu-cli tvsu.exe` returns zero matches as an enforceable post-condition
+- **gsd-integration-checker for cross-phase wiring** — at milestone close it verified all 12 requirement integrations and 11 E2E flows in a single pass; caught no real issues but surfaced 3 worthwhile tech-debt observations (dead `writers.write_html`, `_run_cli --updates` wasted work, `--app + --output` silent ignore)
+- **Mechanical rename preserving git history** — Phase 12 used `git mv`-style renames; all 203 tests passed after the rebrand; one intentional historical parenthetical kept in CLAUDE.md as a navigation hint for old issue references
+- **`--json` as output-format modifier (not pipeline mode)** — `if cli_mode and not args.json:` guard kept `--json --name` working as a full-pipeline run, which matches user mental model (JSON is an output format, not a pipeline switch)
+
+### What Was Inefficient
+
+- **REQUIREMENTS.md checkbox bookkeeping lag — third milestone running** — RENAME-01, RENAME-02, VENDOR-01, VENDOR-02 all shipped checked-off but were still `[ ]` in REQUIREMENTS.md at audit time. Phase 15's VERIFICATION.md correctly flagged OUT-V3-* and CLI-V3-* checkboxes as a gap. The v1.0 and v2.0 retrospectives both called this out; it needs an automation hook before v4.0 (e.g. PreToolUse hook on plan SUMMARY write that requires the matching REQ checkbox flip)
+- **Hardware-gated UAT continues to accumulate** — Phase 13 added 4 new hardware-gated checks; Phase 14 added 5 more. Now 11 v3.0 items + 6 carried from v1.0/v2.0 = 17 deferred human-verification items. Without a scheduled "live machine day" these compound across milestones
+- **Dell/Lenovo registry path uncertainty shipped without IT confirmation** — flagged as a blocker in STATE.md, then shipped anyway with the researched path. Same pattern as v2.0's NinjaOne Mac launchctl label — a "needs confirmation" note in STATE.md is not strong enough to actually gate
+- **OUT-V3-02 host-path validation removed mid-planning** — D-02/D-03 changed the requirement after planning started. REQUIREMENTS.md description retained the old "validates resolved path does not write to host PC" language; only ROADMAP SC2 was updated. Caught at Phase 15 verification
+
+### Patterns Established
+
+- `_WIN32COM_AVAILABLE` guard for pywin32 / WUA COM — third concrete instance of the `_AVAILABLE` family
+- Vendor detection contract: registry+file passive read, never CLI subprocess — enforced by `grep` post-condition
+- `Warning.level: str | None` positional-LAST — preserves backward-compat when extending a public dataclass
+- `dataclasses.asdict(report, default=str)` for full AuditReport JSON serialization — handles nested dataclasses (VendorUpdateStatus, AppStatus, Warning, ParsedHostname) and any non-serializable edge cases
+- `_run_cli_app()` early-exit pattern — extension to v2.0's `_run_cli()` for `--app` with platform dispatch on `sys.platform`
+- `if args.<flag> and sys.platform != "darwin":` gate at BOTH call sites — Phase 14's `--updates` was wired in `_run_cli` AND `main()`; verified by integration checker
+- 3-source requirement audit (VERIFICATION + SUMMARY frontmatter + REQUIREMENTS.md checkboxes) — surfaces bookkeeping lag deterministically at close
+
+### Key Lessons
+
+1. **Repeat for the third time: requirement traceability needs automation, not discipline.** v1.0 → v2.0 → v3.0 all caught this at close. A manual "update REQUIREMENTS.md checkbox at plan completion" rule has failed three times running. Before v4.0, install a hook that fails the SUMMARY commit if the matching REQ checkbox is still `[ ]`
+2. **"Confirm with IT" gates need a Pre-execute checkpoint, not a STATE.md note.** The Dell/Lenovo registry paths are still uncertain at close — same outcome as v2.0's NinjaOne launchctl label. The pattern is: needs-confirmation work proceeds with research, but a `BLOCKED` gate in the PLAN.md success criteria would force resolution before merging the plan
+3. **Schedule a "live machine day" or hardware-gated UAT accumulates indefinitely.** 17 items now. The cost-per-item is low but stacks; a single afternoon on enrolled hardware would close most of v2.0 + v3.0 hardware items at once
+4. **Output-format-modifier vs pipeline-mode-selector is a load-bearing distinction.** `--json` could have been wired as "skip HTML, write only JSON" — instead it's "also write JSON", and `--json + --name` runs full pipeline. The mental model matches user expectations; the `not args.json` guard is the implementation footprint
+5. **`gsd-integration-checker` at milestone close caught zero blockers and 3 useful observations.** Worth the spawn cost — the integration view across 4 phases is hard to keep in head while writing them
+
+### Cost Observations
+
+- Model mix: balanced profile (Sonnet 4.x primary)
+- Sessions: multiple over 4 days
+- Notable: Phase 12 (mechanical rename) was the most token-efficient — pure search-and-replace + test verification; Phase 13 (3 plans, new pip dep, COM guard, renderer changes) was the most complex; Phase 14 (registry + XML parse + renderer + tests across 2 plans) had the highest per-plan test count (28 new tests in 2 plans)
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -107,17 +163,30 @@
 |-----------|--------|-------|------------|
 | v1.0 | 5 | 14 | First milestone; constraints-first approach established |
 | v2.0 | 6 | 12 | Cross-platform dispatch; `_AVAILABLE` guard pattern extended to Mac; Steve CLI pattern |
+| v3.0 | 4 | 9 | `_AVAILABLE` guard extended to pywin32 COM; vendor detection registry-only contract; 3-source requirement audit; integration-checker at close |
 
 ### Cumulative Quality
 
-| Milestone | Python LOC | Tests | Phases |
-|-----------|-----------|-------|--------|
+| Milestone | Python LOC | Tests | Phases (cumulative) |
+|-----------|-----------|-------|---------------------|
 | v1.0 | 2,647 | 85+ | 5 |
-| v2.0 | ~5,226 | 203 | 11 (cumulative) |
+| v2.0 | ~5,226 | 203 | 11 |
+| v3.0 | ~7,129 | 291 | 15 |
 
 ### Top Lessons (Verified Across Milestones)
 
-1. Document hard constraints (what NOT to use) before writing any code — eliminates entire bug classes
-2. Keep requirement traceability current at each plan completion, not at milestone close (repeated v1.0 → v2.0)
-3. LOW-confidence paths need a BLOCKED gate in the plan, not a TODO comment — otherwise they ship unvalidated
-4. Cross-session open decisions need an owner + deadline or they carry forever
+1. Document hard constraints (what NOT to use) before writing any code — eliminates entire bug classes (v1.0 → v3.0 vendor CLI prohibition)
+2. **Requirement traceability needs automation, not discipline** — manual upkeep failed at all three milestone closes (v1.0, v2.0, v3.0). Install a hook before v4.0
+3. **"Needs confirmation" work needs a BLOCKED gate in PLAN.md**, not a STATE.md note — same pattern failed at v2.0 (NinjaOne Mac launchctl) and v3.0 (Dell/Lenovo registry paths)
+4. Cross-session open decisions need an owner + deadline or they carry forever (M365 stakeholder sign-off still open from v1.0)
+5. **`_AVAILABLE` guard pattern is the right abstraction for platform-specific imports** — now four instances (wmi, pwd, win32com, plus test-time patches)
+6. **gsd-integration-checker at milestone close is worth the spawn cost** — surfaces cross-phase observations that are hard to see from within any single phase
+
+### Deferred Human-Verification Backlog (across milestones)
+
+| Milestone | Items | Status |
+|-----------|-------|--------|
+| v1.0 | 3 | carried |
+| v2.0 | 6 | carried |
+| v3.0 | 11 | new |
+| **Total** | **20** | hardware-gated, needs a scheduled "live machine day" |

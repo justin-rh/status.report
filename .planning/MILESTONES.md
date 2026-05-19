@@ -1,4 +1,67 @@
-# Milestones: StatusReport
+# Milestones: SCRY
+
+## v3.0 — System Health, Vendor Updates, and Extended CLI
+
+**Shipped:** 2026-05-18
+**Archived:** 2026-05-19
+**Phases:** 12–15 (4 phases, 9 plans)
+**Timeline:** 4 days (2026-05-14 → 2026-05-18)
+**LOC:** ~+1,903 net new Python | 29 source files changed (+1,629/-85 excl. `.planning`) | 70 commits | 291 tests (88 new, +43%)
+
+### Delivered
+
+Renamed the project to SCRY, surfaced system health signals (uptime, pending Windows update count, yellow/red uptime warnings with hibernation note), added passive vendor update detection (Dell Command Update via XML, Lenovo System Update via registry — no vendor CLIs invoked), and extended the CLI with `--json` (full AuditReport serialization), `--output PATH` (writable-path override), and `--app NAME` (single-app stdout query with case-insensitive matching and optional JSON blob).
+
+### Key Accomplishments
+
+1. **SCRY rename** — Full rebrand (StatusReport → SCRY); `scry.spec` → `dist/scry_v3.0/scry.exe`; output filename `{date}_scry_{hostname}.html`; 203 tests preserved
+2. **System health collectors** — `psutil.boot_time()` uptime (Win+Mac); WUA COM pending update count with `_WIN32COM_AVAILABLE` guard; `Warning.level` field (positional-LAST for backward-compat); `UPTIME_WARN` yellow (>7d), `UPTIME_STALE` red (>30d) with hibernation note; `badge-critical` CSS class
+3. **Vendor update detection** — Dell DCU via passive `DCUApplicableUpdates.xml` parse; Lenovo LSU via registry only; never invokes `dcu-cli.exe` or `tvsu.exe`; `VendorUpdateStatus` dataclass; gated by `--updates` flag; Mac silent no-op
+4. **Extended CLI flags** — `--json` (full `dataclasses.asdict()` serialization, recurses through nested dataclasses); `--output PATH` overrides `logs_dir`; `--app NAME` case-insensitive single-app stdout with `--app --json` JSON blob variant; unknown app → stderr + exit 1
+5. **Quality** — 88 new tests (203 → 291, +43%); zero regressions across the rename; full suite green at close
+6. **Audit hygiene** — 3-source cross-reference of requirements (VERIFICATION.md + SUMMARY frontmatter + REQUIREMENTS.md checkboxes); integration checker verified all 12 requirement integrations and 11 E2E flows
+
+### Audit
+
+- Status: **passed** — 11/11 requirements satisfied, 4/4 phases verified, 12/12 integration paths wired, 11/11 flows pass
+- Report: `.planning/milestones/v3.0-MILESTONE-AUDIT.md`
+
+### Known Deferred Items at Close (11)
+
+Items acknowledged and deferred at milestone close 2026-05-19 — all hardware-gated or visual:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gaps | Phase 13: Live SYSTEM/Admin uptime + pending update count; yellow > 7d badge; red > 30d badge with hibernation note; standard-user N/A degradation | partial (4 pending) |
+| uat_gaps | Phase 14: Live Dell DCU pending count on real machine; live non-Dell/non-Lenovo "Not installed"; 3 visual HTML render checks for vendor row states | partial (5 pending) |
+| open_blockers | Dell Command Update registry path uncertainty — needs IT confirmation | carried |
+| open_blockers | Lenovo System Update registry path uncertainty — needs IT confirmation | carried |
+
+### Carried Forward from v2.0 (still open at v3.0 close)
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gaps | Phase 04: Live NinjaOne/CrowdStrike detection, M365 sign-off | partial (4 pending) |
+| uat_gaps | Phase 10: Mac end-to-end run, NinjaOne launchctl label | partial (2 pending) |
+| verification_gaps | Phase 03: Visual browser check of HTML character sheet | human_needed |
+| verification_gaps | Phase 04: Live app detection on real provisioned machines | human_needed |
+| verification_gaps | Phase 09: Company Portal on real machine | human_needed |
+| verification_gaps | Phase 10: Mac end-to-end run | human_needed |
+
+### Tech Debt at Close
+
+- `writers.write_html` dead code: hard-coded `scry.html` filename in unreachable path — recommend deprecation in v3.1
+- `_run_cli --updates` runs vendor collection but discards data — wasted work, not a bug
+- `--app NAME --output PATH` silently ignores `--output` (matches D-08/D-13 spec; not surfaced to user)
+- REQUIREMENTS.md checkbox bookkeeping lag for the third milestone running — worth automating before v4.0
+
+### Archive
+
+- `.planning/milestones/v3.0-ROADMAP.md` — full phase details
+- `.planning/milestones/v3.0-REQUIREMENTS.md` — all requirements with traceability
+- `.planning/milestones/v3.0-MILESTONE-AUDIT.md` — full audit report
+
+---
 
 ## v2.0 — Warnings, Mac Parity, and NinjaOne Compatibility
 

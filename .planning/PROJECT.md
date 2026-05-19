@@ -8,23 +8,37 @@ A self-contained Windows .exe (and macOS compatible) that runs from a USB flash 
 
 IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
 
-## Current Milestone: v3.0 System Health, Vendor Updates, and Extended CLI
+## Current State (v3.0 SHIPPED 2026-05-18, archived 2026-05-19)
 
-**Goal:** Surface system health signals and extend CLI output options so IT staff can assess machine state and integrate output into NinjaOne workflows.
+- **Last shipped:** v3.0 — System Health, Vendor Updates, and Extended CLI (Phases 12–15, 9 plans, 291 tests)
+- **Cumulative:** 15 phases, 35 plans, ~7,129 Python LOC, 291 tests passing
+- **Stack:** Python 3.12 + psutil + wmi + winreg + pywin32 (WUA COM) + Jinja2 + PyInstaller `--onedir`
+- **Status:** No active milestone — ready for `/gsd-new-milestone` to plan v3.1 or v4.0
 
-**Target features:**
-- System health collectors — uptime since last reboot, pending Windows update count, `UPTIME_STALE` warning if uptime > N days
-- Vendor update detection — pending Dell Command Update count, pending Lenovo System Update count
-- Extended CLI flags — `--json` output, `--output <path>` override, `--app <name>` single-app check with JSON support
+### Pending Hardware-Gated Validation (carried debt)
 
-## Current State (v3.0 complete — 2026-05-18)
+- Live Windows SYSTEM/Admin run for uptime + pending update count populated values (Phase 13)
+- Real-machine yellow UPTIME_WARN (>7d) and red UPTIME_STALE (>30d, hibernation note) badges (Phase 13)
+- Standard-user (non-admin) "N/A" degradation (Phase 13)
+- Live Dell DCU pending count + non-Dell/non-Lenovo "Not installed" rendering (Phase 14)
+- 3 visual HTML render checks for vendor row states (Phase 14)
+- Dell Command Update + Lenovo System Update registry path IT confirmation (Phase 14)
+- Carried from v2.0: Live NinjaOne/CrowdStrike detection, Mac end-to-end run, Company Portal on real machine, visual HTML character sheet check
 
-- **Last shipped:** v2.0 archived 2026-05-14; 6 phases (6–11), 12 plans, 203 tests passing
-- **Stack:** Python 3.12 + psutil + wmi + winreg + Jinja2 + PyInstaller `--onedir`; 4 phases (12–15), 9 plans, 291 tests passing
-- **v3.0 complete:** All 4 phases complete — SCRY rename, system health collectors, vendor update detection, extended CLI flags
-- **Phase 15 complete:** Extended CLI flags — `--json`, `--output PATH`, `--app NAME`; 7 new tests; 291 total tests passing
-- **Pending human testing:** Live NinjaOne/CrowdStrike detection, Mac end-to-end run, Company Portal on real machine, visual HTML check, Dell/Lenovo registry path confirmation (all hardware-gated; carried as acknowledged debt)
-- **Current milestone:** v3.0 complete — ready for `/gsd-complete-milestone`
+### Next Milestone
+
+Open. Candidate scopes if pursued:
+- **v3.1** — close hardware-gated validation debt + address tech-debt items (`writers.write_html` cleanup, `_run_cli --updates` wasted-work fix, requirements-checkbox automation)
+- **v4.0** — major feature work (e.g. remote access tool detection per APP-V2-02, code-signed .exe per DIST-V2-01, additional health signals)
+
+<details>
+<summary>Historical milestone goals</summary>
+
+- **v3.0 (shipped 2026-05-18):** Surface system health signals and extend CLI output options so IT staff can assess machine state and integrate output into NinjaOne workflows
+- **v2.0 (shipped 2026-05-12):** Proactive warnings (OS/disk/rename), NinjaOne SYSTEM-account compatibility, Mac collector parity, Steve CLI flags
+- **v1.0 (shipped 2026-05-05):** Self-contained Windows .exe that decodes hostname, collects hardware + apps, renders D&D character sheet, validated CrowdStrike-safe
+
+</details>
 
 ## Requirements
 
@@ -122,7 +136,16 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 | MERP: filesystem-first at PVX Plus path | Registry path unknown; filesystem check most reliable given D-02 CONTEXT | ✓ Implemented |
 | `ir.files('renderer').joinpath(...)` single-string form | Required for PyInstaller `importlib.resources` compatibility | ✓ Enforced — no PackageLoader or FileSystemLoader |
 | Code signing deferred to v2 | CrowdStrike test passed without it; budget decision deferred | — v2 backlog (DIST-V2-01) |
-| JSON output deferred to v2 | v1 scope decision; HTML is sufficient for immediate IT use case | — v2 backlog (OUT-V2-01) |
+| JSON output deferred to v2 | v1 scope decision; HTML is sufficient for immediate IT use case | ✓ Delivered v3.0 — `--json` flag with full `dataclasses.asdict()` serialization (OUT-V3-01) |
+| Warning.level field positional-LAST in dataclass | Preserves backward-compat with existing `Warning(code, severity, message, detail)` callers; level defaults to None | ✓ Validated v3.0 — 203 tests passed unmodified after field added |
+| `_WIN32COM_AVAILABLE` guard pattern for WUA COM | Mirrors `_WMI_AVAILABLE`/`_PWD_AVAILABLE`; enables CI testing without COM server | ✓ Validated v3.0 — Phase 13 collector tests run cross-platform |
+| Vendor detection is registry+file-only — no CLI invocation | `dcu-cli.exe` and `tvsu.exe` require admin elevation and have side effects; would violate PKG-02 | ✓ Enforced v3.0 — `grep dcu-cli tvsu.exe` returns no matches in vendor.py |
+| DCU pending count "Unknown (no scan data)" not 0 when XML absent | Distinguishes no-data from 0 pending; user must run DCU once for count to appear | ✓ Delivered v3.0 — D-07 states encoded in `dell_dcu_display` |
+| LSU pending count returns N/A by design (no passive source) | `tvsu.exe` requires admin; deferred to LSU-PENDING future requirement if business need arises | ✓ Delivered v3.0 — D-14 documented; carried as future requirement |
+| `--output PATH` accepts any writable path (no host-path validation) | D-02/D-03 — runs from USB but host writes are user-controlled, not blocked | ✓ Delivered v3.0 — ROADMAP SC2 updated mid-planning to reflect this |
+| `--json` is output-format modifier, not pipeline mode selector | Full pipeline always runs unless `--app` short-circuits | ✓ Enforced v3.0 — `--json --name` forces full pipeline via `not args.json` guard |
+| Output filename `{date}_scry_{hostname}.html` (date-first) | Alphabetical sort by date — audit-trail readability | ✓ Delivered v3.0 — main.py:140 |
+| SCRY rename preserves git history via mechanical renames | One intentional historical parenthetical retained in CLAUDE.md for context | ✓ Delivered v3.0 — Phase 12, 203 tests preserved |
 
 ## Evolution
 
@@ -142,4 +165,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-18 — Phase 15 complete (Extended CLI Flags); v3.0 milestone complete*
+*Last updated: 2026-05-19 after v3.0 milestone close — archived to `.planning/milestones/v3.0-*.md`*

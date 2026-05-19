@@ -1,69 +1,88 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: System Health, Vendor Updates, and Extended CLI
-status: complete
-stopped_at: Phase 15 complete (1/1 plans)
-last_updated: "2026-05-18T23:00:00Z"
-last_activity: 2026-05-18 — Phase 15 executed; --json/--output/--app flags + 7 CLI tests; 291 tests pass; v3.0 milestone complete
+milestone: none
+milestone_name: ""
+status: between-milestones
+stopped_at: v3.0 milestone archived
+last_updated: "2026-05-19T00:00:00Z"
+last_activity: 2026-05-19 — v3.0 milestone archived; ROADMAP collapsed, REQUIREMENTS.md removed (fresh for next milestone); git tag v3.0 created
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-14)
+See: .planning/PROJECT.md (updated 2026-05-19 after v3.0 close)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** v3.0 — system health collectors, vendor update detection, extended CLI flags
+**Current focus:** No active milestone. Run `/gsd-new-milestone` to plan v3.1 (close hardware-gated debt) or v4.0 (major feature work).
 
 ## Current Position
 
-Phase: 15 — Extended CLI Flags
-Plan: 1/1 (complete)
-Status: Phase 15 complete — v3.0 milestone complete
-Last activity: 2026-05-18 — Phase 15 executed; --json/--output/--app flags added to main.py; 7 CLI tests written; 291 tests pass; v3.0 milestone complete
+Phase: none
+Plan: none
+Status: between milestones — v3.0 archived 2026-05-19
+Last activity: 2026-05-19 — v3.0 milestone close; archive files written, ROADMAP collapsed, REQUIREMENTS.md removed, git tag v3.0 created
 
 ## Accumulated Context
 
 ### Roadmap Evolution
 
-- v1.0 Phases 1–5: hostname parser, hardware collectors, D&D character sheet, app detection, PyInstaller packaging
-- v2.0 Phases 6–11: warning system, HTML warnings box, NinjaOne SYSTEM compatibility, Company Portal/Intune, Mac collectors, Steve CLI flags
-- Phase 11 added: Steve — CLI flags for targeted stdout output (`--name`, `--serial`, `--warnings`, `--help`)
-- v3.0 Phases 12–15: SCRY rename, system health collectors, vendor update detection, extended CLI flags
+- v1.0 Phases 1–5 (shipped 2026-05-05, archived 2026-05-07)
+- v2.0 Phases 6–11 (shipped 2026-05-12, archived 2026-05-14)
+- v3.0 Phases 12–15 (shipped 2026-05-18, archived 2026-05-19)
+  - Phase 12: SCRY rename
+  - Phase 13: System health collectors (uptime, pending updates, yellow/red severity)
+  - Phase 14: Vendor update detection (Dell DCU XML, Lenovo LSU registry)
+  - Phase 15: Extended CLI flags (--json, --output, --app)
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Key constraints for v3.0:
+Full decision log in PROJECT.md Key Decisions table. Standing constraints across all milestones:
 
 - PyInstaller --onedir only (--onefile quarantined by CrowdStrike Falcon)
 - Win32_Product prohibited (MSI reconfiguration side effect)
 - Output path from sys.executable, not os.getcwd()
-- No writes to host PC; all output to flash drive
-- WMI callers use _wmi_module/_WMI_AVAILABLE guard pattern for CI compatibility
-- Phase 13: `severity` field must be added to `Warning` dataclass before health collectors can be wired
-- Phase 13: `--hidden-import win32timezone` must be added to `scry.spec` when pywin32 is added
-- Phase 13: WUA COM uses `_WIN32COM_AVAILABLE` guard (mirrors `_WMI_AVAILABLE` pattern); pywin32==311 is the only new pip dep
-- Phase 14: Dell/Lenovo registry paths are uncertain — require IT confirmation before phase can close
+- No writes to host PC enforced by code, no longer by CLI validation (D-02/D-03 — `--output PATH` accepts any writable path)
+- WMI / pwd / win32com callers use `_*_AVAILABLE` guard pattern for CI compatibility
+- Vendor detection is registry+file passive only — no CLI subprocess invocation
+- `Warning.level` is positional-LAST in dataclass for backward-compat
 
-### Pending Todos
+### Pending Hardware-Gated Validation (carried into next milestone)
 
-- Confirm Dell Command Update registry path with IT before Phase 14
-- Confirm Lenovo System Update registry path with IT before Phase 14
-- Validate NinjaOne Mac agent path against a real Mac in the fleet (carried from v2.0)
-- Hardware-gated UAT items from v2.0 carried as acknowledged debt
+**v3.0 new (11 items):**
+- Live Windows SYSTEM/Admin run: uptime + pending update count populated values (Phase 13)
+- Real machine uptime > 7 days → yellow UPTIME_WARN badge (Phase 13)
+- Real machine uptime > 30 days → red UPTIME_STALE badge + hibernation note (Phase 13)
+- Standard-user (non-admin) "N/A" degradation for pending updates (Phase 13)
+- Live Dell DCU pending count on real Dell machine (Phase 14)
+- Live non-Dell/non-Lenovo "Not installed" rendering (Phase 14)
+- 3 visual HTML render checks (test_vendor_render_case1/2/3.html) for vendor row states (Phase 14)
 
-### Blockers/Concerns
+**v3.0 open blockers (2 items):**
+- Dell Command Update registry path uncertainty — needs IT confirmation
+- Lenovo System Update registry path uncertainty — needs IT confirmation
 
-- Phase 14: Dell/Lenovo registry paths for pending update counts are uncertain — documented as IT confirmation gate
+**Carried from v2.0 (6 items):**
+- Phase 04: Live NinjaOne/CrowdStrike detection, M365 sign-off (4 pending)
+- Phase 10: Mac end-to-end run, NinjaOne launchctl label (2 pending)
+- Phase 03: Visual browser check of HTML character sheet
+- Phase 09: Company Portal on real machine
+
+**Total deferred: 20 items.** Suggest scheduling a "live machine day" early in next milestone.
+
+### Tech Debt at v3.0 Close
+
+- `writers.write_html` is dead code from the user pipeline (`main.py` calls `render_html()` directly); hard-coded "scry.html" filename in unreachable path — recommend deprecation in v3.1
+- `_run_cli --updates` runs `collect_pending_updates` + `collect_vendor_updates` but discards the data (only prints hostname/serial/warnings) — wasted work, not a bug
+- `--app NAME --output PATH` silently ignores `--output` (matches D-08/D-13; not surfaced to user)
+- REQUIREMENTS.md checkbox bookkeeping lag for the third milestone running — install an automation hook before v4.0
 
 ## Deferred Items
 
@@ -72,21 +91,26 @@ Key constraints for v3.0:
 | App Detection | Remote access tools (APP-V2-02) | future | v3.0 planning |
 | Distribution | Code-signed .exe (DIST-V2-01) | future | v1.0 close (budget decision) |
 | Platform | Mac PyInstaller packaging (.app/notarization) | future | v2.0 planning |
+| Vendor | LSU-PENDING — Lenovo System Update pending count | future | v3.0 close (no passive source) |
 
-### Acknowledged at v2.0 Milestone Close (2026-05-14) — carried forward
+### Acknowledged at v3.0 Milestone Close (2026-05-19)
 
 | Category | Item | Status |
 |----------|------|--------|
-| uat_gaps | Phase 04: 04-HUMAN-UAT.md — Live NinjaOne/CrowdStrike detection, M365 sign-off | partial (4 pending) |
-| uat_gaps | Phase 10: 10-HUMAN-UAT.md — Mac end-to-end run, NinjaOne launchctl label | partial (2 pending) |
-| verification_gaps | Phase 03: 03-VERIFICATION.md — Visual browser check of HTML character sheet | human_needed |
-| verification_gaps | Phase 04: 04-VERIFICATION.md — Live app detection on real provisioned machines | human_needed |
-| verification_gaps | Phase 09: 09-VERIFICATION.md — Company Portal on real machine | human_needed |
-| verification_gaps | Phase 10: 10-VERIFICATION.md — Mac end-to-end run | human_needed |
+| uat_gaps | Phase 13: hardware-gated uptime + pending update + yellow/red badge + standard-user N/A | partial (4 pending) |
+| uat_gaps | Phase 14: live Dell DCU + non-Dell/non-Lenovo + visual HTML render | partial (5 pending) |
+| open_blockers | Dell Command Update registry path needs IT confirmation | carried |
+| open_blockers | Lenovo System Update registry path needs IT confirmation | carried |
+| uat_gaps | Phase 04: Live NinjaOne/CrowdStrike detection, M365 sign-off | partial (4 pending) — carried from v2.0 |
+| uat_gaps | Phase 10: Mac end-to-end run, NinjaOne launchctl label | partial (2 pending) — carried from v2.0 |
+| verification_gaps | Phase 03: Visual browser check of HTML character sheet | human_needed — carried from v1.0 |
+| verification_gaps | Phase 04: Live app detection on real provisioned machines | human_needed — carried from v1.0 |
+| verification_gaps | Phase 09: Company Portal on real machine | human_needed — carried from v2.0 |
+| verification_gaps | Phase 10: Mac end-to-end run | human_needed — carried from v2.0 |
 
 ## Session Continuity
 
-Last session: 2026-05-18T23:00:00Z
-Stopped at: Completed 15-01-PLAN.md (Phase 15 complete; v3.0 milestone complete)
+Last session: 2026-05-19T00:00:00Z
+Stopped at: v3.0 milestone archived (ROADMAP collapsed, REQUIREMENTS.md removed, git tag v3.0 created)
 Resume file: None
-Next action: None — v3.0 milestone complete
+Next action: Run `/gsd-new-milestone` to plan the next milestone, or run `/gsd-progress` to confirm current state.
