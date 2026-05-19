@@ -69,7 +69,10 @@ Audit: `.planning/milestones/v3.0-MILESTONE-AUDIT.md`
   1. `writers.write_html` and its unreachable call site no longer exist in the codebase; the hard-coded `scry.html` string in that dead path is gone; all existing tests pass with no regressions
   2. Running SCRY with `--name`, `--serial`, or `--warnings` does not invoke `collect_pending_updates` or `collect_vendor_updates`; profiling or logging confirms the collectors are not called in that code path
   3. Running `scry.exe --app chrome --output C:\temp` (or equivalent) prints a warning to stderr that `--output` is ignored in app-query mode; the warning is absent when `--output` is used without `--app`
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 16-01-PLAN.md — Remove writers/ package, render_report() dead code, and dead tests (DEBT-01)
+- [ ] 16-02-PLAN.md — Remove wasted collector calls from _run_cli and add --app/--output conflict warning (DEBT-02, DEBT-03)
 
 ### Phase 17: Requirements Automation Hook
 **Goal**: A PreToolUse hook enforces REQUIREMENTS.md checkbox discipline so phases can no longer close with unchecked requirements
@@ -135,7 +138,7 @@ Audit: `.planning/milestones/v3.0-MILESTONE-AUDIT.md`
 | 13. System Health Collectors | v3.0 | 3/3 | Complete | 2026-05-18 |
 | 14. Vendor Update Detection | v3.0 | 2/2 | Complete | 2026-05-18 |
 | 15. Extended CLI Flags | v3.0 | 1/1 | Complete | 2026-05-18 |
-| 16. Tech Debt Cleanup | v3.1 | 0/TBD | Not started | - |
+| 16. Tech Debt Cleanup | v3.1 | 0/2 | Not started | - |
 | 17. Requirements Automation Hook | v3.1 | 0/TBD | Not started | - |
 | 18. IT Registry Path Confirmation | v3.1 | 0/TBD | Not started | - |
 | 19. Live Machine Validation — System Health and Apps | v3.1 | 0/TBD | Not started | - |
