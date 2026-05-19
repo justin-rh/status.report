@@ -1,17 +1,14 @@
 """HTML character sheet renderer. Phase 3.
-render_report(report, output_path) writes HTML to a directory (existing interface).
 render_html(report) returns the HTML string without writing (Phase 5 addition, D-01).
 Never raises on None hardware fields — D-12/D-13 None handling is in _build_context().
 """
 from __future__ import annotations
 
 import importlib.resources as ir
-from pathlib import Path
 
 from jinja2 import Environment
 
 from models import AuditReport
-from writers import write_html
 
 _STANDARD_RAM_SIZES = (2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128)
 
@@ -42,22 +39,6 @@ _DEPT_NAMES: dict[str, str] = {
     'P3B': 'Pull to Pick',
     'PBT': 'Packaging Big and Tall',
 }
-
-
-def render_report(report: AuditReport, output_path: Path) -> Path:
-    """Render AuditReport to HTML character sheet and write to output_path.
-
-    Returns the full path of the written file.
-    Caller resolves output_path from Path(sys.executable).parent — D-16.
-    Never raises on None hardware fields — all None values pre-processed in
-    _build_context() before template render (D-12, D-13).
-    """
-    template_source = _load_template_source()
-    env = Environment(autoescape=True)
-    template = env.from_string(template_source)
-    ctx = _build_context(report)
-    html = template.render(**ctx)
-    return write_html(html, output_path)
 
 
 def render_html(report: AuditReport) -> str:
