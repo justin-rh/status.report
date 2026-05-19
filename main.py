@@ -55,11 +55,6 @@ def _run_cli(args: argparse.Namespace) -> None:
             timestamp=datetime.datetime.now().isoformat(),
         )
         collect_all(report)
-        if args.updates and sys.platform != "darwin":
-            from collectors.windows.hardware import collect_pending_updates
-            collect_pending_updates(report)
-            from collectors.windows.vendor import collect_vendor_updates
-            collect_vendor_updates(report)
         report.warnings = evaluate_warnings(report)
     elif needs_hardware:
         # Import hardware collector directly — avoid full collect_all (D-09)
@@ -175,6 +170,8 @@ def main() -> None:
     # --app: single-app detection path — exits before cli_mode check
     # MUST be checked before cli_mode (RESEARCH.md Anti-Patterns, Pitfall note)
     if args.app:
+        if args.output:
+            print("WARNING: --output is ignored in --app mode", file=sys.stderr)
         _run_cli_app(args)
         return
 
