@@ -170,6 +170,8 @@ def main() -> None:
     # --app: single-app detection path — exits before cli_mode check
     # MUST be checked before cli_mode (RESEARCH.md Anti-Patterns, Pitfall note)
     if args.app:
+        if args.output:
+            print("WARNING: --output is ignored in --app mode", file=sys.stderr)
         _run_cli_app(args)
         return
 
