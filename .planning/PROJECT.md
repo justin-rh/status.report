@@ -21,9 +21,9 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 ## Current State (v3.0 SHIPPED 2026-05-18, archived 2026-05-19)
 
 - **Last shipped:** v3.0 — System Health, Vendor Updates, and Extended CLI (Phases 12–15, 9 plans, 291 tests)
-- **Cumulative:** 15 phases, 35 plans, ~7,129 Python LOC, 291 tests passing
+- **Cumulative:** 16 phases, 37 plans, 268 tests passing (23 dead tests removed in Phase 16)
 - **Stack:** Python 3.12 + psutil + wmi + winreg + pywin32 (WUA COM) + Jinja2 + PyInstaller `--onedir`
-- **Status:** Active — v3.1 Cleanup started 2026-05-19
+- **Status:** Active — v3.1 Phase 16 complete 2026-05-19; Phase 17 next
 
 ### Pending Hardware-Gated Validation (carried debt)
 
@@ -94,6 +94,12 @@ Open. Candidate scopes if pursued:
 - [x] **OUT-V3-01**: `--json` flag serializes AuditReport to JSON alongside HTML; `dataclasses.asdict()` — *Phase 15*
 - [x] **OUT-V3-02**: `--output <path>` flag overrides default `logs/`; any writable path accepted (D-02) — *Phase 15*
 - [x] **CLI-V3-01**: `--app <name>` single-app detection to stdout; `--app --json` prints JSON blob; case-insensitive match — *Phase 15*
+
+### Validated — v3.1
+
+- [x] **DEBT-01**: Remove dead `writers.write_html` and its call site `render_report()`; delete `writers/` package and dead tests — *Phase 16*
+- [x] **DEBT-02**: Remove wasted `collect_pending_updates`/`collect_vendor_updates` calls from `_run_cli()` (unused in CLI output path) — *Phase 16*
+- [x] **DEBT-03**: Emit stderr warning when `--app` and `--output` are both set (output is silently ignored in app-query mode) — *Phase 16*
 
 ### Deferred — Not v3.0 scope
 
@@ -175,4 +181,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-19 after v3.0 milestone close — archived to `.planning/milestones/v3.0-*.md`*
+*Last updated: 2026-05-19 after Phase 16 completion — DEBT-01/02/03 validated, writers/ package removed, 268 tests*
