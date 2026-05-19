@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: none
-milestone_name: ""
-status: between-milestones
-stopped_at: v3.0 milestone archived
+milestone: v3.1
+milestone_name: "Cleanup"
+status: defining-requirements
+stopped_at: milestone v3.1 started
 last_updated: "2026-05-19T00:00:00Z"
-last_activity: 2026-05-19 — v3.0 milestone archived; ROADMAP collapsed, REQUIREMENTS.md removed (fresh for next milestone); git tag v3.0 created
+last_activity: 2026-05-19 — Milestone v3.1 Cleanup started; PROJECT.md updated, defining requirements
 progress:
   total_phases: 0
   completed_phases: 0
@@ -18,17 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-19 after v3.0 close)
+See: .planning/PROJECT.md (updated 2026-05-19 for v3.1 Cleanup)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** No active milestone. Run `/gsd-new-milestone` to plan v3.1 (close hardware-gated debt) or v4.0 (major feature work).
+**Current focus:** v3.1 Cleanup — close 20 hardware-gated UAT items, confirm Dell/Lenovo registry paths with IT, add REQUIREMENTS automation hook, remove tech debt.
 
 ## Current Position
 
-Phase: none
-Plan: none
-Status: between milestones — v3.0 archived 2026-05-19
-Last activity: 2026-05-19 — v3.0 milestone close; archive files written, ROADMAP collapsed, REQUIREMENTS.md removed, git tag v3.0 created
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-19 — Milestone v3.1 Cleanup started
 
 ## Accumulated Context
 

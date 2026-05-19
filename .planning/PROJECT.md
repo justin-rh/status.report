@@ -8,12 +8,22 @@ A self-contained Windows .exe (and macOS compatible) that runs from a USB flash 
 
 IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
 
+## Current Milestone: v3.1 Cleanup
+
+**Goal:** Close all accumulated debt — validate the tool on real hardware, confirm vendor registry paths with IT, automate REQUIREMENTS tracking, and remove code tech debt.
+
+**Target features:**
+- Live machine validation day — clear all 20 hardware-gated UAT items (Phase 13, 14, carried from v2.0)
+- Dell/Lenovo registry path confirmation with Edgar/IT; update code if paths differ
+- REQUIREMENTS.md checkbox automation — PreToolUse hook blocks SUMMARY commit if REQ checkbox still `[ ]`
+- Tech debt cleanup — remove dead `writers.write_html`, fix `_run_cli --updates` wasted work, warn on `--app NAME --output PATH` conflict
+
 ## Current State (v3.0 SHIPPED 2026-05-18, archived 2026-05-19)
 
 - **Last shipped:** v3.0 — System Health, Vendor Updates, and Extended CLI (Phases 12–15, 9 plans, 291 tests)
 - **Cumulative:** 15 phases, 35 plans, ~7,129 Python LOC, 291 tests passing
 - **Stack:** Python 3.12 + psutil + wmi + winreg + pywin32 (WUA COM) + Jinja2 + PyInstaller `--onedir`
-- **Status:** No active milestone — ready for `/gsd-new-milestone` to plan v3.1 or v4.0
+- **Status:** Active — v3.1 Cleanup started 2026-05-19
 
 ### Pending Hardware-Gated Validation (carried debt)
 
