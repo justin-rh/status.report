@@ -61,14 +61,14 @@
 
 | REQ-ID | Phase | Plan | Status |
 |--------|-------|------|--------|
-| VALID-01 | — | — | pending |
-| VALID-02 | — | — | pending |
-| VALID-03 | — | — | pending |
-| VALID-04 | — | — | pending |
-| VALID-05 | — | — | pending |
-| CONF-01 | — | — | pending |
-| CONF-02 | — | — | pending |
-| AUTO-01 | — | — | pending |
-| DEBT-01 | — | — | pending |
-| DEBT-02 | — | — | pending |
-| DEBT-03 | — | — | pending |
+| DEBT-01 | Phase 16 | — | pending |
+| DEBT-02 | Phase 16 | — | pending |
+| DEBT-03 | Phase 16 | — | pending |
+| AUTO-01 | Phase 17 | — | pending |
+| CONF-01 | Phase 18 | — | pending |
+| CONF-02 | Phase 18 | — | pending |
+| VALID-01 | Phase 19 | — | pending |
+| VALID-03 | Phase 19 | — | pending |
+| VALID-05 | Phase 19 | — | pending |
+| VALID-02 | Phase 20 | — | pending |
+| VALID-04 | Phase 20 | — | pending |
