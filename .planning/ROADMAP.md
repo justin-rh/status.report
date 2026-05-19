@@ -53,7 +53,7 @@ Audit: `.planning/milestones/v3.0-MILESTONE-AUDIT.md`
 
 **Milestone Goal:** Close all accumulated debt — remove dead code, fix wasted collector work, automate REQUIREMENTS tracking, confirm vendor registry paths with IT, and validate SCRY on real hardware across all 20 deferred UAT items.
 
-- [ ] **Phase 16: Tech Debt Cleanup** — Remove dead writers.write_html, fix --updates wasted collector calls, warn on --app/--output conflict
+- [x] **Phase 16: Tech Debt Cleanup** — Remove dead writers.write_html, fix --updates wasted collector calls, warn on --app/--output conflict — completed 2026-05-19
 - [ ] **Phase 17: Requirements Automation Hook** — Install PreToolUse hook that blocks SUMMARY commit when REQUIREMENTS.md checkboxes are unchecked
 - [ ] **Phase 18: IT Registry Path Confirmation** — Edgar/IT confirms Dell Command Update and Lenovo System Update registry paths; code updated if paths differ
 - [ ] **Phase 19: Live Machine Validation — System Health and Apps** — IT staff validates uptime badges, pending updates, app detection, and HTML render on real enrolled Windows machines
@@ -71,8 +71,8 @@ Audit: `.planning/milestones/v3.0-MILESTONE-AUDIT.md`
   3. Running `scry.exe --app chrome --output C:\temp` (or equivalent) prints a warning to stderr that `--output` is ignored in app-query mode; the warning is absent when `--output` is used without `--app`
 **Plans**: 2 plans
 Plans:
-- [ ] 16-01-PLAN.md — Remove writers/ package, render_report() dead code, and dead tests (DEBT-01)
-- [ ] 16-02-PLAN.md — Remove wasted collector calls from _run_cli and add --app/--output conflict warning (DEBT-02, DEBT-03)
+- [x] 16-01-PLAN.md — Remove writers/ package, render_report() dead code, and dead tests (DEBT-01)
+- [x] 16-02-PLAN.md — Remove wasted collector calls from _run_cli and add --app/--output conflict warning (DEBT-02, DEBT-03)
 
 ### Phase 17: Requirements Automation Hook
 **Goal**: A PreToolUse hook enforces REQUIREMENTS.md checkbox discipline so phases can no longer close with unchecked requirements
@@ -138,7 +138,7 @@ Plans:
 | 13. System Health Collectors | v3.0 | 3/3 | Complete | 2026-05-18 |
 | 14. Vendor Update Detection | v3.0 | 2/2 | Complete | 2026-05-18 |
 | 15. Extended CLI Flags | v3.0 | 1/1 | Complete | 2026-05-18 |
-| 16. Tech Debt Cleanup | v3.1 | 0/2 | Not started | - |
+| 16. Tech Debt Cleanup | v3.1 | 2/2 | Complete | 2026-05-19 |
 | 17. Requirements Automation Hook | v3.1 | 0/TBD | Not started | - |
 | 18. IT Registry Path Confirmation | v3.1 | 0/TBD | Not started | - |
 | 19. Live Machine Validation — System Health and Apps | v3.1 | 0/TBD | Not started | - |

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.1
 milestone_name: "Cleanup"
-status: ready-to-execute
-stopped_at: Phase 16 planned — 2 plans, 1 wave
-last_updated: "2026-05-19T00:00:00Z"
-last_activity: 2026-05-19 — Phase 16 planned; 2 plans (16-01, 16-02) in 1 wave; checker passed
+status: phase-complete
+stopped_at: Phase 16 complete — 2/2 plans, verification passed
+last_updated: "2026-05-19T23:00:00Z"
+last_activity: 2026-05-19 — Phase 16 executed; dead writers/ package removed, render_report deleted, _run_cli wasted collectors removed, --app/--output warning added; 268 tests pass
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 0
-  percent: 0
+  completed_plans: 2
+  percent: 20
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-19 for v3.1 Cleanup)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** v3.1 Cleanup — Phase 16 ready to plan (tech debt cleanup)
+**Current focus:** v3.1 Cleanup — Phase 17 next (Requirements Automation Hook)
 
 ## Current Position
 
-Phase: 16 of 20 (Tech Debt Cleanup)
+Phase: 17 of 20 (Requirements Automation Hook)
 Plan: — (not yet planned)
 Status: Ready to plan
-Last activity: 2026-05-19 — Roadmap created for v3.1; 5 phases planned (16–20), 11 requirements mapped
+Last activity: 2026-05-19 — Phase 16 complete; dead writers/ package removed, render_report deleted, _run_cli wasted collectors removed, --app/--output stderr warning added; 268 tests pass
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -69,7 +69,7 @@ Full decision log in PROJECT.md Key Decisions table. Standing constraints:
 
 ## Session Continuity
 
-Last session: 2026-05-19T00:00:00Z
-Stopped at: v3.1 roadmap created — ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated
+Last session: 2026-05-19T23:00:00Z
+Stopped at: Phase 16 complete — 2/2 plans executed, verification passed, ROADMAP updated
 Resume file: None
-Next action: Run `/gsd-plan-phase 16` to plan the tech debt cleanup phase.
+Next action: Run `/gsd-discuss-phase 17` or `/gsd-plan-phase 17` to plan the Requirements Automation Hook phase.
