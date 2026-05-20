@@ -81,7 +81,11 @@ Plans:
   1. Edgar or IT has compared the DCU registry key path(s) in `collectors/windows/vendor.py` against at least one enrolled Dell machine and documented whether they match; if they differ, `vendor.py` is updated with the correct path
   2. Edgar or IT has compared the LSU registry key path(s) in `collectors/windows/vendor.py` against at least one enrolled Lenovo machine and documented whether they match; if they differ, `vendor.py` is updated with the correct path
   3. The full test suite passes (no regressions) after any code updates; the "DCU registry path uncertainty" and "LSU registry path uncertainty" open blockers are removed from STATE.md
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 17-01-PLAN.md — Implement --diag-vendor CLI flag, diag_vendor_paths function in vendor.py, LSU keyword-list comment block (D-10/D-11), unit tests for diagnostic and CLI flag
+- [ ] 17-02-PLAN.md — Edgar/IT runs --diag-vendor on enrolled Dell + Lenovo machines and populates 17-IT-CONFIRMATION.md (checkpoint:human-action)
+- [ ] 17-03-PLAN.md — Conditional patches per D-13/D-14 (if findings divergent), remove registry-path blockers from STATE.md, close CONF-01/CONF-02 in REQUIREMENTS.md
 
 ### Phase 18: Live Machine Validation — System Health and Apps
 **Goal**: IT staff has confirmed on real enrolled Windows machines that SCRY correctly reports system health signals, app detection results, and HTML character sheet rendering — closing all carried validation debt from v2.0 and v3.0 for these areas
