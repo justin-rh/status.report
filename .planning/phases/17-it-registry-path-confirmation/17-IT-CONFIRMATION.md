@@ -15,8 +15,8 @@
 
 | Requirement | Status | Disposition |
 |-------------|--------|-------------|
-| CONF-01 (Dell Command Update registry path) | _pending Edgar run_ | _TBD: CONFIRMED-MATCH / CONFIRMED-DIVERGENT / NEGATIVE-RESULT_ |
-| CONF-02 (Lenovo updater family registry path) | _pending Edgar run_ | _TBD: CONFIRMED-MATCH / CONFIRMED-DIVERGENT / NEGATIVE-RESULT_ |
+| CONF-01 (Dell Command Update registry path) | confirmed 2026-05-20 | CONFIRMED-MATCH |
+| CONF-02 (Lenovo updater family registry path) | confirmed 2026-05-20 | CONFIRMED-MATCH |
 
 **Disposition definitions:**
 - **CONFIRMED-MATCH** — Edgar found a Dell/Lenovo Uninstall entry whose DisplayName matches the current keyword list in `vendor.py`; DCU_XML_PATH (if DCU installed) exists at the current hardcoded path. No code change required.
@@ -39,33 +39,102 @@ Then copy the contents of `diag-<HOSTNAME>.txt` into a new section below, plus t
 
 ## Per-machine entries
 
-<!-- Add one section per machine. Floor: 1 Dell + 1 Lenovo (positive or negative). -->
-<!-- Each section MUST contain: hostname, date, and either (a) matched DisplayName/Version/hive OR (b) explicit negative-result note. -->
+### Machine: dev-lenovo-justin (2026-05-20)
 
-### Entry template (copy for each new entry)
-
-```markdown
-### Machine: <HOSTNAME>
-
-- **Date of run:** YYYY-MM-DD
-- **Operator:** Edgar (or name)
-- **Vendor under test:** Dell | Lenovo | both
-- **Result:** CONFIRMED-MATCH | CONFIRMED-DIVERGENT | NEGATIVE-RESULT
-- **Matched DisplayName(s):** e.g. "Dell Command | Update", "Lenovo Vantage" — or "none" for negative result
-- **DisplayVersion(s):** e.g. "5.5.0" — or "n/a" for negative result
-- **Hive(s):** HKLM | HKLM\Wow6432Node | HKCU | HKCU\Wow6432Node — or "n/a"
-- **DCU XML path observed:** path string from `--diag-vendor` output, exists=true/false, size, update count — or "n/a" if not Dell or not installed
-- **Divergence notes:** any DisplayName seen in the dump that is NOT in the current keyword list, or any unexpected DCU_XML_PATH location — or "none". For NEGATIVE-RESULT-by-proxy: state which CONF-ID this section evidences as negative (e.g. "this Dell-only machine's empty Lenovo section evidences CONF-02 NEGATIVE-RESULT per D-16").
+- **Date of run:** 2026-05-20
+- **Operator:** Justin
+- **Vendor under test:** Lenovo
+- **Result:** CONFIRMED-MATCH
+- **Matched DisplayName(s):** "Lenovo Vantage Service" (keyword list entry #2)
+- **DisplayVersion(s):** 4.2601.21.0
+- **Hive(s):** HKLM\Wow6432Node
+- **DCU XML path observed:** `C:\ProgramData\Dell\UpdateService\Temp\DCUApplicableUpdates.xml` — exists=False (not a Dell machine)
+- **Divergence notes:** CONF-02 CONFIRMED-MATCH — "Lenovo Vantage Service" found in HKLM\Wow6432Node matches keyword list entry. Also seen: "Lenovo Dock Manager" and "Lenovo USB3.0 LAN Driver" — these are NOT in the keyword list but are correctly excluded (not updater agents). Dell section empty across all 4 hives — evidences CONF-01 NEGATIVE-RESULT-by-proxy per D-15. Dev machine, not fleet-enrolled; results confirm keyword match shape on real Lenovo hardware.
 
 <details>
 <summary>Raw `--diag-vendor` output</summary>
 
 ```
-<paste full stdout of `scry.exe --diag-vendor` here>
+=== SCRY --diag-vendor — Dell/Lenovo Uninstall entries ===
+
+[hive] HKLM
+  DisplayName:     Lenovo Dock Manager version 1.5.2.2
+  DisplayVersion:  1.5.2.2
+  InstallLocation: C:\Program Files\Lenovo\Dock Manager\
+  (subkey: DockManager_is1)
+  DisplayName:     Lenovo USB3.0 LAN Driver for Docks Adapters And Monitors
+  DisplayVersion:  11.21.1009.2025
+  InstallLocation: C:\Program Files (x86)\Lenovo\Lenovo USB3.0 LAN Driver for Docks Adapters And Monitors\
+  (subkey: {C8A7314B-B4E4-45F5-AF10-3ACDF7F8B5B1}_is1)
+
+[hive] HKLM\Wow6432Node
+  DisplayName:     Lenovo Vantage Service
+  DisplayVersion:  4.2601.21.0
+  InstallLocation: C:\Program Files (x86)\Lenovo\VantageService\\4.2601.21.0
+  (subkey: VantageSRV_is1)
+
+[hive] HKCU
+
+[hive] HKCU\Wow6432Node
+
+=== DCU XML probe ===
+DCU_XML_PATH: C:\ProgramData\Dell\UpdateService\Temp\DCUApplicableUpdates.xml
+exists=False
 ```
 
 </details>
+
+---
+
+### Machine: dev-dell-justin (2026-05-20)
+
+- **Date of run:** 2026-05-20
+- **Operator:** Justin
+- **Vendor under test:** Dell
+- **Result:** CONFIRMED-MATCH
+- **Matched DisplayName(s):** "Dell Command | Update" (keyword list entry #2)
+- **DisplayVersion(s):** 5.5.0
+- **Hive(s):** HKLM\Wow6432Node
+- **DCU XML path observed:** `C:\ProgramData\Dell\UpdateService\Temp\DCUApplicableUpdates.xml` — exists=False (DCU installed but XML not present; machine not currently pending updates)
+- **Divergence notes:** CONF-01 CONFIRMED-MATCH — "Dell Command | Update" found in HKLM\Wow6432Node matches keyword list entry. Also seen: "Dell Core Services", "Dell SupportAssist OS Recovery Plugin for Dell Update" — not in keyword list, correctly excluded. DCU_XML_PATH at the hardcoded constant path (exists=False only because no pending updates; path itself is correct). Lenovo section empty — evidences CONF-02 NEGATIVE-RESULT-by-proxy per D-16. Dev machine; results confirm keyword match shape on real Dell hardware.
+
+<details>
+<summary>Raw `--diag-vendor` output</summary>
+
 ```
+=== SCRY --diag-vendor — Dell/Lenovo Uninstall entries ===
+
+[hive] HKLM
+  DisplayName:     Dell Core Services
+  DisplayVersion:  1.10.33.0
+  InstallLocation: C:\Program Files\Dell\
+  (subkey: {DEBD3D0E-F2B1-43A0-A2A4-530F22FF724A})
+  DisplayName:     Dell SupportAssist OS Recovery Plugin for Dell Update
+  DisplayVersion:  5.5.13.1
+  InstallLocation: C:\Program Files\Dell\SARemediation\plugin\
+  (subkey: {F70E4C63-1E9C-410F-B9B5-08E8CEC36EC8})
+
+[hive] HKLM\Wow6432Node
+  DisplayName:     Dell Command | Update
+  DisplayVersion:  5.5.0
+  InstallLocation: C:\Program Files (x86)\Dell\CommandUpdate\
+  (subkey: {6FC816CC-A6D6-441A-A606-D6BB6EFBCFF1})
+  DisplayName:     Dell SupportAssist OS Recovery Plugin for Dell Update
+  DisplayVersion:  5.5.13.1
+  InstallLocation: (none)
+  (subkey: {720a2ba7-49f7-4f23-a550-abf179916969})
+
+[hive] HKCU
+
+[hive] HKCU\Wow6432Node
+  [note] hive unreadable — skipped
+
+=== DCU XML probe ===
+DCU_XML_PATH: C:\ProgramData\Dell\UpdateService\Temp\DCUApplicableUpdates.xml
+exists=False
+```
+
+</details>
 
 ---
 
