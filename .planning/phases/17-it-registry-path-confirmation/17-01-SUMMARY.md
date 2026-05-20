@@ -81,11 +81,15 @@ Created `tests/test_cli_phase17.py` with 7 tests:
 - Test 6: `--diag-vendor` appears in `--help` output
 - Test 7 (B1): `--diag-vendor --app chrome` routes to diag handler, not `_run_cli_app`
 
-### Task 3: PyInstaller smoke build (CHECKPOINT — NOT COMPLETED)
+### Task 3: PyInstaller smoke build (CHECKPOINT — APPROVED)
 
-PyInstaller is not installed in the execution environment (worktree executor, not developer's local machine with PyInstaller). This task requires the human to run the smoke build on a Windows machine with PyInstaller installed.
-
-**Resume signal required:** See checkpoint section below.
+Build ran via `.venv\Scripts\python.exe -m PyInstaller scry.spec` producing `dist\scry_v3.1\scry_v3.1.exe`.
+Smoke test confirmed:
+- Exit code: 0
+- `=== SCRY --diag-vendor — Dell/Lenovo Uninstall entries ===` header printed
+- All 4 hive labels present (HKLM, HKLM\Wow6432Node, HKCU, HKCU\Wow6432Node)
+- `=== DCU XML probe ===` section present
+- W5 build-risk cleared before Edgar's checkpoint (Plan 17-02)
 
 ### Task 4: Full suite regression + STATE.md drift fix
 
@@ -115,36 +119,11 @@ PyInstaller is not installed in the execution environment (worktree executor, no
 ## Checkpoint: Task 3 PyInstaller Smoke Build
 
 **Type:** checkpoint:human-verify
-**Status:** BLOCKED — PyInstaller not installed in executor environment
+**Status:** APPROVED — build successful, --diag-vendor smoke test passed on Windows
 
-**What was built (Tasks 1 and 2):** Code and tests are complete and passing. `--diag-vendor` is wired end-to-end. To prove the compiled .exe works before Edgar's checkpoint (W5 risk mitigation), a smoke build is needed.
-
-**Steps to verify:**
-
-1. On a Windows machine with PyInstaller installed, from the project root:
-   ```
-   python -m PyInstaller scry.spec
-   ```
-
-2. Confirm `dist/scry/scry.exe` was produced.
-
-3. Run:
-   ```powershell
-   dist\scry\scry.exe --diag-vendor 2>&1 | Select-String "SCRY --diag-vendor|DCU XML probe|\[hive\]"
-   ```
-   Expected: at least 3 matched lines.
-
-4. Confirm exit code 0:
-   ```powershell
-   dist\scry\scry.exe --diag-vendor > $null; $LASTEXITCODE
-   ```
-   Expected: `0`.
-
-**Resume signals:**
-- `approved — build successful, --diag-vendor smoke test passed on Windows`
-- `approved — build successful but smoke test produced unexpected output: <describe>`
-- `blocked — PyInstaller build failed: <error>`
-- `blocked — no Windows environment available; deferring smoke test to Plan 17-02 pre-Edgar`
+**Build:** `.venv\Scripts\python.exe -m PyInstaller scry.spec` → `dist\scry_v3.1\scry_v3.1.exe` (2026-05-20)
+**Smoke test:** `dist\scry_v3.1\scry_v3.1.exe --diag-vendor` → exit 0, all 4 hive headers + DCU XML probe section in stdout
+**W5 mitigation:** Build-risk cleared before Edgar's Plan 17-02 checkpoint — the .exe Edgar will copy to a flash drive is proven to work
 
 ## Test Count Delta
 
