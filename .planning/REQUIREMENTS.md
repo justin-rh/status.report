@@ -21,10 +21,6 @@
 - [ ] **CONF-01**: Edgar/IT confirms Dell Command Update registry path(s) used by SCRY match the actual path on enrolled Dell machines; code updated and tests added if paths differ from current implementation
 - [ ] **CONF-02**: Edgar/IT confirms Lenovo System Update registry path(s) used by SCRY match the actual path on enrolled Lenovo machines; code updated and tests added if paths differ from current implementation
 
-### Automation (AUTO)
-
-- [ ] **AUTO-01**: A PreToolUse hook exists that intercepts SUMMARY commit attempts and fails if any REQUIREMENTS.md REQ checkbox matched by the current phase is still `[ ]` — preventing phases from closing with unchecked requirements
-
 ### Tech Debt (DEBT)
 
 - [ ] **DEBT-01**: `writers.write_html` function and its unreachable call path are removed; hard-coded `scry.html` filename in dead code is eliminated; all existing tests continue to pass
@@ -64,11 +60,10 @@
 | DEBT-01 | Phase 16 | — | pending |
 | DEBT-02 | Phase 16 | — | pending |
 | DEBT-03 | Phase 16 | — | pending |
-| AUTO-01 | Phase 17 | — | pending |
-| CONF-01 | Phase 18 | — | pending |
-| CONF-02 | Phase 18 | — | pending |
-| VALID-01 | Phase 19 | — | pending |
-| VALID-03 | Phase 19 | — | pending |
-| VALID-05 | Phase 19 | — | pending |
-| VALID-02 | Phase 20 | — | pending |
-| VALID-04 | Phase 20 | — | pending |
+| CONF-01 | Phase 17 | — | pending |
+| CONF-02 | Phase 17 | — | pending |
+| VALID-01 | Phase 18 | — | pending |
+| VALID-03 | Phase 18 | — | pending |
+| VALID-05 | Phase 18 | — | pending |
+| VALID-02 | Phase 19 | — | pending |
+| VALID-04 | Phase 19 | — | pending |

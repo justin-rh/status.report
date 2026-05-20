@@ -7,7 +7,7 @@ stopped_at: Phase 16 complete — 2/2 plans, verification passed
 last_updated: "2026-05-19T23:00:00Z"
 last_activity: 2026-05-19 — Phase 16 executed; dead writers/ package removed, render_report deleted, _run_cli wasted collectors removed, --app/--output warning added; 268 tests pass
 progress:
-  total_phases: 5
+  total_phases: 4
   completed_phases: 1
   total_plans: 2
   completed_plans: 2
@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-05-19 for v3.1 Cleanup)
 
 ## Current Position
 
-Phase: 17 of 20 (Requirements Automation Hook)
+Phase: 17 of 19 (IT Registry Path Confirmation)
 Plan: — (not yet planned)
 Status: Ready to plan
 Last activity: 2026-05-19 — Phase 16 complete; dead writers/ package removed, render_report deleted, _run_cli wasted collectors removed, --app/--output stderr warning added; 268 tests pass
@@ -72,4 +72,4 @@ Full decision log in PROJECT.md Key Decisions table. Standing constraints:
 Last session: 2026-05-19T23:00:00Z
 Stopped at: Phase 16 complete — 2/2 plans executed, verification passed, ROADMAP updated
 Resume file: None
-Next action: Run `/gsd-discuss-phase 17` or `/gsd-plan-phase 17` to plan the Requirements Automation Hook phase.
+Next action: Run `/gsd-discuss-phase 17` or `/gsd-plan-phase 17` to plan the IT Registry Path Confirmation phase.

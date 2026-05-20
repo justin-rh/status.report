@@ -51,13 +51,12 @@ Audit: `.planning/milestones/v3.0-MILESTONE-AUDIT.md`
 
 ### 🚧 v3.1 Cleanup (In Progress)
 
-**Milestone Goal:** Close all accumulated debt — remove dead code, fix wasted collector work, automate REQUIREMENTS tracking, confirm vendor registry paths with IT, and validate SCRY on real hardware across all 20 deferred UAT items.
+**Milestone Goal:** Close all accumulated debt — remove dead code, fix wasted collector work, confirm vendor registry paths with IT, and validate SCRY on real hardware across all 20 deferred UAT items.
 
 - [x] **Phase 16: Tech Debt Cleanup** — Remove dead writers.write_html, fix --updates wasted collector calls, warn on --app/--output conflict — completed 2026-05-19
-- [ ] **Phase 17: Requirements Automation Hook** — Install PreToolUse hook that blocks SUMMARY commit when REQUIREMENTS.md checkboxes are unchecked
-- [ ] **Phase 18: IT Registry Path Confirmation** — Edgar/IT confirms Dell Command Update and Lenovo System Update registry paths; code updated if paths differ
-- [ ] **Phase 19: Live Machine Validation — System Health and Apps** — IT staff validates uptime badges, pending updates, app detection, and HTML render on real enrolled Windows machines
-- [ ] **Phase 20: Live Machine Validation — Vendor and Mac** — IT staff validates Dell DCU vendor row on a real Dell machine and verifies Mac end-to-end run
+- [ ] **Phase 17: IT Registry Path Confirmation** — Edgar/IT confirms Dell Command Update and Lenovo System Update registry paths; code updated if paths differ
+- [ ] **Phase 18: Live Machine Validation — System Health and Apps** — IT staff validates uptime badges, pending updates, app detection, and HTML render on real enrolled Windows machines
+- [ ] **Phase 19: Live Machine Validation — Vendor and Mac** — IT staff validates Dell DCU vendor row on a real Dell machine and verifies Mac end-to-end run
 
 ## Phase Details
 
@@ -74,19 +73,9 @@ Plans:
 - [x] 16-01-PLAN.md — Remove writers/ package, render_report() dead code, and dead tests (DEBT-01)
 - [x] 16-02-PLAN.md — Remove wasted collector calls from _run_cli and add --app/--output conflict warning (DEBT-02, DEBT-03)
 
-### Phase 17: Requirements Automation Hook
-**Goal**: A PreToolUse hook enforces REQUIREMENTS.md checkbox discipline so phases can no longer close with unchecked requirements
-**Depends on**: Phase 16
-**Requirements**: AUTO-01
-**Success Criteria** (what must be TRUE):
-  1. A PreToolUse hook file exists in the project's `.claude/` hook directory targeting SUMMARY commit operations
-  2. Attempting to create a SUMMARY commit when the current phase has at least one unchecked `[ ]` requirement checkbox causes the hook to exit non-zero with an error message identifying the unchecked requirements
-  3. Creating a SUMMARY commit when all requirements for the current phase are checked `[x]` proceeds without hook intervention
-**Plans**: TBD
-
-### Phase 18: IT Registry Path Confirmation
+### Phase 17: IT Registry Path Confirmation
 **Goal**: The registry paths SCRY uses to detect Dell Command Update and Lenovo System Update are confirmed against real enrolled machines, and the code is corrected if they differ
-**Depends on**: Phase 17
+**Depends on**: Phase 16
 **Requirements**: CONF-01, CONF-02
 **Success Criteria** (what must be TRUE):
   1. Edgar or IT has compared the DCU registry key path(s) in `collectors/windows/vendor.py` against at least one enrolled Dell machine and documented whether they match; if they differ, `vendor.py` is updated with the correct path
@@ -94,9 +83,9 @@ Plans:
   3. The full test suite passes (no regressions) after any code updates; the "DCU registry path uncertainty" and "LSU registry path uncertainty" open blockers are removed from STATE.md
 **Plans**: TBD
 
-### Phase 19: Live Machine Validation — System Health and Apps
+### Phase 18: Live Machine Validation — System Health and Apps
 **Goal**: IT staff has confirmed on real enrolled Windows machines that SCRY correctly reports system health signals, app detection results, and HTML character sheet rendering — closing all carried validation debt from v2.0 and v3.0 for these areas
-**Depends on**: Phase 17
+**Depends on**: Phase 16
 **Requirements**: VALID-01, VALID-03, VALID-05
 **Success Criteria** (what must be TRUE):
   1. IT staff runs SCRY under a SYSTEM or Admin account and observes real (non-None, non-"N/A") uptime and pending Windows update count values displayed in the character sheet
@@ -107,9 +96,9 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 20: Live Machine Validation — Vendor and Mac
+### Phase 19: Live Machine Validation — Vendor and Mac
 **Goal**: IT staff has confirmed vendor update detection on real Dell and non-Dell hardware, and Mac end-to-end execution is verified on real Apple hardware — closing all remaining carried validation debt
-**Depends on**: Phase 18, Phase 19
+**Depends on**: Phase 17, Phase 18
 **Requirements**: VALID-02, VALID-04
 **Success Criteria** (what must be TRUE):
   1. IT staff runs SCRY with `--updates` on a real Dell machine and observes a DCU pending count (or "Unknown (no scan data)" if DCU has not been run since imaging) — the vendor row is not "Not installed"
@@ -139,7 +128,6 @@ Plans:
 | 14. Vendor Update Detection | v3.0 | 2/2 | Complete | 2026-05-18 |
 | 15. Extended CLI Flags | v3.0 | 1/1 | Complete | 2026-05-18 |
 | 16. Tech Debt Cleanup | v3.1 | 2/2 | Complete | 2026-05-19 |
-| 17. Requirements Automation Hook | v3.1 | 0/TBD | Not started | - |
-| 18. IT Registry Path Confirmation | v3.1 | 0/TBD | Not started | - |
-| 19. Live Machine Validation — System Health and Apps | v3.1 | 0/TBD | Not started | - |
-| 20. Live Machine Validation — Vendor and Mac | v3.1 | 0/TBD | Not started | - |
+| 17. IT Registry Path Confirmation | v3.1 | 0/TBD | Not started | - |
+| 18. Live Machine Validation — System Health and Apps | v3.1 | 0/TBD | Not started | - |
+| 19. Live Machine Validation — Vendor and Mac | v3.1 | 0/TBD | Not started | - |

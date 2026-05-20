@@ -15,7 +15,6 @@ IT staff plugs in, runs the tool, and instantly knows what they're looking at �
 **Target features:**
 - Live machine validation day — clear all 20 hardware-gated UAT items (Phase 13, 14, carried from v2.0)
 - Dell/Lenovo registry path confirmation with Edgar/IT; update code if paths differ
-- REQUIREMENTS.md checkbox automation — PreToolUse hook blocks SUMMARY commit if REQ checkbox still `[ ]`
 - Tech debt cleanup — remove dead `writers.write_html`, fix `_run_cli --updates` wasted work, warn on `--app NAME --output PATH` conflict
 
 ## Current State (v3.0 SHIPPED 2026-05-18, archived 2026-05-19)
