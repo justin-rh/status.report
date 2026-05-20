@@ -110,6 +110,28 @@ def _format_app_status_line(app_status: "AppStatus") -> str:
     return f"{app_status.name}: installed"
 
 
+def _run_cli_diag_vendor(args: argparse.Namespace) -> None:
+    """Handle --diag-vendor mode: dump vendor Uninstall + DCU XML state, exit.
+
+    Short-circuit (Phase 17 D-04 — like --name / --app). Runs under any
+    account; never writes to disk; never invokes the full pipeline.
+    Windows-only — exits 0 with a stderr note on Darwin.
+    """
+    if sys.platform == "darwin":
+        print(
+            "--diag-vendor is Windows-only; nothing to probe on darwin",
+            file=sys.stderr,
+        )
+        sys.exit(0)
+
+    # Lazy import: avoids 'import winreg' at main.py module-top on Darwin builds.
+    # (S3 — defends against future "fix" that moves the import to module-top
+    # and breaks Mac PyInstaller / Mac test collection.)
+    from collectors.windows.vendor import diag_vendor_paths
+    diag_vendor_paths()  # defaults to sys.stdout
+    sys.exit(0)
+
+
 def _run_cli_app(args: argparse.Namespace) -> None:
     """Handle --app <name> mode: detect one app, print result to stdout, exit.
 
@@ -165,7 +187,21 @@ def main() -> None:
     parser.add_argument("--json",   action="store_true", help="Write AuditReport as JSON alongside HTML report; full pipeline always runs")
     parser.add_argument("--output", metavar="PATH",      help="Override default logs/ destination for all file output (HTML and JSON)")
     parser.add_argument("--app",    metavar="NAME",      help="Run app-detection for one named app; print result to stdout and exit")
+    parser.add_argument(
+        "--diag-vendor",
+        action="store_true",
+        help="Diagnostic: dump Dell/Lenovo Uninstall entries and DCU XML state for IT confirmation; prints to stdout and exits (Windows only)",
+    )
     args = parser.parse_args()
+
+    # --diag-vendor: vendor registry/XML diagnostic — exits before cli_mode check (D-04)
+    # MUST be placed BEFORE the --app block (enforced by tests/test_cli_phase17.py
+    # test_diag_vendor_dispatched_before_app, per Phase 17 review B1).
+    if args.diag_vendor:
+        if args.output:
+            print("WARNING: --output is ignored in --diag-vendor mode", file=sys.stderr)
+        _run_cli_diag_vendor(args)
+        return
 
     # --app: single-app detection path — exits before cli_mode check
     # MUST be checked before cli_mode (RESEARCH.md Anti-Patterns, Pitfall note)
