@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v3.1
 milestone_name: "Cleanup"
-status: phase-complete
-stopped_at: Phase 16 complete — 2/2 plans, verification passed
-last_updated: "2026-05-19T23:00:00Z"
-last_activity: 2026-05-19 — Phase 16 executed; dead writers/ package removed, render_report deleted, _run_cli wasted collectors removed, --app/--output warning added; 268 tests pass
+status: context-gathered
+stopped_at: Phase 17 context gathered — ready to plan
+last_updated: "2026-05-20T00:00:00Z"
+last_activity: 2026-05-20 — Phase 17 (IT Registry Path Confirmation) discuss complete; --diag-vendor approach + 17-IT-CONFIRMATION.md artifact + Lenovo keyword scope decided
 progress:
   total_phases: 4
   completed_phases: 1
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-19 for v3.1 Cleanup)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** v3.1 Cleanup — Phase 17 next (Requirements Automation Hook)
+**Current focus:** v3.1 Cleanup — Phase 17 next (IT Registry Path Confirmation)
 
 ## Current Position
 
 Phase: 17 of 19 (IT Registry Path Confirmation)
-Plan: — (not yet planned)
+Plan: — (not yet planned; context gathered 2026-05-20)
 Status: Ready to plan
-Last activity: 2026-05-19 — Phase 16 complete; dead writers/ package removed, render_report deleted, _run_cli wasted collectors removed, --app/--output stderr warning added; 268 tests pass
+Last activity: 2026-05-20 — Phase 17 discuss complete; 16 decisions captured in 17-CONTEXT.md across verification artifact, findings capture, Lenovo keyword scope, and discrepancy handling
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -69,7 +69,7 @@ Full decision log in PROJECT.md Key Decisions table. Standing constraints:
 
 ## Session Continuity
 
-Last session: 2026-05-19T23:00:00Z
-Stopped at: Phase 16 complete — 2/2 plans executed, verification passed, ROADMAP updated
-Resume file: None
-Next action: Run `/gsd-discuss-phase 17` or `/gsd-plan-phase 17` to plan the IT Registry Path Confirmation phase.
+Last session: 2026-05-20T00:00:00Z
+Stopped at: Phase 17 context gathered — 17-CONTEXT.md and 17-DISCUSSION-LOG.md written and committed
+Resume file: .planning/phases/17-it-registry-path-confirmation/17-CONTEXT.md
+Next action: Run `/gsd-plan-phase 17` to draft PLAN.md from captured context.
