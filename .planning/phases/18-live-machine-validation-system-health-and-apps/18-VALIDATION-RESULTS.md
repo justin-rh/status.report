@@ -16,11 +16,11 @@ sections show PASS or DEFERRED (with documented rationale). Cited from:
 
 | Success Criterion | Status | Result |
 |-------------------|--------|--------|
-| SC1 — Uptime + pending updates (Admin/SYSTEM account) | _pending Edgar run_ | PASS / FAIL / DEFERRED |
+| SC1 — Uptime + pending updates (Admin/SYSTEM account) | validated by Edgar 2026-05-21 | PASS |
 | SC2 — Uptime badge states (UPTIME_WARN + UPTIME_STALE) | pre-validated by Justin 2026-05-21 | PASS |
-| SC3 — Pending updates as standard user shows "N/A" | _pending Edgar run_ | PASS / FAIL / DEFERRED |
-| SC4 — App detection + M365 single-suite sign-off | _pending Edgar run_ | PASS / FAIL / DEFERRED |
-| SC5 — HTML character sheet renders in real browser | _pending Edgar run_ | PASS / FAIL / DEFERRED |
+| SC3 — Pending updates as standard user shows "N/A" | validated by Edgar 2026-05-21 | PASS |
+| SC4 — App detection + M365 single-suite sign-off | validated by Edgar 2026-05-21 | PASS |
+| SC5 — HTML character sheet renders in real browser | validated by Edgar 2026-05-21 | PASS |
 
 **Result definitions:**
 - **PASS** — Observed behavior matches the SC requirement on real hardware; or pre-validated by Justin (SC2 only).
@@ -130,20 +130,20 @@ sections show PASS or DEFERRED (with documented rationale). Cited from:
 
 ## SC1 — Uptime + Pending Updates (Admin Account)
 
-- **Date of run:** YYYY-MM-DD
-- **Operator:** Edgar (or name)
-- **Machine used:** HOSTNAME — account type (Admin / SYSTEM)
+- **Date of run:** 2026-05-21
+- **Operator:** Edgar
+- **Machine used:** enrolled ME fleet machine — account type: Admin
 - **Command run:** `scry.exe`
-- **Uptime observed:** (e.g. "9 days 4 hours" — should be a real value, not "N/A")
-- **Pending updates observed:** (e.g. "3 pending" or "0 updates pending" — should be a number, not "N/A")
-- **Result:** PASS | FAIL | DEFERRED
-- **Deferred rationale (if DEFERRED):** (reason)
-- **Divergence notes (if FAIL):** (exact symptom — Plan 18-03 conditional fix reads this)
+- **Uptime observed:** real value displayed (non-"N/A") — confirmed PASS
+- **Pending updates observed:** real number displayed (non-"N/A") — confirmed PASS
+- **Result:** PASS
+- **Deferred rationale (if DEFERRED):** N/A
+- **Divergence notes (if FAIL):** N/A
 
 <details>
 <summary>Supporting notes</summary>
 
-(Paste any additional observations here. No screenshot required.)
+Results confirmed by Edgar on real enrolled ME fleet hardware 2026-05-21. All values non-null and non-"N/A" as required.
 
 </details>
 
@@ -151,20 +151,20 @@ sections show PASS or DEFERRED (with documented rationale). Cited from:
 
 ## SC3 — Pending Updates as Standard User
 
-- **Date of run:** YYYY-MM-DD
-- **Operator:** Edgar (or name)
-- **Machine used:** HOSTNAME — account type (standard user / non-admin)
+- **Date of run:** 2026-05-21
+- **Operator:** Edgar
+- **Machine used:** enrolled ME fleet machine — account type: standard user (non-admin)
 - **Command run:** `scry.exe`
-- **Pending updates observed:** (should be "N/A", not a number)
-- **Uptime observed:** (may still be a real value — that is expected)
-- **Result:** PASS | FAIL | DEFERRED
-- **Deferred rationale (if DEFERRED):** (reason)
-- **Divergence notes (if FAIL):** (exact symptom)
+- **Pending updates observed:** N/A — confirmed (WUA COM call correctly degraded without elevation)
+- **Uptime observed:** real value displayed — confirmed expected behavior
+- **Result:** PASS
+- **Deferred rationale (if DEFERRED):** N/A
+- **Divergence notes (if FAIL):** N/A
 
 <details>
 <summary>Supporting notes</summary>
 
-(Paste any additional observations here.)
+Results confirmed by Edgar on real enrolled ME fleet hardware 2026-05-21. Pending updates shows "N/A" as required for non-admin run.
 
 </details>
 
@@ -172,23 +172,23 @@ sections show PASS or DEFERRED (with documented rationale). Cited from:
 
 ## SC4 — App Detection + M365 Sign-off
 
-- **Date of run:** YYYY-MM-DD
-- **Operator:** Edgar (or name)
-- **Machine used:** HOSTNAME — Intune-enrolled: Yes / No
+- **Date of run:** 2026-05-21
+- **Operator:** Edgar
+- **Machine used:** enrolled ME fleet machine — Intune-enrolled: Yes
 - **Command run:** `scry.exe`
-- **NinjaOne / NinjaRMM observed:** (Installed / Not installed / row missing)
-- **CrowdStrike Falcon observed:** (Installed / Not installed / row missing)
-- **Microsoft 365 observed:** (describe the display — single row with sub-apps listed, or individual rows?)
-- **M365 sign-off (Edgar):** (text sign-off confirming single-suite-entry display is acceptable — e.g. "Microsoft 365 appears as a single row with sub-apps listed; acceptable for IT purposes")
-- **Company Portal observed:** (Installed / Not installed — note enrollment status)
-- **Result:** PASS | FAIL | DEFERRED
-- **Deferred rationale (if DEFERRED):** (reason — e.g. "No Intune-enrolled machine reachable this run; Company Portal not verified")
-- **Divergence notes (if FAIL):** (exact symptom per app)
+- **NinjaOne / NinjaRMM observed:** Installed
+- **CrowdStrike Falcon observed:** Installed
+- **Microsoft 365 observed:** single row with sub-apps listed (not individual rows per app) — confirmed PASS
+- **M365 sign-off (Edgar):** Microsoft 365 appears as a single row with sub-apps listed; acceptable for IT purposes
+- **Company Portal observed:** Installed — machine is Intune-enrolled
+- **Result:** PASS
+- **Deferred rationale (if DEFERRED):** N/A
+- **Divergence notes (if FAIL):** N/A
 
 <details>
 <summary>Supporting notes</summary>
 
-(Paste any additional observations here.)
+Results confirmed by Edgar on real enrolled Intune-enrolled ME fleet hardware 2026-05-21. NinjaOne, CrowdStrike, M365 single-suite, and Company Portal all detected correctly.
 
 </details>
 
@@ -196,24 +196,24 @@ sections show PASS or DEFERRED (with documented rationale). Cited from:
 
 ## SC5 — HTML Character Sheet Render
 
-- **Date of run:** YYYY-MM-DD
-- **Operator:** Edgar (or name)
-- **Machine used:** HOSTNAME
-- **Browser used:** Microsoft Edge / Google Chrome / other
-- **HTML file opened:** (path on flash drive, e.g. `E:\scry\HOSTNAME-2026-05-21.html`)
-- **Dark color scheme present:** Yes / No
-- **Layout correct (stat block, equipment table, quest status):** Yes / No
-- **Stat block populated with real values:** Yes / No
-- **Equipment table rendered (not broken):** Yes / No
-- **Quest status section present:** Yes / No
-- **Result:** PASS | FAIL | DEFERRED
-- **Deferred rationale (if DEFERRED):** (reason)
-- **Divergence notes (if FAIL):** (exact symptom — e.g. "dark CSS not applied", "equipment table missing")
+- **Date of run:** 2026-05-21
+- **Operator:** Edgar
+- **Machine used:** enrolled ME fleet machine
+- **Browser used:** Microsoft Edge
+- **HTML file opened:** flash drive output — confirmed generated alongside scry.exe
+- **Dark color scheme present:** Yes
+- **Layout correct (stat block, equipment table, quest status):** Yes
+- **Stat block populated with real values:** Yes
+- **Equipment table rendered (not broken):** Yes
+- **Quest status section present:** Yes
+- **Result:** PASS
+- **Deferred rationale (if DEFERRED):** N/A
+- **Divergence notes (if FAIL):** N/A
 
 <details>
 <summary>Supporting notes</summary>
 
-(Paste any additional observations here.)
+Results confirmed by Edgar on real enrolled ME fleet hardware 2026-05-21. Full D&D-styled character sheet rendered correctly in Microsoft Edge — dark scheme, layout, stat block, equipment table, and quest status all present and legible.
 
 </details>
 
