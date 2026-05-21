@@ -97,8 +97,11 @@ Plans:
   3. IT staff runs SCRY as a standard non-admin user and confirms pending updates displays "N/A" rather than a number
   4. IT staff runs SCRY on an enrolled Windows machine and confirms NinjaOne and CrowdStrike Falcon are detected as present; an IT stakeholder signs off on the M365 single-suite-entry display; Company Portal is detected on a real Intune-enrolled machine
   5. IT staff opens the generated HTML character sheet in a real browser and confirms the full D&D-styled sheet renders correctly — layout, dark color scheme, stat block, equipment/app table, and quest status section all present and legible
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 3 plans
+Plans:
+- [ ] 18-01-PLAN.md — Create 18-VALIDATION-RESULTS.md skeleton with SC2 pre-populated (VALID-01, VALID-03, VALID-05)
+- [ ] 18-02-PLAN.md — Edgar/IT validates SC1/SC3/SC4/SC5 on enrolled Windows machines (checkpoint:human-action)
+- [ ] 18-03-PLAN.md — Conditional code fixes (if any SC failed) and phase close (VALID-01, VALID-03, VALID-05)
 
 ### Phase 19: Live Machine Validation — Vendor and Mac
 **Goal**: IT staff has confirmed vendor update detection on real Dell and non-Dell hardware, and Mac end-to-end execution is verified on real Apple hardware — closing all remaining carried validation debt
@@ -132,6 +135,6 @@ Plans:
 | 14. Vendor Update Detection | v3.0 | 2/2 | Complete | 2026-05-18 |
 | 15. Extended CLI Flags | v3.0 | 1/1 | Complete | 2026-05-18 |
 | 16. Tech Debt Cleanup | v3.1 | 2/2 | Complete | 2026-05-19 |
-| 17. IT Registry Path Confirmation | v3.1 | 0/TBD | Not started | - |
-| 18. Live Machine Validation — System Health and Apps | v3.1 | 0/TBD | Not started | - |
+| 17. IT Registry Path Confirmation | v3.1 | 3/3 | Complete | 2026-05-20 |
+| 18. Live Machine Validation — System Health and Apps | v3.1 | 0/3 | In progress | - |
 | 19. Live Machine Validation — Vendor and Mac | v3.1 | 0/TBD | Not started | - |
