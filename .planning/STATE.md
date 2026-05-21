@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v3.1
 milestone_name: "Cleanup"
-status: phase-complete
-stopped_at: Phase 17 complete — 3/3 plans, CONF-01 and CONF-02 closed (see 17-IT-CONFIRMATION.md)
-last_updated: "2026-05-20T00:00:00Z"
-last_activity: 2026-05-20 — Phase 17 (IT Registry Path Confirmation) executed; --diag-vendor shipped; 17-IT-CONFIRMATION.md populated; both CONFIRMED-MATCH — no code changes required
+status: context-gathered
+stopped_at: Phase 18 context gathered — validation artifact structure, uptime pre-validation, M365 sign-off, and bug-fix scope decisions captured
+last_updated: "2026-05-21T00:00:00Z"
+last_activity: 2026-05-21 — Phase 18 (Live Machine Validation — System Health and Apps) context discussion complete; SC2 pre-validated by Justin; 18-CONTEXT.md created
 progress:
   total_phases: 4
   completed_phases: 2
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-19 for v3.1 Cleanup)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** v3.1 Cleanup — Phase 18 next (Live Machine Validation — System Health and Apps)
+**Current focus:** v3.1 Cleanup — Phase 18 in progress (Live Machine Validation — System Health and Apps — context gathered, ready to plan)
 
 ## Current Position
 
 Phase: 18 of 19 (Live Machine Validation — System Health and Apps)
 Plan: —
-Status: Ready to discuss
-Last activity: 2026-05-20 — Phase 17 (IT Registry Path Confirmation) executed; --diag-vendor shipped; 17-IT-CONFIRMATION.md populated; both CONFIRMED-MATCH — no code changes required
+Status: Context gathered — ready to plan
+Last activity: 2026-05-21 — Phase 18 context discussion complete; SC2 pre-validated by Justin; 18-CONTEXT.md committed
 
 Progress: [█████░░░░░] 50%
 
@@ -68,7 +68,7 @@ Full decision log in PROJECT.md Key Decisions table. Standing constraints:
 
 ## Session Continuity
 
-Last session: 2026-05-20T00:00:00Z
-Stopped at: Phase 17 complete — 3/3 plans, CONF-01 and CONF-02 closed (see 17-IT-CONFIRMATION.md)
-Resume file: .planning/ROADMAP.md
-Next action: Run /gsd-discuss-phase 18
+Last session: 2026-05-21T00:00:00Z
+Stopped at: Phase 18 context gathered — ready to plan
+Resume file: .planning/phases/18-live-machine-validation-system-health-and-apps/18-CONTEXT.md
+Next action: Run /gsd-plan-phase 18
