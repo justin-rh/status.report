@@ -99,7 +99,7 @@ Plans:
   5. IT staff opens the generated HTML character sheet in a real browser and confirms the full D&D-styled sheet renders correctly — layout, dark color scheme, stat block, equipment/app table, and quest status section all present and legible
 **Plans**: 3 plans
 Plans:
-- [ ] 18-01-PLAN.md — Create 18-VALIDATION-RESULTS.md skeleton with SC2 pre-populated (VALID-01, VALID-03, VALID-05)
+- [x] 18-01-PLAN.md — Create 18-VALIDATION-RESULTS.md skeleton with SC2 pre-populated (VALID-01, VALID-03, VALID-05)
 - [ ] 18-02-PLAN.md — Edgar/IT validates SC1/SC3/SC4/SC5 on enrolled Windows machines (checkpoint:human-action)
 - [ ] 18-03-PLAN.md — Conditional code fixes (if any SC failed) and phase close (VALID-01, VALID-03, VALID-05)
 
@@ -136,5 +136,5 @@ Plans:
 | 15. Extended CLI Flags | v3.0 | 1/1 | Complete | 2026-05-18 |
 | 16. Tech Debt Cleanup | v3.1 | 2/2 | Complete | 2026-05-19 |
 | 17. IT Registry Path Confirmation | v3.1 | 3/3 | Complete | 2026-05-20 |
-| 18. Live Machine Validation — System Health and Apps | v3.1 | 0/3 | In progress | - |
+| 18. Live Machine Validation — System Health and Apps | v3.1 | 1/3 | In progress | - |
 | 19. Live Machine Validation — Vendor and Mac | v3.1 | 0/TBD | Not started | - |
