@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.1
 milestone_name: "Cleanup"
-status: planned
-stopped_at: Phase 17 planned — 3 plans across 3 waves; ready to execute
-last_updated: "2026-05-20T01:00:00Z"
-last_activity: 2026-05-20 — Phase 17 (IT Registry Path Confirmation) planned; 3 plans (17-01 diag-vendor tool, 17-02 Edgar evidence run, 17-03 conditional patch+close); verification passed iteration 2/3 after 4 blockers + 7 warnings resolved
+status: phase-complete
+stopped_at: Phase 17 complete — 3/3 plans, CONF-01 and CONF-02 closed (see 17-IT-CONFIRMATION.md)
+last_updated: "2026-05-20T00:00:00Z"
+last_activity: 2026-05-20 — Phase 17 (IT Registry Path Confirmation) executed; --diag-vendor shipped; 17-IT-CONFIRMATION.md populated; both CONFIRMED-MATCH — no code changes required
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 2
-  percent: 25
+  completed_plans: 5
+  percent: 50
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-19 for v3.1 Cleanup)
 
 **Core value:** IT staff plugs in, runs the tool, and instantly knows what they're looking at — device type, location, department, software status, and any gaps — no manual lookup required.
-**Current focus:** v3.1 Cleanup — Phase 17 next (IT Registry Path Confirmation)
+**Current focus:** v3.1 Cleanup — Phase 18 next (Live Machine Validation — System Health and Apps)
 
 ## Current Position
 
-Phase: 17 of 19 (IT Registry Path Confirmation)
-Plan: 17-01 next (Wave 1 — autonomous code + PyInstaller smoke checkpoint)
-Status: Ready to execute
-Last activity: 2026-05-20 — Phase 17 planned; 3 plans across 3 waves; verification passed iteration 2/3 after 4 blockers + 7 warnings resolved
+Phase: 18 of 19 (Live Machine Validation — System Health and Apps)
+Plan: —
+Status: Ready to discuss
+Last activity: 2026-05-20 — Phase 17 (IT Registry Path Confirmation) executed; --diag-vendor shipped; 17-IT-CONFIRMATION.md populated; both CONFIRMED-MATCH — no code changes required
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████░░░░░] 50%
 
 ## Accumulated Context
 
@@ -54,9 +54,8 @@ Full decision log in PROJECT.md Key Decisions table. Standing constraints:
 
 ### Blockers/Concerns
 
-- **Phase 18 gate:** Dell Command Update and Lenovo System Update registry paths unconfirmed — requires scheduling meeting with Edgar/IT before Phase 18 can complete
-- **Phase 20 gate:** Depends on Phase 18 completing first (confirmed paths may require code updates before live Dell/Lenovo validation)
-- **Phase 19/20 gate:** Requires access to real enrolled Windows machines (SYSTEM/Admin account, Dell hardware, Intune-enrolled machine) and a real Mac
+- **Phase 19 gate:** Confirmed registry paths (Phase 17) may require code updates that must ship before live Dell/Lenovo validation in Phase 19
+- **Phase 18/19 gate:** Requires access to real enrolled Windows machines (SYSTEM/Admin account, Dell hardware, Intune-enrolled machine) and a real Mac
 
 ## Deferred Items
 
@@ -69,7 +68,7 @@ Full decision log in PROJECT.md Key Decisions table. Standing constraints:
 
 ## Session Continuity
 
-Last session: 2026-05-20T01:00:00Z
-Stopped at: Phase 17 planned — 3 plans + PATTERNS.md committed; ROADMAP.md updated; checker verification passed iteration 2/3
-Resume file: .planning/phases/17-it-registry-path-confirmation/17-01-PLAN.md
-Next action: `/clear` then `/gsd-execute-phase 17` to run Wave 1 (17-01).
+Last session: 2026-05-20T00:00:00Z
+Stopped at: Phase 17 complete — 3/3 plans, CONF-01 and CONF-02 closed (see 17-IT-CONFIRMATION.md)
+Resume file: .planning/ROADMAP.md
+Next action: Run /gsd-discuss-phase 18
