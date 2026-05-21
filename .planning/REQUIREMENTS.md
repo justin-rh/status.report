@@ -10,11 +10,11 @@
 
 ### Hardware Validation (VALID)
 
-- [ ] **VALID-01**: IT staff runs SCRY under a Windows SYSTEM/Admin account and observes real uptime and pending update count values; yellow UPTIME_WARN badge renders when uptime >7 days; red UPTIME_STALE badge renders when uptime >30 days; standard-user (non-admin) run shows "N/A" for pending updates
+- [x] **VALID-01**: IT staff runs SCRY under a Windows SYSTEM/Admin account and observes real uptime and pending update count values; yellow UPTIME_WARN badge renders when uptime >7 days; red UPTIME_STALE badge renders when uptime >30 days; standard-user (non-admin) run shows "N/A" for pending updates
 - [ ] **VALID-02**: IT staff runs SCRY on a real Dell machine and observes DCU pending count populated; runs on a non-Dell/non-Lenovo machine and observes "Not installed" vendor row; 3 visual HTML vendor row renders (test_vendor_render_case1/2/3.html) verified in browser
-- [ ] **VALID-03**: IT staff runs SCRY on an enrolled Windows machine and confirms NinjaOne and CrowdStrike detected; IT/stakeholder signs off on M365 single-suite-entry display; SCRY runs on real Intune-enrolled machine and Company Portal detected
+- [x] **VALID-03**: IT staff runs SCRY on an enrolled Windows machine and confirms NinjaOne and CrowdStrike detected; IT/stakeholder signs off on M365 single-suite-entry display; SCRY runs on real Intune-enrolled machine and Company Portal detected
 - [ ] **VALID-04**: IT staff runs SCRY on a real Mac and confirms hardware collectors, profile enumeration, app detection, and HTML render complete without error; NinjaOne launchctl label confirmed
-- [ ] **VALID-05**: IT staff opens generated HTML character sheet in a real browser and confirms D&D-styled sheet renders correctly (layout, colors, stat block, equipment table, quest status)
+- [x] **VALID-05**: IT staff opens generated HTML character sheet in a real browser and confirms D&D-styled sheet renders correctly (layout, colors, stat block, equipment table, quest status)
 
 ### IT Confirmation (CONF)
 
@@ -62,8 +62,8 @@
 | DEBT-03 | Phase 16 | 16-02                 | complete |
 | CONF-01 | Phase 17 | 17-01, 17-02, 17-03   | complete |
 | CONF-02 | Phase 17 | 17-01, 17-02, 17-03   | complete |
-| VALID-01 | Phase 18 | —                    | pending  |
-| VALID-03 | Phase 18 | —                    | pending  |
-| VALID-05 | Phase 18 | —                    | pending  |
+| VALID-01 | Phase 18 | 18-01, 18-02, 18-03 | complete |
+| VALID-03 | Phase 18 | 18-01, 18-02, 18-03 | complete |
+| VALID-05 | Phase 18 | 18-01, 18-02, 18-03 | complete |
 | VALID-02 | Phase 19 | —                    | pending  |
 | VALID-04 | Phase 19 | —                    | pending  |

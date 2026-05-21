@@ -55,7 +55,7 @@ Audit: `.planning/milestones/v3.0-MILESTONE-AUDIT.md`
 
 - [x] **Phase 16: Tech Debt Cleanup** — Remove dead writers.write_html, fix --updates wasted collector calls, warn on --app/--output conflict — completed 2026-05-19
 - [x] **Phase 17: IT Registry Path Confirmation** — 3/3 plans — completed 2026-05-20
-- [ ] **Phase 18: Live Machine Validation — System Health and Apps** — IT staff validates uptime badges, pending updates, app detection, and HTML render on real enrolled Windows machines
+- [x] **Phase 18: Live Machine Validation — System Health and Apps** — 3/3 plans — completed 2026-05-21
 - [ ] **Phase 19: Live Machine Validation — Vendor and Mac** — IT staff validates Dell DCU vendor row on a real Dell machine and verifies Mac end-to-end run
 
 ## Phase Details
@@ -100,8 +100,8 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 18-01-PLAN.md — Create 18-VALIDATION-RESULTS.md skeleton with SC2 pre-populated (VALID-01, VALID-03, VALID-05)
-- [ ] 18-02-PLAN.md — Edgar/IT validates SC1/SC3/SC4/SC5 on enrolled Windows machines (checkpoint:human-action)
-- [ ] 18-03-PLAN.md — Conditional code fixes (if any SC failed) and phase close (VALID-01, VALID-03, VALID-05)
+- [x] 18-02-PLAN.md — Edgar/IT validates SC1/SC3/SC4/SC5 on enrolled Windows machines (checkpoint:human-action)
+- [x] 18-03-PLAN.md — Conditional code fixes (if any SC failed) and phase close (VALID-01, VALID-03, VALID-05)
 
 ### Phase 19: Live Machine Validation — Vendor and Mac
 **Goal**: IT staff has confirmed vendor update detection on real Dell and non-Dell hardware, and Mac end-to-end execution is verified on real Apple hardware — closing all remaining carried validation debt
@@ -136,5 +136,5 @@ Plans:
 | 15. Extended CLI Flags | v3.0 | 1/1 | Complete | 2026-05-18 |
 | 16. Tech Debt Cleanup | v3.1 | 2/2 | Complete | 2026-05-19 |
 | 17. IT Registry Path Confirmation | v3.1 | 3/3 | Complete | 2026-05-20 |
-| 18. Live Machine Validation — System Health and Apps | v3.1 | 1/3 | In progress | - |
+| 18. Live Machine Validation — System Health and Apps | v3.1 | 3/3 | Complete | 2026-05-21 |
 | 19. Live Machine Validation — Vendor and Mac | v3.1 | 0/TBD | Not started | - |
