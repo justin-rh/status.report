@@ -54,7 +54,7 @@ Audit: `.planning/milestones/v3.0-MILESTONE-AUDIT.md`
 **Milestone Goal:** Close all accumulated debt — remove dead code, fix wasted collector work, confirm vendor registry paths with IT, and validate SCRY on real hardware across all 20 deferred UAT items.
 
 - [x] **Phase 16: Tech Debt Cleanup** — Remove dead writers.write_html, fix --updates wasted collector calls, warn on --app/--output conflict — completed 2026-05-19
-- [ ] **Phase 17: IT Registry Path Confirmation** — Edgar/IT confirms Dell Command Update and Lenovo System Update registry paths; code updated if paths differ
+- [x] **Phase 17: IT Registry Path Confirmation** — 3/3 plans — completed 2026-05-20
 - [ ] **Phase 18: Live Machine Validation — System Health and Apps** — IT staff validates uptime badges, pending updates, app detection, and HTML render on real enrolled Windows machines
 - [ ] **Phase 19: Live Machine Validation — Vendor and Mac** — IT staff validates Dell DCU vendor row on a real Dell machine and verifies Mac end-to-end run
 
