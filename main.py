@@ -27,7 +27,7 @@ from collectors import collect_all
 from health_checks import evaluate_warnings
 from models import AuditReport
 from parsers.name_parser import parse_hostname
-from renderer import render_html
+from renderer import render_html, render_console
 
 
 def _run_cli(args: argparse.Namespace) -> None:
@@ -187,6 +187,7 @@ def main() -> None:
     parser.add_argument("--json",   action="store_true", help="Write AuditReport as JSON alongside HTML report; full pipeline always runs")
     parser.add_argument("--output", metavar="PATH",      help="Override default logs/ destination for all file output (HTML and JSON)")
     parser.add_argument("--app",    metavar="NAME",      help="Run app-detection for one named app; print result to stdout and exit")
+    parser.add_argument("--console", action="store_true", help="Print full audit report to stdout instead of writing an HTML file")
     parser.add_argument(
         "--diag-vendor",
         action="store_true",
@@ -245,6 +246,10 @@ def main() -> None:
     # (progress label shown after collect_all so it aligns with D-04 console spec)
 
     report.warnings = evaluate_warnings(report)  # D-09: populates warnings before render
+
+    if args.console:
+        print(render_console(report))
+        return
 
     print("Rendering character sheet...")
 
@@ -309,7 +314,6 @@ def main() -> None:
                 os.startfile(str(output_path))
             except OSError:
                 pass
-        input("\nPress Enter to close this window, then eject the USB drive.")
 
 
 if __name__ == "__main__":

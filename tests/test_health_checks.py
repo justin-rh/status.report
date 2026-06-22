@@ -89,14 +89,15 @@ def test_disk_space_skip_has_detail():
 # ---------------------------------------------------------------------------
 
 def test_evaluate_warnings_always_returns_four():
-    """evaluate_warnings must always return exactly 4 Warning objects (Phase 13 D-14)."""
+    """evaluate_warnings must always return exactly 5 Warning objects (Phase 13 D-14, +WARN-06)."""
     report = make_report()
     warnings = evaluate_warnings(report)
-    assert len(warnings) == 4, f'expected 4 warnings, got {len(warnings)}'
+    assert len(warnings) == 5, f'expected 5 warnings, got {len(warnings)}'
     assert warnings[0].code == 'OS_VERSION'
     assert warnings[1].code == 'DISK_SPACE'
     assert warnings[2].code == 'RENAME_REQUIRED'
     assert warnings[3].code in ('UPTIME', 'UPTIME_WARN', 'UPTIME_STALE')
+    assert warnings[4].code == 'SECURITY_AGENTS'
 
 
 # ---------------------------------------------------------------------------
@@ -117,7 +118,7 @@ def test_evaluate_warnings_never_raises():
     )
     try:
         result = evaluate_warnings(all_none_report)
-        assert len(result) == 4
+        assert len(result) == 5
     except Exception as exc:
         pytest.fail(f'evaluate_warnings raised an exception with all-None fields: {exc}')
 

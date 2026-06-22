@@ -1,9 +1,9 @@
 """Health checks — evaluates AuditReport fields and produces typed Warning objects.
 
-Always returns exactly four Warning objects from evaluate_warnings() (D-06,
-extended to 4 in Phase 13 D-14): one for OS version (WARN-01), one for disk
-space (WARN-02), one for rename required (WARN-03), and one for uptime
-(WARN-04/WARN-05).
+Always returns exactly five Warning objects from evaluate_warnings() (D-06,
+extended to 4 in Phase 13 D-14, extended to 5 for WARN-06): one for OS version
+(WARN-01), one for disk space (WARN-02), one for rename required (WARN-03), one
+for uptime (WARN-04/WARN-05), and one for security agents (WARN-06).
 """
 from models import AuditReport, Warning
 
@@ -23,15 +23,16 @@ UPTIME_STALE_DAYS: int = 30  # WARN-05: critical threshold (red); hibernation ti
 def evaluate_warnings(report: AuditReport) -> list[Warning]:
     """Pure function: AuditReport -> list[Warning]. Never raises.
 
-    Always returns exactly four Warning objects — one per check — so the
+    Always returns exactly five Warning objects — one per check — so the
     Phase 7 renderer can display a complete status table regardless of
-    pass/fail outcome (D-06, extended to 4 in Phase 13 D-14).
+    pass/fail outcome (D-06, extended to 4 in Phase 13 D-14, 5 for WARN-06).
     """
     return [
         _check_os_version(report),
         _check_disk_space(report),
         _check_rename(report),
         _check_uptime(report),
+        _check_security_agents(report),
     ]
 
 
@@ -165,5 +166,45 @@ def _check_uptime(report: AuditReport) -> Warning:
         code='UPTIME',
         severity='OK',
         message='Uptime is within normal range',
+        detail=None,
+    )
+
+
+_REQUIRED_SECURITY_AGENTS = ("NinjaOne", "CrowdStrike Falcon")
+
+
+def _check_security_agents(report: AuditReport) -> Warning:
+    """Return SECURITY_AGENTS Warning. WARN (red) if NinjaOne or CrowdStrike Falcon
+    is present in the app list but not installed. Skipped when app collection
+    did not run (report.apps is empty).
+    """
+    if not report.apps:
+        return Warning(
+            code='SECURITY_AGENTS',
+            severity='OK',
+            message='Security agent check skipped',
+            detail='app collection did not run',
+        )
+
+    app_index = {app.name: app for app in report.apps}
+    missing = [
+        name for name in _REQUIRED_SECURITY_AGENTS
+        if name in app_index and not app_index[name].installed
+    ]
+
+    if missing:
+        names = " and ".join(missing)
+        return Warning(
+            code='SECURITY_AGENTS',
+            severity='WARN',
+            message=f'{names} {"is" if len(missing) == 1 else "are"} not installed',
+            detail='Security agents must be present on all devices',
+            level='red',
+        )
+
+    return Warning(
+        code='SECURITY_AGENTS',
+        severity='OK',
+        message='Security agents are installed',
         detail=None,
     )

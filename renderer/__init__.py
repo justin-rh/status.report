@@ -41,6 +41,17 @@ _DEPT_NAMES: dict[str, str] = {
 }
 
 
+def _format_uptime(seconds: int) -> str:
+    days = seconds // 86400
+    hours = (seconds % 86400) // 3600
+    minutes = (seconds % 3600) // 60
+    if days >= 1:
+        return f"{days} day{'s' if days != 1 else ''} {hours} hour{'s' if hours != 1 else ''}"
+    if hours >= 1:
+        return f"{hours} hour{'s' if hours != 1 else ''}"
+    return f"{minutes} minute{'s' if minutes != 1 else ''}"
+
+
 def render_html(report: AuditReport) -> str:
     """Return rendered HTML string without writing to disk.
 
@@ -125,16 +136,6 @@ def _build_context(report: AuditReport) -> dict:
     dept_codes = sorted(_DEPT_NAMES.items())
 
     # Uptime display — D-07 (Phase 13)
-    def _format_uptime(seconds: int) -> str:
-        days = seconds // 86400
-        hours = (seconds % 86400) // 3600
-        minutes = (seconds % 3600) // 60
-        if days >= 1:
-            return f"{days} day{'s' if days != 1 else ''} {hours} hour{'s' if hours != 1 else ''}"
-        if hours >= 1:
-            return f"{hours} hour{'s' if hours != 1 else ''}"
-        return f"{minutes} minute{'s' if minutes != 1 else ''}"
-
     uptime_display = _format_uptime(report.uptime_seconds) if report.uptime_seconds is not None else None
 
     # Pending updates display — D-16 (Phase 13)
@@ -195,3 +196,117 @@ def _build_context(report: AuditReport) -> dict:
         'dell_dcu_display': dell_dcu_display,
         'lenovo_lsu_display': lenovo_lsu_display,
     }
+
+
+def render_console(report: AuditReport) -> str:
+    """Return a plain-text audit summary for --console mode.
+
+    Covers the same data as the HTML sheet: identity, hardware, vendor updates,
+    user profiles, apps, and health checks. Vendor section only appears when
+    --updates was passed (dell_dcu / lenovo_lsu will be non-None).
+    """
+    ph = report.parsed_hostname
+    SEP = "=" * 42
+    lines: list[str] = []
+
+    lines.append("SCRY — Master Electronics IT Audit")
+    lines.append(SEP)
+    lines.append(f"Hostname:    {report.hostname}")
+    if ph.device_type:
+        lines.append(f"Device Type: {ph.device_type}")
+    if ph.city:
+        lines.append(f"Location:    {ph.city}")
+    guild = (_DEPT_NAMES.get(ph.department, ph.department) if ph.department else None) or ph.company_code
+    if guild:
+        lines.append(f"Guild:       {guild}")
+    if ph.station is not None:
+        lines.append(f"Station:     {ph.station}")
+    lines.append(f"Timestamp:   {report.timestamp}")
+
+    lines.append("")
+    lines.append("--- Hardware ---")
+    if report.os_version or report.os_build:
+        os_str = report.os_version or ""
+        if report.os_build:
+            os_str = f"{os_str} — Build {report.os_build}" if os_str else f"Build {report.os_build}"
+        lines.append(f"OS:          {os_str}")
+    if report.cpu_model:
+        lines.append(f"CPU:         {report.cpu_model}")
+    if report.ram_gb is not None:
+        nearest = _nearest_standard_ram(report.ram_gb)
+        lines.append(f"RAM:         {report.ram_gb:.1f} GB ({nearest} GB)")
+    if report.disk_total_gb and report.disk_free_gb is not None:
+        pct = (report.disk_free_gb / report.disk_total_gb) * 100
+        lines.append(f"Disk:        {report.disk_free_gb:.0f} GB free / {report.disk_total_gb:.0f} GB total ({pct:.0f}% free)")
+    if report.serial_number:
+        lines.append(f"Serial:      {report.serial_number}")
+    if report.uptime_seconds is not None:
+        lines.append(f"Uptime:      {_format_uptime(report.uptime_seconds)}")
+    if report.pending_updates is not None:
+        lines.append(f"Pending:     {report.pending_updates} update{'s' if report.pending_updates != 1 else ''}")
+
+    if report.dell_dcu is not None or report.lenovo_lsu is not None:
+        lines.append("")
+        lines.append("--- Vendor Updates ---")
+        if report.dell_dcu is not None:
+            dcu = report.dell_dcu
+            if not dcu.installed:
+                dcu_str = "Not installed"
+            elif not dcu.scan_data_present or dcu.pending_count is None:
+                dcu_str = "Unknown (no scan data)"
+            else:
+                dcu_str = f"{dcu.pending_count} pending"
+            lines.append(f"Dell DCU:    {dcu_str}")
+        if report.lenovo_lsu is not None:
+            lsu = report.lenovo_lsu
+            lsu_str = "Not installed" if not lsu.installed else "Installed"
+            lines.append(f"Lenovo LSU:  {lsu_str}")
+
+    if report.current_user or report.local_profiles:
+        lines.append("")
+        lines.append("--- Users ---")
+        if report.current_user:
+            lines.append(f"Current:     {report.current_user}")
+        others = [p for p in report.local_profiles if not p.lower().startswith('adm_') and p != report.current_user]
+        if others:
+            lines.append(f"Others:      {', '.join(others)}")
+
+    if report.apps:
+        lines.append("")
+        lines.append("--- Apps ---")
+        for app in report.apps:
+            if app.sub_apps:
+                lines.append(f"[+] {app.name}")
+                for sub in app.sub_apps:
+                    mark = "+" if sub.installed else "-"
+                    ver = f" (v{sub.version})" if sub.version else ""
+                    lines.append(f"     [{mark}] {sub.name}{ver}")
+            else:
+                mark = "+" if app.installed else "-"
+                if app.installed:
+                    suffix = f" (v{app.version})" if app.version else (f" ({app.service_state})" if app.service_state else "")
+                else:
+                    suffix = "  not installed"
+                lines.append(f"[{mark}] {app.name}{suffix}")
+
+    if report.warnings:
+        lines.append("")
+        lines.append("--- Health Checks ---")
+        for w in report.warnings:
+            if w.severity == "WARN" and w.level == "red":
+                tag = "!!! "
+            elif w.severity == "WARN":
+                tag = "WARN"
+            else:
+                tag = "  OK"
+            detail_str = f" — {w.detail}" if w.detail else ""
+            lines.append(f"[{tag}]  {w.code:<18} {w.message}{detail_str}")
+
+    if report.collection_errors:
+        lines.append("")
+        lines.append("--- Collection Errors ---")
+        for err in report.collection_errors:
+            lines.append(f"  {err}")
+
+    lines.append(SEP)
+    return "\n".join(lines)

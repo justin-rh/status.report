@@ -104,7 +104,7 @@ def test_headless_skips_startfile_and_input():
 # ---------------------------------------------------------------------------
 
 def test_interactive_calls_startfile_and_input():
-    """When isatty()=True, os.startfile and input must each be called once (NINJA-01)."""
+    """When isatty()=True, os.startfile must be called once; input() must NOT be called."""
     import main
 
     with _patched_main(isatty_value=True) as (mock_startfile, mock_input):
@@ -114,8 +114,8 @@ def test_interactive_calls_startfile_and_input():
         f"os.startfile should be called exactly once in interactive mode, "
         f"but was called {mock_startfile.call_count} time(s)"
     )
-    assert mock_input.call_count == 1, (
-        f"input() should be called exactly once in interactive mode, "
+    assert mock_input.call_count == 0, (
+        f"input() should not be called — process exits after browser launch, "
         f"but was called {mock_input.call_count} time(s)"
     )
 
